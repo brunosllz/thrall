@@ -1,8 +1,8 @@
 {
   "name": "thrall",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Back-end application from dev-xperience",
+  "author": "Bruno Silveira Luiz",
   "private": true,
   "bin": "build/src/main.js",
   "license": "MIT",
