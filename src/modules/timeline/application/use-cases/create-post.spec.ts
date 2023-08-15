@@ -1,23 +1,50 @@
-import { InMemoryPostRepository } from '../repositories/in-memory/in-memory-post-repository';
-import { CreatePostUseCase } from './create-post';
+import { faker } from '@faker-js/faker';
 
-let sut: CreatePostUseCase;
-let postRepository: InMemoryPostRepository;
+import { InMemoryProjectRepository } from '../repositories/in-memory/in-memory-project-repository';
+import { InMemoryRoleRepository } from '../repositories/in-memory/in-memory-role-repository';
+import { CreateProjectUseCase } from './create-project';
 
-describe('Create a post', () => {
+let sut: CreateProjectUseCase;
+let projectRepository: InMemoryProjectRepository;
+let roleRepository: InMemoryRoleRepository;
+
+describe('Create a project', () => {
   beforeEach(() => {
-    postRepository = new InMemoryPostRepository();
-    sut = new CreatePostUseCase(postRepository);
+    roleRepository = new InMemoryRoleRepository();
+    projectRepository = new InMemoryProjectRepository(roleRepository);
+    sut = new CreateProjectUseCase(projectRepository);
   });
 
-  it('should be able create a post', async () => {
+  it('should be able create a project', async () => {
     await sut.execute({
-      content: 'a'.repeat(1000),
-      roles: 'develop',
+      authorId: '1',
+      content: faker.lorem.paragraphs(),
+      roles: [
+        {
+          amount: 2,
+          name: 'front-end',
+        },
+        {
+          amount: 1,
+          name: 'devops',
+        },
+      ],
       title: 'title example',
     });
 
-    expect(postRepository.items).toHaveLength(1);
-    expect(postRepository.items[0].slug.value).toEqual('title-example');
+    expect(projectRepository.items).toHaveLength(1);
+    expect(projectRepository.items[0].slug.value).toEqual('title-example');
+    expect(projectRepository.items[0].roles.getItems()).toHaveLength(2);
+    //TODO: create a class then manage ids for all classes and implement validation on this class -> UUIDEntity
+    expect(projectRepository.items[0].roles.getItems()).toEqual([
+      expect.objectContaining({
+        amount: 2,
+        name: 'front-end',
+      }),
+      expect.objectContaining({
+        amount: 1,
+        name: 'devops',
+      }),
+    ]);
   });
 });
