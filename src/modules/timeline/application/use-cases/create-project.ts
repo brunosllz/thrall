@@ -1,3 +1,4 @@
+import { Either, right } from '@common/logic/either';
 import { ProjectRoleList } from '@modules/timeline/domain/entities/project-role-list';
 import { Role } from '@modules/timeline/domain/entities/role';
 import { Injectable } from '@nestjs/common';
@@ -15,7 +16,10 @@ interface CreateProjectRequest {
   }>;
 }
 
-type CreateProjectResponse = Promise<void>;
+type CreateProjectResponse = Either<
+  Record<string, never>,
+  Record<string, never>
+>;
 
 @Injectable()
 export class CreateProjectUseCase {
@@ -26,7 +30,7 @@ export class CreateProjectUseCase {
     title,
     roles,
     authorId,
-  }: CreateProjectRequest): CreateProjectResponse {
+  }: CreateProjectRequest): Promise<CreateProjectResponse> {
     const project = Project.create({ authorId, content, title });
 
     const createdRoles = roles.map((role) => {
@@ -40,5 +44,7 @@ export class CreateProjectUseCase {
     project.roles = new ProjectRoleList(createdRoles);
 
     await this.projectRepository.create(project);
+
+    return right({});
   }
 }

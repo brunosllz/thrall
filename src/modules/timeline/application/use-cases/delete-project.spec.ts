@@ -1,3 +1,5 @@
+import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
+
 import { makeFakeProject } from '@test/factories/make-project';
 import { makeFakeRole } from '@test/factories/make-role';
 
@@ -38,5 +40,12 @@ describe('Delete a project', () => {
 
     expect(projectRepository.items).toHaveLength(0);
     expect(roleRepository.items).toHaveLength(0);
+  });
+
+  it('should be be not able delete a project with non exist id', async () => {
+    const result = await sut.execute({ id: 'non-id' });
+
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
   });
 });

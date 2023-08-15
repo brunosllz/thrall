@@ -1,3 +1,6 @@
+import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
+import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
+
 import { makeFakeProject } from '@test/factories/make-project';
 import { makeFakeRole } from '@test/factories/make-role';
 
@@ -69,15 +72,16 @@ describe('Edit a project', () => {
 
     await projectRepository.create(project);
 
-    await expect(
-      sut.execute({
-        projectId: 'non-id',
-        authorId: '1',
-        title: 'title example',
-        content: 'content example 2',
-        roles: [],
-      }),
-    ).rejects.toThrow();
+    const result = await sut.execute({
+      projectId: 'non-id',
+      authorId: '1',
+      title: 'title example',
+      content: 'content example 2',
+      roles: [],
+    });
+
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
   });
 
   //TODO: validate if a custom error
@@ -86,14 +90,15 @@ describe('Edit a project', () => {
 
     await projectRepository.create(project);
 
-    await expect(
-      sut.execute({
-        projectId: project.id,
-        authorId: 'non-id',
-        title: 'title example',
-        content: 'content example 2',
-        roles: [],
-      }),
-    ).rejects.toThrow();
+    const result = await sut.execute({
+      projectId: project.id,
+      authorId: 'non-id',
+      title: 'title example',
+      content: 'content example 2',
+      roles: [],
+    });
+
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(NotAllowedError);
   });
 });

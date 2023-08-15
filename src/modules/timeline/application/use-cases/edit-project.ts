@@ -1,6 +1,10 @@
+import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
+import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
+import { Either, left, right } from '@common/logic/either';
 import { ProjectRoleList } from '@modules/timeline/domain/entities/project-role-list';
 import { Role } from '@modules/timeline/domain/entities/role';
 import { Injectable } from '@nestjs/common';
+import { NotFoundError } from 'rxjs';
 
 import { ProjectRepository } from '../repositories/project-repository';
 import { RoleRepository } from '../repositories/role-repository';
@@ -17,7 +21,10 @@ interface EditProjectRequest {
   }>;
 }
 
-type EditProjectResponse = Promise<void>;
+type EditProjectResponse = Either<
+  ResourceNotFoundError | NotFoundError,
+  Record<string, never>
+>;
 
 @Injectable()
 export class EditProjectUseCase {
@@ -32,15 +39,15 @@ export class EditProjectUseCase {
     content,
     roles,
     title,
-  }: EditProjectRequest): EditProjectResponse {
+  }: EditProjectRequest): Promise<EditProjectResponse> {
     const project = await this.projectRepository.findById(projectId);
 
     if (!project) {
-      throw new Error('resources not found.');
+      return left(new ResourceNotFoundError());
     }
 
     if (authorId !== project.authorId) {
-      throw new Error('not allowed.');
+      return left(new NotAllowedError());
     }
 
     const currentRoles = await this.roleRepository.findManyByProjectId(
@@ -67,5 +74,7 @@ export class EditProjectUseCase {
     project.roles = projectRolesList;
 
     await this.projectRepository.save(project);
+
+    return right({});
   }
 }
