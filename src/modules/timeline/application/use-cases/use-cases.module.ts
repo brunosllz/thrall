@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 
-import { CreatePostUseCase } from './create-post';
+import { CreateProjectUseCase } from './create-project';
 
 //TODO: import database module
 @Module({
   imports: [],
-  providers: [CreatePostUseCase],
+  providers: [CreateProjectUseCase],
 })
 export class UseCasesModule {}
