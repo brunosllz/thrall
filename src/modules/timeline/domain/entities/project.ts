@@ -2,6 +2,8 @@ import { AggregateRoot } from '@common/domain/aggregate-root';
 import { Replace } from '@common/logic/Replace';
 
 import { ProjectRoleList } from './project-role-list';
+import { ProjectTechnologyList } from './project-technology-list';
+import { Requirement } from './value-objects/requirement';
 import { Slug } from './value-objects/slug';
 
 export interface ProjectProps {
@@ -10,6 +12,8 @@ export interface ProjectProps {
   content: string;
   slug: Slug;
   roles: ProjectRoleList;
+  technologies: ProjectTechnologyList;
+  requirements: Requirement;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -43,6 +47,18 @@ export class Project extends AggregateRoot<ProjectProps> {
     return this.props.roles;
   }
 
+  get technologies() {
+    return this.props.technologies;
+  }
+
+  get requirements() {
+    return this.props.requirements;
+  }
+
+  get updatedAt() {
+    return this.props.updatedAt;
+  }
+
   set title(text: string) {
     this.props.title = text;
     this.props.slug = Slug.createFromText(text);
@@ -56,6 +72,17 @@ export class Project extends AggregateRoot<ProjectProps> {
 
   set roles(roles: ProjectRoleList) {
     this.props.roles = roles;
+    this.touch();
+  }
+
+  set technologies(technologies: ProjectTechnologyList) {
+    this.props.technologies = technologies;
+    this.touch();
+  }
+
+  set requirements(requirements: Requirement) {
+    this.props.requirements = requirements;
+    this.touch();
   }
 
   private touch() {
@@ -65,7 +92,11 @@ export class Project extends AggregateRoot<ProjectProps> {
   static create(
     props: Replace<
       Omit<ProjectProps, 'slug'>,
-      { createdAt?: Date; roles?: ProjectRoleList }
+      {
+        createdAt?: Date;
+        roles?: ProjectRoleList;
+        technologies?: ProjectTechnologyList;
+      }
     >,
     id?: string,
   ) {
@@ -74,6 +105,7 @@ export class Project extends AggregateRoot<ProjectProps> {
         ...props,
         slug: Slug.createFromText(props.title),
         roles: props.roles ?? new ProjectRoleList(),
+        technologies: props.technologies ?? new ProjectTechnologyList(),
         createdAt: props.createdAt ?? new Date(),
       },
       id,

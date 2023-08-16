@@ -8,7 +8,10 @@ describe('Role', () => {
       amount: 3,
     });
 
-    expect(role.id).toEqual(expect.any(String));
-    expect(role.amount).toEqual(3);
+    expect(role).toMatchObject({
+      projectId: '1',
+      name: 'Front-end',
+      amount: 3,
+    });
   });
 });

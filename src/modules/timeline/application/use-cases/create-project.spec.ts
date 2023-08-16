@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
 
 import { InMemoryProjectRepository } from '../repositories/in-memory/in-memory-project-repository';
 import { InMemoryRoleRepository } from '../repositories/in-memory/in-memory-role-repository';
@@ -18,6 +19,7 @@ describe('Create a project', () => {
   it('should be able create a project', async () => {
     await sut.execute({
       authorId: '1',
+      title: 'title example',
       content: faker.lorem.paragraphs(),
       roles: [
         {
@@ -29,13 +31,17 @@ describe('Create a project', () => {
           name: 'devops',
         },
       ],
-      title: 'title example',
+      requirements: {
+        content: faker.lorem.paragraphs(),
+        timeAmount: 2,
+        timeIdentifier: 'week',
+      },
+      technologies: [{ slug: 'react' }, { slug: 'react native' }],
     });
 
     expect(projectRepository.items).toHaveLength(1);
     expect(projectRepository.items[0].slug.value).toEqual('title-example');
     expect(projectRepository.items[0].roles.getItems()).toHaveLength(2);
-    //TODO: create a class then manage ids for all classes and implement validation on this class -> UUIDEntity
     expect(projectRepository.items[0].roles.getItems()).toEqual([
       expect.objectContaining({
         amount: 2,
@@ -46,5 +52,14 @@ describe('Create a project', () => {
         name: 'devops',
       }),
     ]);
+    expect(projectRepository.items[0].technologies.getItems()).toHaveLength(2);
+    expect(projectRepository.items[0].technologies.getItems()).toEqual([
+      expect.objectContaining({ slug: Slug.createFromText('react') }),
+      expect.objectContaining({ slug: Slug.createFromText('react native') }),
+    ]);
+    expect(projectRepository.items[0].requirements.value).toMatchObject({
+      timeAmount: 2,
+      timeIdentifier: 'week',
+    });
   });
 });

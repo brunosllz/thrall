@@ -1,12 +1,6 @@
 import { makeFakeProject } from '@test/factories/make-project';
 
 describe('Project', () => {
-  it('should be able to create a project', () => {
-    const post = makeFakeProject();
-
-    expect(post.id).toEqual(expect.any(String));
-  });
-
   it('should be able to create excerpt from project content', () => {
     const post = makeFakeProject();
 
