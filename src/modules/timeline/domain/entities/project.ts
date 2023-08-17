@@ -1,8 +1,10 @@
 import { AggregateRoot } from '@common/domain/entities/aggregate-root';
 import { Optional } from '@common/logic/types/Optional';
 
+import { Member } from './member';
 import { ProjectRoleList } from './project-role-list';
 import { ProjectTechnologyList } from './project-technology-list';
+import { TeamMembersList } from './team-members-list';
 import { Requirement } from './value-objects/requirement';
 import { Slug } from './value-objects/slug';
 
@@ -14,6 +16,7 @@ export interface ProjectProps {
   roles: ProjectRoleList;
   technologies: ProjectTechnologyList;
   requirements: Requirement;
+  teamMembers: TeamMembersList;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -55,6 +58,10 @@ export class Project extends AggregateRoot<ProjectProps> {
     return this.props.requirements;
   }
 
+  get teamMembers() {
+    return this.props.teamMembers;
+  }
+
   get createdAt() {
     return this.props.createdAt;
   }
@@ -89,6 +96,11 @@ export class Project extends AggregateRoot<ProjectProps> {
     this.touch();
   }
 
+  set teamMembers(teamMembers: TeamMembersList) {
+    this.props.teamMembers = teamMembers;
+    this.touch();
+  }
+
   private touch() {
     this.props.updatedAt = new Date();
   }
@@ -96,7 +108,7 @@ export class Project extends AggregateRoot<ProjectProps> {
   static create(
     props: Optional<
       Omit<ProjectProps, 'slug'>,
-      'createdAt' | 'roles' | 'technologies'
+      'createdAt' | 'roles' | 'technologies' | 'teamMembers'
     >,
     id?: string,
   ) {
@@ -106,6 +118,15 @@ export class Project extends AggregateRoot<ProjectProps> {
         slug: Slug.createFromText(props.title),
         roles: props.roles ?? new ProjectRoleList(),
         technologies: props.technologies ?? new ProjectTechnologyList(),
+        teamMembers:
+          props.teamMembers ??
+          new TeamMembersList([
+            Member.create({
+              recipientId: props.authorId,
+              permissionType: 'owner',
+              status: 'approved',
+            }),
+          ]),
         createdAt: props.createdAt ?? new Date(),
       },
       id,

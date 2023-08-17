@@ -25,10 +25,7 @@ interface CreateProjectRequest {
   };
 }
 
-type CreateProjectResponse = Either<
-  Record<string, never>,
-  Record<string, never>
->;
+type CreateProjectResponse = Either<null, Record<string, never>>;
 
 @Injectable()
 export class CreateProjectUseCase {
