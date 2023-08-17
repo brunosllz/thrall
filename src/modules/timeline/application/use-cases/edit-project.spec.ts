@@ -4,34 +4,34 @@ import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-
 import { makeFakeProject } from '@test/factories/make-project';
 import { makeFakeRole } from '@test/factories/make-role';
 
-import { InMemoryProjectRepository } from '../repositories/in-memory/in-memory-project-repository';
-import { InMemoryRoleRepository } from '../repositories/in-memory/in-memory-role-repository';
+import { InMemoryProjectsRepository } from '../repositories/in-memory/in-memory-projects-repository';
+import { InMemoryRolesRepository } from '../repositories/in-memory/in-memory-roles-repository';
 import { EditProjectUseCase } from './edit-project';
 
 let sut: EditProjectUseCase;
-let projectRepository: InMemoryProjectRepository;
-let roleRepository: InMemoryRoleRepository;
+let projectsRepository: InMemoryProjectsRepository;
+let rolesRepository: InMemoryRolesRepository;
 
-describe('Edit a project', () => {
+describe('Edit a projects', () => {
   beforeEach(() => {
-    roleRepository = new InMemoryRoleRepository();
-    projectRepository = new InMemoryProjectRepository(roleRepository);
-    roleRepository = new InMemoryRoleRepository();
-    sut = new EditProjectUseCase(projectRepository, roleRepository);
+    rolesRepository = new InMemoryRolesRepository();
+    projectsRepository = new InMemoryProjectsRepository(rolesRepository);
+    rolesRepository = new InMemoryRolesRepository();
+    sut = new EditProjectUseCase(projectsRepository, rolesRepository);
   });
 
-  it('should be able edit a project', async () => {
-    const project = makeFakeProject({
+  it('should be able edit a projects', async () => {
+    const projects = makeFakeProject({
       authorId: '1',
     });
 
-    await projectRepository.create(project);
+    await projectsRepository.create(projects);
 
-    roleRepository.items.push(
+    rolesRepository.items.push(
       makeFakeRole(
         {
           name: 'devops',
-          projectId: project.id,
+          projectId: projects.id,
           amount: 1,
         },
         '1',
@@ -39,7 +39,7 @@ describe('Edit a project', () => {
     );
 
     await sut.execute({
-      projectId: project.id,
+      projectId: projects.id,
       authorId: '1',
       title: 'example title',
       content: 'example content',
@@ -49,28 +49,28 @@ describe('Edit a project', () => {
       ],
     });
 
-    expect(projectRepository.items[0]).toMatchObject({
+    expect(projectsRepository.items[0]).toMatchObject({
       title: 'example title',
       content: 'example content',
     });
-    expect(projectRepository.items[0].roles.currentItems).toHaveLength(2);
-    expect(projectRepository.items[0].roles.currentItems[0]).toMatchObject({
+    expect(projectsRepository.items[0].roles.currentItems).toHaveLength(2);
+    expect(projectsRepository.items[0].roles.currentItems[0]).toMatchObject({
       name: 'front-end',
       amount: 3,
     });
-    expect(projectRepository.items[0].roles.currentItems[1]).toMatchObject({
+    expect(projectsRepository.items[0].roles.currentItems[1]).toMatchObject({
       name: 'back-end',
       amount: 2,
     });
   });
 
   //TODO: validate if a custom error
-  it('should be not able edit a project with non exists id', async () => {
-    const project = makeFakeProject({
+  it('should be not able edit a projects with non exists id', async () => {
+    const projects = makeFakeProject({
       authorId: '1',
     });
 
-    await projectRepository.create(project);
+    await projectsRepository.create(projects);
 
     const result = await sut.execute({
       projectId: 'non-id',
@@ -85,13 +85,13 @@ describe('Edit a project', () => {
   });
 
   //TODO: validate if a custom error
-  it('should be not able edit a project with invalid author id', async () => {
-    const project = makeFakeProject();
+  it('should be not able edit a projects with invalid author id', async () => {
+    const projects = makeFakeProject();
 
-    await projectRepository.create(project);
+    await projectsRepository.create(projects);
 
     const result = await sut.execute({
-      projectId: project.id,
+      projectId: projects.id,
       authorId: 'non-id',
       title: 'title example',
       content: 'content example 2',

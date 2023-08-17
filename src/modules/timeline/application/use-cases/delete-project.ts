@@ -2,7 +2,7 @@ import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-
 import { Either, left, right } from '@common/logic/either';
 import { Injectable } from '@nestjs/common';
 
-import { ProjectRepository } from '../repositories/project-repository';
+import { ProjectsRepository } from '../repositories/projects-repository';
 
 interface DeleteProjectRequest {
   id: string;
@@ -15,16 +15,16 @@ type DeleteProjectResponse = Either<
 
 @Injectable()
 export class DeleteProjectUseCase {
-  constructor(private readonly projectRepository: ProjectRepository) {}
+  constructor(private readonly projectsRepository: ProjectsRepository) {}
 
   async execute({ id }: DeleteProjectRequest): Promise<DeleteProjectResponse> {
-    const project = await this.projectRepository.findById(id);
+    const project = await this.projectsRepository.findById(id);
 
     if (!project) {
       return left(new ResourceNotFoundError());
     }
 
-    await this.projectRepository.delete(project);
+    await this.projectsRepository.delete(project);
 
     return right({});
   }

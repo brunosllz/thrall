@@ -7,7 +7,7 @@ import { Requirement } from '@modules/timeline/domain/entities/value-objects/req
 import { Injectable } from '@nestjs/common';
 
 import { Project } from '../../domain/entities/project';
-import { ProjectRepository } from '../repositories/project-repository';
+import { ProjectsRepository } from '../repositories/projects-repository';
 
 interface CreateProjectRequest {
   authorId: string;
@@ -32,7 +32,7 @@ type CreateProjectResponse = Either<
 
 @Injectable()
 export class CreateProjectUseCase {
-  constructor(private readonly projectRepository: ProjectRepository) {}
+  constructor(private readonly projectsRepository: ProjectsRepository) {}
 
   async execute({
     content,
@@ -64,7 +64,7 @@ export class CreateProjectUseCase {
     project.roles = new ProjectRoleList(createdRoles);
     project.technologies = new ProjectTechnologyList(createdTechnologies);
 
-    await this.projectRepository.create(project);
+    await this.projectsRepository.create(project);
 
     return right({});
   }

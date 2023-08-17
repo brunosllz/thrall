@@ -1,8 +1,8 @@
 import { Role } from '@modules/timeline/domain/entities/role';
 
-import { RoleRepository } from '../role-repository';
+import { RolesRepository } from '../roles-repository';
 
-export class InMemoryRoleRepository implements RoleRepository {
+export class InMemoryRolesRepository implements RolesRepository {
   items: Role[] = [];
 
   async deleteManyByProjectId(projectId: string) {

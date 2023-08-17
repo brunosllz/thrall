@@ -1,22 +1,22 @@
 import { faker } from '@faker-js/faker';
 import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
 
-import { InMemoryProjectRepository } from '../repositories/in-memory/in-memory-project-repository';
-import { InMemoryRoleRepository } from '../repositories/in-memory/in-memory-role-repository';
+import { InMemoryProjectsRepository } from '../repositories/in-memory/in-memory-projects-repository';
+import { InMemoryRolesRepository } from '../repositories/in-memory/in-memory-roles-repository';
 import { CreateProjectUseCase } from './create-project';
 
 let sut: CreateProjectUseCase;
-let projectRepository: InMemoryProjectRepository;
-let roleRepository: InMemoryRoleRepository;
+let projectsRepository: InMemoryProjectsRepository;
+let rolesRepository: InMemoryRolesRepository;
 
-describe('Create a project', () => {
+describe('Create a projects', () => {
   beforeEach(() => {
-    roleRepository = new InMemoryRoleRepository();
-    projectRepository = new InMemoryProjectRepository(roleRepository);
-    sut = new CreateProjectUseCase(projectRepository);
+    rolesRepository = new InMemoryRolesRepository();
+    projectsRepository = new InMemoryProjectsRepository(rolesRepository);
+    sut = new CreateProjectUseCase(projectsRepository);
   });
 
-  it('should be able create a project', async () => {
+  it('should be able create a projects', async () => {
     await sut.execute({
       authorId: '1',
       title: 'title example',
@@ -39,10 +39,10 @@ describe('Create a project', () => {
       technologies: [{ slug: 'react' }, { slug: 'react native' }],
     });
 
-    expect(projectRepository.items).toHaveLength(1);
-    expect(projectRepository.items[0].slug.value).toEqual('title-example');
-    expect(projectRepository.items[0].roles.getItems()).toHaveLength(2);
-    expect(projectRepository.items[0].roles.getItems()).toEqual([
+    expect(projectsRepository.items).toHaveLength(1);
+    expect(projectsRepository.items[0].slug.value).toEqual('title-example');
+    expect(projectsRepository.items[0].roles.getItems()).toHaveLength(2);
+    expect(projectsRepository.items[0].roles.getItems()).toEqual([
       expect.objectContaining({
         amount: 2,
         name: 'front-end',
@@ -52,12 +52,12 @@ describe('Create a project', () => {
         name: 'devops',
       }),
     ]);
-    expect(projectRepository.items[0].technologies.getItems()).toHaveLength(2);
-    expect(projectRepository.items[0].technologies.getItems()).toEqual([
+    expect(projectsRepository.items[0].technologies.getItems()).toHaveLength(2);
+    expect(projectsRepository.items[0].technologies.getItems()).toEqual([
       expect.objectContaining({ slug: Slug.createFromText('react') }),
       expect.objectContaining({ slug: Slug.createFromText('react native') }),
     ]);
-    expect(projectRepository.items[0].requirements.value).toMatchObject({
+    expect(projectsRepository.items[0].requirements.value).toMatchObject({
       timeAmount: 2,
       timeIdentifier: 'week',
     });

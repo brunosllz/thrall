@@ -6,8 +6,8 @@ import { Role } from '@modules/timeline/domain/entities/role';
 import { Injectable } from '@nestjs/common';
 import { NotFoundError } from 'rxjs';
 
-import { ProjectRepository } from '../repositories/project-repository';
-import { RoleRepository } from '../repositories/role-repository';
+import { ProjectsRepository } from '../repositories/projects-repository';
+import { RolesRepository } from '../repositories/roles-repository';
 
 interface EditProjectRequest {
   projectId: string;
@@ -29,8 +29,8 @@ type EditProjectResponse = Either<
 @Injectable()
 export class EditProjectUseCase {
   constructor(
-    private readonly projectRepository: ProjectRepository,
-    private readonly roleRepository: RoleRepository,
+    private readonly projectsRepository: ProjectsRepository,
+    private readonly rolesRepository: RolesRepository,
   ) {}
 
   async execute({
@@ -40,7 +40,7 @@ export class EditProjectUseCase {
     roles,
     title,
   }: EditProjectRequest): Promise<EditProjectResponse> {
-    const project = await this.projectRepository.findById(projectId);
+    const project = await this.projectsRepository.findById(projectId);
 
     if (!project) {
       return left(new ResourceNotFoundError());
@@ -50,7 +50,7 @@ export class EditProjectUseCase {
       return left(new NotAllowedError());
     }
 
-    const currentRoles = await this.roleRepository.findManyByProjectId(
+    const currentRoles = await this.rolesRepository.findManyByProjectId(
       project.id,
     );
 
@@ -73,7 +73,7 @@ export class EditProjectUseCase {
     project.title = title;
     project.roles = projectRolesList;
 
-    await this.projectRepository.save(project);
+    await this.projectsRepository.save(project);
 
     return right({});
   }

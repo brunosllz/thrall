@@ -3,46 +3,46 @@ import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-
 import { makeFakeProject } from '@test/factories/make-project';
 import { makeFakeRole } from '@test/factories/make-role';
 
-import { InMemoryProjectRepository } from '../repositories/in-memory/in-memory-project-repository';
-import { InMemoryRoleRepository } from '../repositories/in-memory/in-memory-role-repository';
+import { InMemoryProjectsRepository } from '../repositories/in-memory/in-memory-projects-repository';
+import { InMemoryRolesRepository } from '../repositories/in-memory/in-memory-roles-repository';
 import { DeleteProjectUseCase } from './delete-project';
 
 let sut: DeleteProjectUseCase;
-let projectRepository: InMemoryProjectRepository;
-let roleRepository: InMemoryRoleRepository;
+let projectsRepository: InMemoryProjectsRepository;
+let rolesRepository: InMemoryRolesRepository;
 
-describe('Delete a project', () => {
+describe('Delete a projects', () => {
   beforeEach(() => {
-    roleRepository = new InMemoryRoleRepository();
-    projectRepository = new InMemoryProjectRepository(roleRepository);
-    sut = new DeleteProjectUseCase(projectRepository);
+    rolesRepository = new InMemoryRolesRepository();
+    projectsRepository = new InMemoryProjectsRepository(rolesRepository);
+    sut = new DeleteProjectUseCase(projectsRepository);
   });
 
-  it('should be able delete a project', async () => {
-    const project = makeFakeProject();
+  it('should be able delete a projects', async () => {
+    const projects = makeFakeProject();
 
-    await projectRepository.create(project);
+    await projectsRepository.create(projects);
 
-    roleRepository.items.push(
+    rolesRepository.items.push(
       makeFakeRole({
         name: 'devops',
-        projectId: project.id,
+        projectId: projects.id,
         amount: 1,
       }),
       makeFakeRole({
         name: 'front-end',
-        projectId: project.id,
+        projectId: projects.id,
         amount: 4,
       }),
     );
 
-    await sut.execute({ id: project.id });
+    await sut.execute({ id: projects.id });
 
-    expect(projectRepository.items).toHaveLength(0);
-    expect(roleRepository.items).toHaveLength(0);
+    expect(projectsRepository.items).toHaveLength(0);
+    expect(rolesRepository.items).toHaveLength(0);
   });
 
-  it('should be be not able delete a project with non exist id', async () => {
+  it('should be be not able delete a projects with non exist id', async () => {
     const result = await sut.execute({ id: 'non-id' });
 
     expect(result.isLeft()).toBe(true);

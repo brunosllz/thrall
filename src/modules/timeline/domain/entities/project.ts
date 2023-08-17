@@ -1,5 +1,5 @@
-import { AggregateRoot } from '@common/domain/aggregate-root';
-import { Replace } from '@common/logic/Replace';
+import { AggregateRoot } from '@common/domain/entities/aggregate-root';
+import { Optional } from '@common/logic/types/Optional';
 
 import { ProjectRoleList } from './project-role-list';
 import { ProjectTechnologyList } from './project-technology-list';
@@ -55,6 +55,10 @@ export class Project extends AggregateRoot<ProjectProps> {
     return this.props.requirements;
   }
 
+  get createdAt() {
+    return this.props.createdAt;
+  }
+
   get updatedAt() {
     return this.props.updatedAt;
   }
@@ -90,13 +94,9 @@ export class Project extends AggregateRoot<ProjectProps> {
   }
 
   static create(
-    props: Replace<
+    props: Optional<
       Omit<ProjectProps, 'slug'>,
-      {
-        createdAt?: Date;
-        roles?: ProjectRoleList;
-        technologies?: ProjectTechnologyList;
-      }
+      'createdAt' | 'roles' | 'technologies'
     >,
     id?: string,
   ) {

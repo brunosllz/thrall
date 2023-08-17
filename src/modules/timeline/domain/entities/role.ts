@@ -1,5 +1,5 @@
-import { Entity } from '@common/domain/entity';
-import { Replace } from '@common/logic/Replace';
+import { Entity } from '@common/domain/entities/entity';
+import { Optional } from '@common/logic/types/Optional';
 
 export interface RoleProps {
   name: string;
@@ -25,10 +25,7 @@ export class Role extends Entity<RoleProps> {
     return this.props.projectId;
   }
 
-  static create(
-    props: Replace<RoleProps, { assigneesId?: string[] }>,
-    id?: string,
-  ) {
+  static create(props: Optional<RoleProps, 'assigneesId'>, id?: string) {
     const projectRole = new Role(
       { ...props, assigneesId: props.assigneesId ?? [] },
       id,

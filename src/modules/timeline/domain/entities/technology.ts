@@ -1,4 +1,4 @@
-import { Entity } from '@common/domain/entity';
+import { Entity } from '@common/domain/entities/entity';
 
 import { Slug } from './value-objects/slug';
 
