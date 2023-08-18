@@ -1,6 +1,7 @@
 import { AggregateRoot } from '@common/domain/entities/aggregate-root';
 import { Optional } from '@common/logic/types/Optional';
 
+import { SendInviteTeamMemberEvent } from '../events/send-invite-team-member';
 import { Member } from './member';
 import { ProjectRoleList } from './project-role-list';
 import { ProjectTechnologyList } from './project-technology-list';
@@ -99,6 +100,18 @@ export class Project extends AggregateRoot<ProjectProps> {
   set teamMembers(teamMembers: TeamMembersList) {
     this.props.teamMembers = teamMembers;
     this.touch();
+  }
+
+  sendInviteTeamMember(recipient: Member, senderId: string) {
+    this.teamMembers.add(recipient);
+
+    this.addDomainEvent(
+      new SendInviteTeamMemberEvent({
+        project: this,
+        recipientId: recipient.recipientId,
+        senderId,
+      }),
+    );
   }
 
   private touch() {

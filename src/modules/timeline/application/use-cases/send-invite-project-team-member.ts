@@ -53,7 +53,7 @@ export class SendInviteProjectTeamMemberUseCase {
       status: 'pending',
     });
 
-    project.teamMembers.add(invitedMember);
+    project.sendInviteTeamMember(invitedMember, ownerId);
 
     await this.projectsRepository.save(project);
 
