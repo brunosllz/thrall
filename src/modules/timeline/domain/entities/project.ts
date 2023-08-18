@@ -102,13 +102,18 @@ export class Project extends AggregateRoot<ProjectProps> {
     this.touch();
   }
 
-  sendInviteTeamMember(recipient: Member, senderId: string) {
-    this.teamMembers.add(recipient);
+  sendInviteTeamMember(recipientId: string, senderId: string) {
+    const invitedMember = Member.create({
+      recipientId,
+      status: 'pending',
+    });
+
+    this.teamMembers.add(invitedMember);
 
     this.addDomainEvent(
       new SendInviteTeamMemberEvent({
         project: this,
-        recipientId: recipient.recipientId,
+        recipientId: recipientId,
         senderId,
       }),
     );

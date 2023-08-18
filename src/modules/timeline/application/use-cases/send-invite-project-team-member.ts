@@ -1,7 +1,6 @@
 import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
 import { Either, left, right } from '@common/logic/either';
-import { Member } from '@modules/timeline/domain/entities/member';
 import { Injectable } from '@nestjs/common';
 
 import { ProjectsRepository } from '../repositories/projects-repository';
@@ -48,12 +47,9 @@ export class SendInviteProjectTeamMemberUseCase {
       return left(new NotAllowedError());
     }
 
-    const invitedMember = Member.create({
-      recipientId,
-      status: 'pending',
-    });
+    //TODO: Validate if recipient is already exist
 
-    project.sendInviteTeamMember(invitedMember, ownerId);
+    project.sendInviteTeamMember(recipientId, ownerId);
 
     await this.projectsRepository.save(project);
 

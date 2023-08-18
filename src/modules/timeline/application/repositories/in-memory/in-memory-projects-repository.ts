@@ -1,3 +1,4 @@
+import { DomainEvents } from '@common/domain/events/domain-events';
 import { AsyncMaybe } from '@common/logic/types/Maybe';
 import { PaginationParams } from '@common/repositories/pagination-params';
 import { Project } from '@modules/timeline/domain/entities/project';
@@ -45,6 +46,8 @@ export class InMemoryProjectsRepository extends ProjectsRepository {
     );
 
     this.items[projectUpdatedIndex] = project;
+
+    DomainEvents.dispatchEventsForAggregate(project.id);
   }
 
   async delete(project: Project) {
