@@ -1,5 +1,6 @@
 import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
+import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
 
 import { makeFakeProject } from '@test/factories/make-project';
 import { makeFakeRole } from '@test/factories/make-role';
@@ -30,7 +31,7 @@ describe('Edit a projects', () => {
     rolesRepository.items.push(
       makeFakeRole(
         {
-          name: 'devops',
+          name: Slug.createFromText('devops'),
           projectId: projects.id,
           amount: 1,
         },
@@ -55,16 +56,15 @@ describe('Edit a projects', () => {
     });
     expect(projectsRepository.items[0].roles.currentItems).toHaveLength(2);
     expect(projectsRepository.items[0].roles.currentItems[0]).toMatchObject({
-      name: 'front-end',
+      name: Slug.createFromText('front end'),
       amount: 3,
     });
     expect(projectsRepository.items[0].roles.currentItems[1]).toMatchObject({
-      name: 'back-end',
+      name: Slug.createFromText('back end'),
       amount: 2,
     });
   });
 
-  //TODO: validate if a custom error
   it('should be not able edit a projects with non exists id', async () => {
     const projects = makeFakeProject({
       authorId: '1',
@@ -84,7 +84,6 @@ describe('Edit a projects', () => {
     expect(result.value).toBeInstanceOf(ResourceNotFoundError);
   });
 
-  //TODO: validate if a custom error
   it('should be not able edit a projects with invalid author id', async () => {
     const projects = makeFakeProject();
 
