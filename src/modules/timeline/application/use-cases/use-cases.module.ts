@@ -1,10 +1,11 @@
+import { PrismaDatabaseModule } from '@modules/timeline/infra/prisma/prisma-database.module';
 import { Module } from '@nestjs/common';
 
 import { CreateProjectUseCase } from './create-project';
 
-//TODO: import database module
 @Module({
-  imports: [],
+  imports: [PrismaDatabaseModule],
   providers: [CreateProjectUseCase],
+  exports: [CreateProjectUseCase],
 })
 export class UseCasesModule {}

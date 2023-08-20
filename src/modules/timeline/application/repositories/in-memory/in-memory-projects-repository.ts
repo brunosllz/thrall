@@ -3,9 +3,14 @@ import { PaginationParams } from '@common/repositories/pagination-params';
 import { Project } from '@modules/timeline/domain/entities/project';
 
 import { ProjectsRepository } from '../projects-repository';
+import { RolesRepository } from '../roles-repository';
 
 export class InMemoryProjectsRepository extends ProjectsRepository {
   items: Project[] = [];
+
+  constructor(private readonly rolesRepository: RolesRepository) {
+    super();
+  }
 
   async findById(id: string): AsyncMaybe<Project> {
     const project = this.items.find((project) => project.id === id);
