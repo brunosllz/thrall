@@ -9,3 +9,112 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Technology {
+  id        String @id @default(uuid())
+  projectId String
+  slug      String
+
+  project Project @relation(fields: [projectId], references: [id])
+}
+
+enum MEMBER_PERMISSION_TYPE {
+  member
+  owner
+}
+
+enum MEMBER_STATUS {
+  pending
+  rejected
+  approved
+}
+
+model TeamMember {
+  id             String                 @id @default(uuid())
+  recipientId    String
+  permissionType MEMBER_PERMISSION_TYPE
+  status         MEMBER_STATUS
+  projectId      String
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id])
+}
+
+enum TIME_IDENTIFIER {
+  day
+  week
+  month
+}
+
+model Role {
+  id        String   @id @default(uuid())
+  name      String   @unique()
+  createdAt DateTime @default(now())
+
+  projectRole ProjectRole[]
+}
+
+model ProjectRole {
+  id          String   @id @default(uuid())
+  projectId   String
+  roleId      String
+  amount      Int
+  assigneesId String[]
+
+  project Project @relation(fields: [projectId], references: [id])
+  role    Role    @relation(fields: [roleId], references: [id])
+}
+
+model Project {
+  id String @id @default(uuid())
+
+  authorId                  String
+  title                     String
+  content                   String
+  slug                      String
+  requirementTimeAmount     Int
+  requirementTimeIdentifier TIME_IDENTIFIER
+  requirementContent        String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  teamMember  TeamMember[]
+  answer      Answer[]
+  technology  Technology[]
+  projectRole ProjectRole[]
+}
+
+model Answer {
+  id        String    @id @default(uuid())
+  content   String
+  authorId  String
+  projectId String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  question      Project         @relation(fields: [projectId], references: [id])
+  answerComment AnswerComment[]
+}
+
+model AnswerComment {
+  id        String    @id @default(uuid())
+  content   String
+  authorId  String
+  answerId  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  answer Answer @relation(fields: [answerId], references: [id])
+}
+
+model Notification {
+  id          String    @id @default(uuid())
+  content     String
+  authorId    String
+  recipientId String
+  isRead      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}

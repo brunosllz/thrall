@@ -1,8 +1,10 @@
 import { Entity } from '@common/domain/entities/entity';
 import { Optional } from '@common/logic/types/Optional';
 
+import { Slug } from './value-objects/slug';
+
 export interface RoleProps {
-  name: string;
+  name: Slug;
   amount: number;
   projectId: string;
   assigneesId: string[];

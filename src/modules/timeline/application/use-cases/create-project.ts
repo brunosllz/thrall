@@ -4,6 +4,7 @@ import { ProjectTechnologyList } from '@modules/timeline/domain/entities/project
 import { Role } from '@modules/timeline/domain/entities/role';
 import { Technology } from '@modules/timeline/domain/entities/technology';
 import { Requirement } from '@modules/timeline/domain/entities/value-objects/requirement';
+import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
 import { Injectable } from '@nestjs/common';
 
 import { Project } from '../../domain/entities/project';
@@ -50,7 +51,7 @@ export class CreateProjectUseCase {
       return Role.create({
         projectId: project.id,
         amount: role.amount,
-        name: role.name,
+        name: Slug.createFromText(role.name),
       });
     });
 
