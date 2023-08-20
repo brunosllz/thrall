@@ -3,6 +3,7 @@ import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-
 import { Either, left, right } from '@common/logic/either';
 import { ProjectRoleList } from '@modules/timeline/domain/entities/project-role-list';
 import { Role } from '@modules/timeline/domain/entities/role';
+import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
 import { Injectable } from '@nestjs/common';
 import { NotFoundError } from 'rxjs';
 
@@ -60,7 +61,7 @@ export class EditProjectUseCase {
       return Role.create(
         {
           amount: role.amount,
-          name: role.name,
+          name: Slug.createFromText(role.name),
           projectId: project.id,
         },
         role.id,
