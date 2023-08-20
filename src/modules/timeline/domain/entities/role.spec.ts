@@ -11,7 +11,7 @@ describe('Role', () => {
 
     expect(role).toMatchObject({
       projectId: '1',
-      name: 'Front-end',
+      name: Slug.createFromText('Front end'),
       amount: 3,
     });
   });
