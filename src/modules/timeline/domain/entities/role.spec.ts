@@ -1,10 +1,11 @@
 import { Role } from './role';
+import { Slug } from './value-objects/slug';
 
 describe('Role', () => {
   it('should be able to create a role', () => {
     const role = Role.create({
       projectId: '1',
-      name: 'Front-end',
+      name: Slug.createFromText('Front end'),
       amount: 3,
     });
 
