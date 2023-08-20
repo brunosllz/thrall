@@ -18,6 +18,14 @@ export abstract class Comment<
     return this.props.content;
   }
 
+  get excerpt() {
+    if (this.content.length >= 120) {
+      return this.props.content.substring(0, 120).trimEnd().concat('...');
+    }
+
+    return this.content;
+  }
+
   get createdAt() {
     return this.props.createdAt;
   }
