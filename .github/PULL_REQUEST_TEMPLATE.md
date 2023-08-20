@@ -18,4 +18,3 @@ Fixes # (issue)
 
 - [ ] I added tests for my changes
 - [ ] My changes do not generate new alerts
-- [ ] I added tests for my changes
