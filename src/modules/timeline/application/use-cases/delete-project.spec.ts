@@ -1,4 +1,5 @@
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
+import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
 
 import { makeFakeProject } from '@test/factories/make-project';
 import { makeFakeRole } from '@test/factories/make-role';
@@ -25,12 +26,12 @@ describe('Delete a projects', () => {
 
     rolesRepository.items.push(
       makeFakeRole({
-        name: 'devops',
+        name: Slug.createFromText('devops'),
         projectId: projects.id,
         amount: 1,
       }),
       makeFakeRole({
-        name: 'front-end',
+        name: Slug.createFromText('front end'),
         projectId: projects.id,
         amount: 4,
       }),

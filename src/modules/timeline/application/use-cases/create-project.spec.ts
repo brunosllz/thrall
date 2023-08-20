@@ -24,7 +24,7 @@ describe('Create a projects', () => {
       roles: [
         {
           amount: 2,
-          name: 'front-end',
+          name: 'front end',
         },
         {
           amount: 1,
@@ -45,11 +45,11 @@ describe('Create a projects', () => {
     expect(projectsRepository.items[0].roles.getItems()).toEqual([
       expect.objectContaining({
         amount: 2,
-        name: 'front-end',
+        name: Slug.createFromText('front end'),
       }),
       expect.objectContaining({
         amount: 1,
-        name: 'devops',
+        name: Slug.createFromText('devops'),
       }),
     ]);
     expect(projectsRepository.items[0].technologies.getItems()).toHaveLength(2);
