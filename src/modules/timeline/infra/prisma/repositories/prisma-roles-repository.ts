@@ -1,8 +1,7 @@
+import { PrismaService } from '@common/infra/database/prisma.service';
 import { RolesRepository } from '@modules/timeline/application/repositories/roles-repository';
 import { Role } from '@modules/timeline/domain/entities/role';
 import { Injectable } from '@nestjs/common';
-
-import { PrismaService } from '@infra/database/prisma.service';
 
 import { RoleMapper } from '../mappers/role-mapper';
 

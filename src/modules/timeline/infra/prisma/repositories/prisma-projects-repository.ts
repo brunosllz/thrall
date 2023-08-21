@@ -1,9 +1,8 @@
+import { PrismaService } from '@common/infra/database/prisma.service';
 import { PaginationParams } from '@common/repositories/pagination-params';
 import { ProjectsRepository } from '@modules/timeline/application/repositories/projects-repository';
 import { Project } from '@modules/timeline/domain/entities/project';
 import { Injectable } from '@nestjs/common';
-
-import { PrismaService } from '@infra/database/prisma.service';
 
 import { ProjectMapper } from '../mappers/project-mapper';
 
