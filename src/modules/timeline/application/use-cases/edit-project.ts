@@ -1,9 +1,9 @@
 import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
 import { Either, left, right } from '@common/logic/either';
-import { ProjectRoleList } from '@modules/timeline/domain/entities/project-role-list';
 import { Role } from '@modules/timeline/domain/entities/role';
 import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
+import { ProjectRoleList } from '@modules/timeline/domain/entities/watched-list/project-role-list';
 import { Injectable } from '@nestjs/common';
 import { NotFoundError } from 'rxjs';
 

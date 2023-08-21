@@ -1,2 +1,5 @@
 # .kodiak.toml
 version = 1
+
+[update]
+always = true
