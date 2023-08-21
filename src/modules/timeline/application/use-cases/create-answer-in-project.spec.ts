@@ -1,15 +1,15 @@
 import { faker } from '@faker-js/faker';
 
 import { InMemoryAnswersRepository } from '../repositories/in-memory/in-memory-answers-repository';
-import { AnswerProjectUseCase } from './answer-project';
+import { CreateAnswerInProjectUseCase } from './create-answer-in-project';
 
-let sut: AnswerProjectUseCase;
+let sut: CreateAnswerInProjectUseCase;
 let answerRepository: InMemoryAnswersRepository;
 
-describe('Create answer', () => {
+describe('Create answer in project', () => {
   beforeEach(() => {
     answerRepository = new InMemoryAnswersRepository();
-    sut = new AnswerProjectUseCase(answerRepository);
+    sut = new CreateAnswerInProjectUseCase(answerRepository);
   });
 
   it('should be able to create a answer', async () => {

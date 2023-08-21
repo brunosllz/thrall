@@ -1,13 +1,16 @@
 import { AggregateRoot } from '@common/domain/entities/aggregate-root';
 import { Optional } from '@common/logic/types/Optional';
 
+import { ExpressProjectInterestEvent } from '../events/express-project-interest';
 import { SendInviteTeamMemberEvent } from '../events/send-invite-team-member';
 import { Member } from './member';
-import { ProjectRoleList } from './project-role-list';
-import { ProjectTechnologyList } from './project-technology-list';
-import { TeamMembersList } from './team-members-list';
+import { Interested } from './value-objects/interested';
 import { Requirement } from './value-objects/requirement';
 import { Slug } from './value-objects/slug';
+import { ProjectInterestedList } from './watched-list/project-interested-list';
+import { ProjectRoleList } from './watched-list/project-role-list';
+import { ProjectTechnologyList } from './watched-list/project-technology-list';
+import { TeamMembersList } from './watched-list/team-members-list';
 
 export interface ProjectProps {
   authorId: string;
@@ -17,6 +20,7 @@ export interface ProjectProps {
   roles: ProjectRoleList;
   technologies: ProjectTechnologyList;
   requirements: Requirement;
+  interested: ProjectInterestedList;
   teamMembers: TeamMembersList;
   createdAt: Date;
   updatedAt?: Date;
@@ -57,6 +61,10 @@ export class Project extends AggregateRoot<ProjectProps> {
 
   get requirements() {
     return this.props.requirements;
+  }
+
+  get interested() {
+    return this.props.interested;
   }
 
   get teamMembers() {
@@ -119,6 +127,21 @@ export class Project extends AggregateRoot<ProjectProps> {
     );
   }
 
+  addInterested(recipientId: string) {
+    const interested = Interested.create({
+      recipientId,
+    });
+
+    this.interested.add(interested);
+
+    this.addDomainEvent(
+      new ExpressProjectInterestEvent({
+        project: this,
+        recipientId: recipientId,
+      }),
+    );
+  }
+
   private touch() {
     this.props.updatedAt = new Date();
   }
@@ -126,7 +149,7 @@ export class Project extends AggregateRoot<ProjectProps> {
   static create(
     props: Optional<
       Omit<ProjectProps, 'slug'>,
-      'createdAt' | 'roles' | 'technologies' | 'teamMembers'
+      'createdAt' | 'roles' | 'technologies' | 'teamMembers' | 'interested'
     >,
     id?: string,
   ) {
@@ -136,6 +159,7 @@ export class Project extends AggregateRoot<ProjectProps> {
         slug: Slug.createFromText(props.title),
         roles: props.roles ?? new ProjectRoleList(),
         technologies: props.technologies ?? new ProjectTechnologyList(),
+        interested: props.interested ?? new ProjectInterestedList(),
         teamMembers:
           props.teamMembers ??
           new TeamMembersList([

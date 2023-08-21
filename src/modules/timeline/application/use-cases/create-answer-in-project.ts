@@ -4,26 +4,26 @@ import { Injectable } from '@nestjs/common';
 import { Answer } from '../../domain/entities/answer';
 import { AnswersRepository } from '../repositories/answers-repository';
 
-interface AnswerAnswerRequest {
+interface CreateAnswerInProjectRequest {
   projectId: string;
   authorId: string;
   content: string;
 }
 
-type AnswerAnswerResponse = Either<
+type CreateAnswerInProjectResponse = Either<
   Record<string, never>,
   Record<string, never>
 >;
 
 @Injectable()
-export class AnswerProjectUseCase {
+export class CreateAnswerInProjectUseCase {
   constructor(private readonly answersRepository: AnswersRepository) {}
 
   async execute({
     content,
     projectId,
     authorId,
-  }: AnswerAnswerRequest): Promise<AnswerAnswerResponse> {
+  }: CreateAnswerInProjectRequest): Promise<CreateAnswerInProjectResponse> {
     const answer = Answer.create({
       authorId,
       projectId,
