@@ -3,7 +3,7 @@ import { Optional } from '@common/logic/types/Optional';
 
 import { Email } from './value-objects/email';
 
-interface UserProps {
+export interface UserProps {
   name: string;
   email: Email;
   bio: string;
@@ -23,9 +23,6 @@ interface UserProps {
 }
 
 export class User extends Entity<UserProps> {
-  isLeft(): any {
-    throw new Error('Method not implemented.');
-  }
   get name() {
     return this.props.name;
   }
@@ -34,12 +31,24 @@ export class User extends Entity<UserProps> {
     return this.props.email;
   }
 
+  get bio() {
+    return this.props.bio;
+  }
+
+  get occupation() {
+    return this.props.occupation;
+  }
+
   get avatarUrl() {
     return this.props.avatarUrl;
   }
 
-  get bio() {
-    return this.props.bio;
+  get address() {
+    return this.props.address;
+  }
+
+  get socialMedia() {
+    return this.props.socialMedia;
   }
 
   get createdAt() {
@@ -50,7 +59,27 @@ export class User extends Entity<UserProps> {
     return this.props.updatedAt;
   }
 
-  static create(props: Optional<UserProps, 'createdAt'>) {
-    return new User({ ...props, createdAt: props.createdAt ?? new Date() });
+  set bio(bio: string) {
+    this.props.bio = bio;
+  }
+
+  set occupation(occupation: string) {
+    this.props.occupation = occupation;
+  }
+
+  set avatarUrl(avatarUrl: string) {
+    this.props.avatarUrl = avatarUrl;
+  }
+
+  set address(address: UserProps['address']) {
+    this.props.address = address;
+  }
+
+  set socialMedia(socialMedia: UserProps['socialMedia']) {
+    this.props.socialMedia = socialMedia;
+  }
+
+  static create(props: Optional<UserProps, 'createdAt'>, id?: string) {
+    return new User({ ...props, createdAt: props.createdAt ?? new Date() }, id);
   }
 }
