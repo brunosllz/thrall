@@ -1,10 +1,10 @@
 import { Either, right } from '@common/logic/either';
-import { ProjectRoleList } from '@modules/timeline/domain/entities/project-role-list';
-import { ProjectTechnologyList } from '@modules/timeline/domain/entities/project-technology-list';
 import { Role } from '@modules/timeline/domain/entities/role';
 import { Technology } from '@modules/timeline/domain/entities/technology';
 import { Requirement } from '@modules/timeline/domain/entities/value-objects/requirement';
 import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
+import { ProjectRoleList } from '@modules/timeline/domain/entities/watched-list/project-role-list';
+import { ProjectTechnologyList } from '@modules/timeline/domain/entities/watched-list/project-technology-list';
 import { Injectable } from '@nestjs/common';
 
 import { Project } from '../../domain/entities/project';
