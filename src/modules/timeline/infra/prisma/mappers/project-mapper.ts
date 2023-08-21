@@ -1,12 +1,12 @@
 import { Member } from '@modules/timeline/domain/entities/member';
 import { Project } from '@modules/timeline/domain/entities/project';
-import { ProjectRoleList } from '@modules/timeline/domain/entities/project-role-list';
-import { ProjectTechnologyList } from '@modules/timeline/domain/entities/project-technology-list';
 import { Role } from '@modules/timeline/domain/entities/role';
-import { TeamMembersList } from '@modules/timeline/domain/entities/team-members-list';
 import { Technology } from '@modules/timeline/domain/entities/technology';
 import { Requirement } from '@modules/timeline/domain/entities/value-objects/requirement';
 import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
+import { ProjectRoleList } from '@modules/timeline/domain/entities/watched-list/project-role-list';
+import { ProjectTechnologyList } from '@modules/timeline/domain/entities/watched-list/project-technology-list';
+import { TeamMembersList } from '@modules/timeline/domain/entities/watched-list/team-members-list';
 import {
   Answer as RawAnswer,
   Project as RawProject,
