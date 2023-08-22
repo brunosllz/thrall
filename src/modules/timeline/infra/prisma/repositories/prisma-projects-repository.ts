@@ -1,4 +1,4 @@
-import { PrismaService } from '@common/infra/database/prisma.service';
+import { PrismaService } from '@common/infra/prisma/prisma.service';
 import { PaginationParams } from '@common/repositories/pagination-params';
 import { ProjectsRepository } from '@modules/timeline/application/repositories/projects-repository';
 import { Project } from '@modules/timeline/domain/entities/project';

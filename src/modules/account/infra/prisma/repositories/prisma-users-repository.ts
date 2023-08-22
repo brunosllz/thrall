@@ -1,7 +1,6 @@
+import { PrismaService } from '@common/infra/prisma/prisma.service';
 import { UsersRepository } from '@modules/account/application/repositories/users-repository';
 import { User } from '@modules/account/domain/user';
-
-import { PrismaService } from '@common/infra/database/prisma.service';
 
 import { UserMapper } from '../mappers/user-mapper';
 

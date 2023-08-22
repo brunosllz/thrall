@@ -1,4 +1,4 @@
-import { PrismaService } from '@common/infra/database/prisma.service';
+import { PrismaService } from '@common/infra/prisma/prisma.service';
 import { ProjectsRepository } from '@modules/timeline/application/repositories/projects-repository';
 import { RolesRepository } from '@modules/timeline/application/repositories/roles-repository';
 import { Module } from '@nestjs/common';
