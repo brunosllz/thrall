@@ -6,6 +6,5 @@ import { ProjectController } from './controllers/project.controller';
 @Module({
   imports: [UseCasesModule],
   controllers: [ProjectController],
-  providers: [],
 })
 export class HttpModule {}

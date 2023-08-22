@@ -1,3 +1,4 @@
+import { env } from '@config/env';
 import { Module } from '@nestjs/common';
 import { Request } from 'express';
 import { ServerResponse, IncomingMessage } from 'http';
@@ -67,8 +68,8 @@ const statusText: Record<string, string> = {
   imports: [
     PinoLoggerModule.forRoot({
       pinoHttp: {
-        name: `${process.env.APP_NAME || 'thrall'}-logger`,
-        level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+        name: `${env.APP_NAME}-logger`,
+        level: env.NODE_ENV !== 'production' ? 'debug' : 'info',
         customLogLevel(
           _: IncomingMessage,
           res: ServerResponse<IncomingMessage>,
