@@ -1,3 +1,4 @@
+import { DomainEvents } from '@common/domain/events/domain-events';
 import { PrismaService } from '@common/infra/prisma/prisma.service';
 import { PaginationParams } from '@common/repositories/pagination-params';
 import { AnswersRepository } from '@modules/timeline/application/repositories/answers-repository';
@@ -45,6 +46,8 @@ export class PrismaAnswersRepository extends AnswersRepository {
     await this.prisma.answer.create({
       data: raw,
     });
+
+    DomainEvents.dispatchEventsForAggregate(answer.id);
   }
 
   async save(answer: Answer) {
