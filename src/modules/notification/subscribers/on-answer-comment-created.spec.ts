@@ -1,3 +1,4 @@
+import { InMemoryUsersRepository } from '@modules/account/application/repositories/in-memory/in-memory-users-repository';
 import { InMemoryAnswerCommentsRepository } from '@modules/timeline/application/repositories/in-memory/in-memory-answer-comments-repository';
 import { InMemoryAnswersRepository } from '@modules/timeline/application/repositories/in-memory/in-memory-answers-repository';
 import { InMemoryProjectsRepository } from '@modules/timeline/application/repositories/in-memory/in-memory-projects-repository';
@@ -13,10 +14,11 @@ import { SendNotificationUseCase } from '../application/use-cases/send-notificat
 import { OnAnswerCommentCreated } from './on-answer-comment-created';
 
 let notificationsRepository: InMemoryNotificationsRepository;
+let rolesRepository: InMemoryRolesRepository;
 let projectsRepository: InMemoryProjectsRepository;
 let answersRepository: InMemoryAnswersRepository;
 let answerCommentsRepository: InMemoryAnswerCommentsRepository;
-let rolesRepository: InMemoryRolesRepository;
+let usersRepository: InMemoryUsersRepository;
 let sendNotificationUseCase: SendNotificationUseCase;
 
 let sendNotificationExecuteSpy: jest.SpyInstance;
@@ -24,10 +26,12 @@ let sendNotificationExecuteSpy: jest.SpyInstance;
 describe('On Answer comment created', () => {
   beforeEach(() => {
     notificationsRepository = new InMemoryNotificationsRepository();
-    rolesRepository = new InMemoryRolesRepository();
+
     answersRepository = new InMemoryAnswersRepository();
     answerCommentsRepository = new InMemoryAnswerCommentsRepository();
+    usersRepository = new InMemoryUsersRepository();
     projectsRepository = new InMemoryProjectsRepository(rolesRepository);
+
     sendNotificationUseCase = new SendNotificationUseCase(
       notificationsRepository,
     );
@@ -35,8 +39,8 @@ describe('On Answer comment created', () => {
     sendNotificationExecuteSpy = jest.spyOn(sendNotificationUseCase, 'execute');
 
     new OnAnswerCommentCreated(
-      projectsRepository,
       answersRepository,
+      usersRepository,
       sendNotificationUseCase,
     );
   });
@@ -48,6 +52,7 @@ describe('On Answer comment created', () => {
     await projectsRepository.create(project);
     await answersRepository.create(answer);
 
+    expect(projectsRepository.items).toHaveLength(1);
     expect(answersRepository.items).toHaveLength(1);
 
     const answerComment = makeFakeAnswerComment({
