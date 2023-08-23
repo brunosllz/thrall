@@ -1,15 +1,15 @@
 import { DomainEvents } from '@common/domain/events/domain-events';
 import { EventHandler } from '@common/domain/events/event-handler';
+import { UsersRepository } from '@modules/account/application/repositories/users-repository';
 import { AnswersRepository } from '@modules/timeline/application/repositories/answers-repository';
-import { ProjectsRepository } from '@modules/timeline/application/repositories/projects-repository';
 import { AnswerCommentCreatedEvent } from '@modules/timeline/domain/events/answer-comment-created';
 
 import { SendNotificationUseCase } from '../application/use-cases/send-notification';
 
 export class OnAnswerCommentCreated implements EventHandler {
   constructor(
-    private projectsRepository: ProjectsRepository,
     private answersRepository: AnswersRepository,
+    private userRepository: UsersRepository,
     private sendNotification: SendNotificationUseCase,
   ) {
     this.setupSubscriptions();
@@ -30,15 +30,14 @@ export class OnAnswerCommentCreated implements EventHandler {
     );
 
     if (answer) {
-      const project = await this.projectsRepository.findById(answer.projectId);
+      const user = await this.userRepository.findById(answerComment.authorId);
 
-      if (project) {
-        await this.sendNotification.execute({
-          recipientId: project.authorId,
-          title: `Novo comentário em "${project.title}`,
-          content: answerComment.excerpt,
-        });
-      }
+      await this.sendNotification.execute({
+        authorId: answerComment.authorId,
+        recipientId: answer.authorId,
+        title: `${user?.name} comentou na sua resposta`,
+        content: answerComment.excerpt,
+      });
     }
   }
 }

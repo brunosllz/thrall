@@ -5,6 +5,7 @@ import { Email } from './value-objects/email';
 
 export interface UserProps {
   name: string;
+  slug: string;
   email: Email;
   bio: string;
   occupation: string;
@@ -25,6 +26,10 @@ export interface UserProps {
 export class User extends Entity<UserProps> {
   get name() {
     return this.props.name;
+  }
+
+  get slug() {
+    return this.props.slug;
   }
 
   get email() {

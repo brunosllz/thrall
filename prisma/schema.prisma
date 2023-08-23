@@ -14,6 +14,7 @@ model User {
   id           String    @id @default(uuid())
   name         String
   email        String    @unique()
+  slug         String    @unique()
   bio          String
   occupation   String
   avatarUrl    String
@@ -24,14 +25,23 @@ model User {
   githubLink   String
   createdAt    DateTime  @default(now())
   updatedAt    DateTime? @updatedAt
+
+  projects              Project[]
+  teamMembers           TeamMember[]
+  answers               Answer[]
+  answerComments        AnswerComment[]
+  projectRoles          ProjectRole[]
+  technologies          Technology[]
+  sendedNotifications   Notification[]  @relation("Author")
+  receivedNotifications Notification[]  @relation("Receiver")
 }
 
 model Technology {
-  id        String @id @default(uuid())
-  projectId String
-  slug      String
+  id   String @id @default(uuid())
+  slug String @unique()
 
-  project Project @relation(fields: [projectId], references: [id])
+  project Project[]
+  user    User[]
 }
 
 enum MEMBER_PERMISSION_TYPE {
@@ -55,6 +65,7 @@ model TeamMember {
   updatedAt      DateTime               @updatedAt
 
   project Project @relation(fields: [projectId], references: [id])
+  member  User    @relation(fields: [recipientId], references: [id])
 }
 
 enum TIME_IDENTIFIER {
@@ -64,22 +75,23 @@ enum TIME_IDENTIFIER {
 }
 
 model Role {
-  id        String   @id @default(uuid())
-  name      String   @unique()
-  createdAt DateTime @default(now())
+  id   String @id @default(uuid())
+  name String @unique()
 
-  projectRole ProjectRole[]
+  projectRoles ProjectRole[]
 }
 
 model ProjectRole {
-  id          String   @id @default(uuid())
+  id          String @id @default(uuid())
   projectId   String
   roleId      String
   amount      Int
-  assigneesId String[]
+  assigneesId User[]
 
   project Project @relation(fields: [projectId], references: [id])
   role    Role    @relation(fields: [roleId], references: [id])
+
+  @@unique([projectId, roleId])
 }
 
 model Project {
@@ -91,15 +103,18 @@ model Project {
   slug                      String
   requirementTimeAmount     Int
   requirementTimeIdentifier TIME_IDENTIFIER
-  requirementContent        String
+  requirementContent        String?
+  createdAt                 DateTime        @default(now())
+  updatedAt                 DateTime?       @updatedAt
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  teamMembers  TeamMember[]
+  answers      Answer[]
+  technologies Technology[]
+  projectRoles ProjectRole[]
 
-  teamMember  TeamMember[]
-  answer      Answer[]
-  technology  Technology[]
-  projectRole ProjectRole[]
+  author User @relation(fields: [authorId], references: [id])
+
+  @@unique([authorId, slug])
 }
 
 model Answer {
@@ -110,8 +125,10 @@ model Answer {
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
 
-  question      Project         @relation(fields: [projectId], references: [id])
   answerComment AnswerComment[]
+
+  project Project @relation(fields: [projectId], references: [id])
+  author  User    @relation(fields: [authorId], references: [id])
 }
 
 model AnswerComment {
@@ -123,14 +140,18 @@ model AnswerComment {
   updatedAt DateTime? @updatedAt
 
   answer Answer @relation(fields: [answerId], references: [id])
+  author User   @relation(fields: [authorId], references: [id])
 }
 
 model Notification {
   id          String    @id @default(uuid())
+  title       String
   content     String
   authorId    String
   recipientId String
-  isRead      DateTime?
+  readAt      DateTime?
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+
+  author   User @relation("Author", fields: [authorId], references: [id])
+  receiver User @relation("Receiver", fields: [recipientId], references: [id])
 }

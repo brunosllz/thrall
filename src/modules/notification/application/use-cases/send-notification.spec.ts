@@ -12,14 +12,16 @@ describe('Send Notification', () => {
 
   it('should be able to send a notification', async () => {
     const result = await sut.execute({
-      recipientId: '1',
+      authorId: '1',
+      recipientId: '2',
       title: 'new notification',
       content: 'content example',
     });
 
     expect(result.isRight()).toBe(true);
     expect(notificationsRepository.items[0]).toMatchObject({
-      recipientId: '1',
+      authorId: '1',
+      recipientId: '2',
       title: 'new notification',
       content: 'content example',
     });

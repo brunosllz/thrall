@@ -1,9 +1,15 @@
 //TODO: maybe will need put project id here, when persist in database
 
+export enum TimeIdentifier {
+  DAY = 'day',
+  WEEK = 'week',
+  MONTH = 'month',
+}
+
 interface RequirementProps {
   timeAmount: number;
-  timeIdentifier: 'day' | 'week' | 'month';
-  content: string;
+  timeIdentifier: TimeIdentifier;
+  content?: string;
 }
 
 export class Requirement {

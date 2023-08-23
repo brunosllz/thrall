@@ -1,10 +1,16 @@
 import { Entity } from '@common/domain/entities/entity';
 import { Optional } from '@common/logic/types/Optional';
 
+export enum MemberStatus {
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  PENDING = 'pending',
+}
+
 export interface MemberProps {
   recipientId: string;
   permissionType: 'owner' | 'member';
-  status: 'approved' | 'rejected' | 'pending';
+  status: MemberStatus | null;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -35,7 +41,7 @@ export class Member extends Entity<MemberProps> {
     this.touch();
   }
 
-  set status(status: 'approved' | 'rejected' | 'pending') {
+  set status(status: MemberStatus | null) {
     this.props.status = status;
     this.touch();
   }
@@ -51,7 +57,7 @@ export class Member extends Entity<MemberProps> {
     const member = new Member(
       {
         ...props,
-        status: props.status ?? 'rejected',
+        status: props.status ?? null,
         permissionType: props.permissionType ?? 'member',
         createdAt: props.createdAt ?? new Date(),
       },

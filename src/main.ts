@@ -1,5 +1,6 @@
 import { LoggerService } from '@common/infra/logger/logger.service';
 import { env } from '@config/env';
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { LoggerErrorInterceptor } from 'nestjs-pino';
 
@@ -12,6 +13,8 @@ async function bootstrap() {
 
   const LoggerServiceInstance = app.get(LoggerService);
 
+  app.setGlobalPrefix('api/v1');
+  app.useGlobalPipes(new ValidationPipe());
   app.useLogger(LoggerServiceInstance);
   app.useGlobalInterceptors(new LoggerErrorInterceptor());
 

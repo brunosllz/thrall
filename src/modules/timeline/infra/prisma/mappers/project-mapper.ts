@@ -1,8 +1,11 @@
-import { Member } from '@modules/timeline/domain/entities/member';
+import { Member, MemberStatus } from '@modules/timeline/domain/entities/member';
 import { Project } from '@modules/timeline/domain/entities/project';
 import { Role } from '@modules/timeline/domain/entities/role';
 import { Technology } from '@modules/timeline/domain/entities/technology';
-import { Requirement } from '@modules/timeline/domain/entities/value-objects/requirement';
+import {
+  Requirement,
+  TimeIdentifier,
+} from '@modules/timeline/domain/entities/value-objects/requirement';
 import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
 import { ProjectRoleList } from '@modules/timeline/domain/entities/watched-list/project-role-list';
 import { ProjectTechnologyList } from '@modules/timeline/domain/entities/watched-list/project-technology-list';
@@ -16,15 +19,15 @@ import {
 } from '@prisma/client';
 
 type ToDomainRawProps = RawProject & {
-  projectRole: Array<{ amount: number; role: RawRole }>;
-  technology: RawTechnology[];
-  answer: RawAnswer[];
-  teamMember: RawTeamMember[];
+  projectRoles: Array<{ amount: number; role: RawRole }>;
+  technologies: RawTechnology[];
+  answers: RawAnswer[];
+  teamMembers: RawTeamMember[];
 };
 
 export class ProjectMapper {
   static toDomain(raw: ToDomainRawProps): Project {
-    const roles = raw.projectRole.map((projectRole) => {
+    const roles = raw.projectRoles.map((projectRole) => {
       return Role.create(
         {
           projectId: raw.id,
@@ -35,38 +38,41 @@ export class ProjectMapper {
       );
     });
 
-    const technologies = raw.technology.map((technology) => {
+    const technologies = raw.technologies.map((technology) => {
       return Technology.create(technology.slug, technology.id);
     });
 
-    const teamMembers = raw.teamMember.map((teamMember) => {
+    const teamMembers = raw.teamMembers.map((teamMember) => {
       return Member.create(
         {
           recipientId: teamMember.recipientId,
           createdAt: teamMember.createdAt,
           permissionType: teamMember.permissionType,
-          status: teamMember.status,
+          status: teamMember.status as MemberStatus,
           updatedAt: teamMember.updatedAt,
         },
         teamMember.id,
       );
     });
 
-    const project = Project.create({
-      authorId: raw.authorId,
-      content: raw.content,
-      title: raw.title,
-      requirements: Requirement.create({
-        content: raw.requirementContent,
-        timeAmount: raw.requirementTimeAmount,
-        timeIdentifier: raw.requirementTimeIdentifier,
-      }),
-      roles: new ProjectRoleList(roles),
-      technologies: new ProjectTechnologyList(technologies),
-      teamMembers: new TeamMembersList(teamMembers),
-      createdAt: raw.createdAt,
-      updatedAt: raw.updatedAt ?? undefined,
-    });
+    const project = Project.create(
+      {
+        authorId: raw.authorId,
+        content: raw.content,
+        title: raw.title,
+        requirements: Requirement.create({
+          content: raw.requirementContent ?? undefined,
+          timeAmount: raw.requirementTimeAmount,
+          timeIdentifier: raw.requirementTimeIdentifier as TimeIdentifier,
+        }),
+        roles: new ProjectRoleList(roles),
+        technologies: new ProjectTechnologyList(technologies),
+        teamMembers: new TeamMembersList(teamMembers),
+        createdAt: raw.createdAt,
+        updatedAt: raw.updatedAt ?? undefined,
+      },
+      raw.id,
+    );
 
     return project;
   }
@@ -79,7 +85,7 @@ export class ProjectMapper {
         content: project.content,
         title: project.title,
         slug: project.slug.value,
-        requirementContent: project.requirements.value.content,
+        requirementContent: project.requirements.value.content ?? null,
         requirementTimeAmount: project.requirements.value.timeAmount,
         requirementTimeIdentifier: project.requirements.value.timeIdentifier,
         createdAt: project.createdAt,

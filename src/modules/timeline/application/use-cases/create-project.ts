@@ -1,7 +1,10 @@
 import { Either, right } from '@common/logic/either';
 import { Role } from '@modules/timeline/domain/entities/role';
 import { Technology } from '@modules/timeline/domain/entities/technology';
-import { Requirement } from '@modules/timeline/domain/entities/value-objects/requirement';
+import {
+  Requirement,
+  TimeIdentifier,
+} from '@modules/timeline/domain/entities/value-objects/requirement';
 import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
 import { ProjectRoleList } from '@modules/timeline/domain/entities/watched-list/project-role-list';
 import { ProjectTechnologyList } from '@modules/timeline/domain/entities/watched-list/project-technology-list';
@@ -21,7 +24,7 @@ interface CreateProjectRequest {
   technologies: Array<{ slug: string }>;
   requirements: {
     timeAmount: number;
-    timeIdentifier: 'day' | 'week' | 'month';
+    timeIdentifier: TimeIdentifier;
     content: string;
   };
 }

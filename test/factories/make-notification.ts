@@ -4,12 +4,12 @@ import {
   NotificationProps,
 } from '@modules/notification/domain/entities/notification';
 
-export function makeFakeNotification(
-  override: Partial<NotificationProps> = {},
-  id?: string,
-) {
+type Overrides = Partial<NotificationProps>;
+
+export function makeFakeNotification(override: Overrides = {}, id?: string) {
   const notification = Notification.create(
     {
+      authorId: faker.string.uuid(),
       recipientId: faker.string.uuid(),
       title: faker.lorem.sentence(4),
       content: faker.lorem.sentence(10),

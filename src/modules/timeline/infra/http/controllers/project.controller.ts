@@ -1,23 +1,26 @@
+import { IsPublic } from '@common/infra/http/auth/is-public';
 import { CreateProjectUseCase } from '@modules/timeline/application/use-cases/create-project';
-import { Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
+
+import { CreateProjectDTO } from '../dto/create-project-dto';
 
 @Controller('/projects')
 export class ProjectController {
   constructor(private readonly createProjectUseCase: CreateProjectUseCase) {}
 
   @Post()
-  async createProject() {
+  @IsPublic()
+  async createProject(@Body() body: CreateProjectDTO) {
+    const { authorId, content, requirements, roles, technologies, title } =
+      body;
+
     await this.createProjectUseCase.execute({
-      authorId: '1',
-      content: 'content',
-      requirements: {
-        content: 'content',
-        timeAmount: 1,
-        timeIdentifier: 'day',
-      },
-      roles: [{ amount: 1, name: 'react native' }],
-      technologies: [{ slug: 'react' }],
-      title: 'title',
+      authorId,
+      content,
+      requirements,
+      roles,
+      technologies,
+      title,
     });
   }
 }

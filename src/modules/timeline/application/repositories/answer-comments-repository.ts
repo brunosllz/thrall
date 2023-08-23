@@ -4,11 +4,11 @@ import { AnswerComment } from '@modules/timeline/domain/entities/answer-comment'
 
 export abstract class AnswerCommentsRepository {
   abstract findById(id: string): AsyncMaybe<AnswerComment>;
-  abstract create(answerComment: AnswerComment): Promise<void>;
-  abstract delete(answerComment: AnswerComment): Promise<void>;
-  abstract save(answerComment: AnswerComment): Promise<void>;
   abstract findManyByAnswerId(
     answerId: string,
     params: PaginationParams,
   ): Promise<AnswerComment[]>;
+  abstract create(answerComment: AnswerComment): Promise<void>;
+  abstract delete(answerComment: AnswerComment): Promise<void>;
+  abstract save(answerComment: AnswerComment): Promise<void>;
 }

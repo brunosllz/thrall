@@ -3,7 +3,7 @@ import { Optional } from '@common/logic/types/Optional';
 
 import { ExpressProjectInterestEvent } from '../events/express-project-interest';
 import { SendInviteTeamMemberEvent } from '../events/send-invite-team-member';
-import { Member } from './member';
+import { Member, MemberStatus } from './member';
 import { Interested } from './value-objects/interested';
 import { Requirement } from './value-objects/requirement';
 import { Slug } from './value-objects/slug';
@@ -113,7 +113,7 @@ export class Project extends AggregateRoot<ProjectProps> {
   sendInviteTeamMember(recipientId: string, senderId: string) {
     const invitedMember = Member.create({
       recipientId,
-      status: 'pending',
+      status: MemberStatus.PENDING,
     });
 
     this.teamMembers.add(invitedMember);
@@ -166,7 +166,7 @@ export class Project extends AggregateRoot<ProjectProps> {
             Member.create({
               recipientId: props.authorId,
               permissionType: 'owner',
-              status: 'approved',
+              status: MemberStatus.APPROVED,
             }),
           ]),
         createdAt: props.createdAt ?? new Date(),

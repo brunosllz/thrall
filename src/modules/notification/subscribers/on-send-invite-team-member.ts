@@ -28,6 +28,7 @@ export class OnSendInviteTeamMember implements EventHandler {
 
     if (project) {
       await this.sendNotification.execute({
+        authorId: props.senderId,
         recipientId: props.recipientId,
         title: `Novo convite para participar do projeto "${project.title}`,
         content: 'Venha fazer parte do time!',
