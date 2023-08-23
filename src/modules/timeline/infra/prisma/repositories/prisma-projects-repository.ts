@@ -3,6 +3,7 @@ import { PaginationParams } from '@common/repositories/pagination-params';
 import { ProjectsRepository } from '@modules/timeline/application/repositories/projects-repository';
 import { Project } from '@modules/timeline/domain/entities/project';
 import { Injectable } from '@nestjs/common';
+import { MEMBER_STATUS } from '@prisma/client';
 
 import { ProjectMapper } from '../mappers/project-mapper';
 
@@ -16,15 +17,15 @@ export class PrismaProjectsRepository extends ProjectsRepository {
     const project = await this.prisma.project.findUnique({
       where: { id },
       include: {
-        answer: true,
-        projectRole: {
+        answers: true,
+        projectRoles: {
           select: {
             amount: true,
             role: true,
           },
         },
-        teamMember: true,
-        technology: true,
+        teamMembers: true,
+        technologies: true,
       },
     });
 
@@ -39,15 +40,15 @@ export class PrismaProjectsRepository extends ProjectsRepository {
     const project = await this.prisma.project.findFirst({
       where: { slug },
       include: {
-        answer: true,
-        projectRole: {
+        answers: true,
+        projectRoles: {
           select: {
             amount: true,
             role: true,
           },
         },
-        teamMember: true,
-        technology: true,
+        teamMembers: true,
+        technologies: true,
       },
     });
 
@@ -61,15 +62,15 @@ export class PrismaProjectsRepository extends ProjectsRepository {
   async findManyRecent({ pageIndex, pageSize }: PaginationParams) {
     const projects = await this.prisma.project.findMany({
       include: {
-        answer: true,
-        projectRole: {
+        answers: true,
+        projectRoles: {
           select: {
             amount: true,
             role: true,
           },
         },
-        teamMember: true,
-        technology: true,
+        teamMembers: true,
+        technologies: true,
       },
       skip: (pageIndex - 1) * pageSize,
       take: pageIndex * pageSize,
@@ -102,7 +103,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
             name: role.name.value,
           },
           update: {
-            projectRole: {
+            projectRoles: {
               create: {
                 projectId: createdProject.id,
                 amount: role.amount,
@@ -112,7 +113,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
           create: {
             id: role.id,
             name: role.name.value,
-            projectRole: {
+            projectRoles: {
               create: {
                 projectId: createdProject.id,
                 amount: role.amount,
@@ -128,8 +129,12 @@ export class PrismaProjectsRepository extends ProjectsRepository {
         await this.prisma.technology.create({
           data: {
             id: technology.id,
-            projectId: createdProject.id,
             slug: technology.slug.value,
+            project: {
+              connect: {
+                id: createdProject.id,
+              },
+            },
           },
         });
       }),
@@ -142,7 +147,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
             id: teamMember.id,
             recipientId: teamMember.recipientId,
             permissionType: teamMember.permissionType,
-            status: teamMember.status,
+            status: teamMember.status as MEMBER_STATUS,
             createdAt: teamMember.createdAt,
             projectId: createdProject.id,
             updatedAt: teamMember.updatedAt,
