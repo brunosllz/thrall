@@ -1,5 +1,6 @@
 import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
+import { MemberStatus } from '@modules/timeline/domain/entities/member';
 
 import { makeFakeMember } from '@test/factories/make-member';
 import { makeFakeProject } from '@test/factories/make-project';
@@ -42,12 +43,12 @@ describe('Send invite project team member', () => {
       expect.objectContaining({
         recipientId: member.recipientId,
         permissionType: 'owner',
-        status: 'approved',
+        status: MemberStatus.APPROVED,
       }),
       expect.objectContaining({
         recipientId: '2',
         permissionType: 'member',
-        status: 'pending',
+        status: MemberStatus.PENDING,
       }),
     ]);
   });
@@ -78,7 +79,7 @@ describe('Send invite project team member', () => {
 
     const member2 = makeFakeMember({
       recipientId: '2',
-      status: 'approved',
+      status: MemberStatus.APPROVED,
     });
 
     project.teamMembers.add(member2);

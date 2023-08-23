@@ -1,5 +1,6 @@
 import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
+import { MemberStatus } from '@modules/timeline/domain/entities/member';
 
 import { makeFakeMember } from '@test/factories/make-member';
 import { makeFakeProject } from '@test/factories/make-project';
@@ -24,7 +25,7 @@ describe('Manage project team member privilege', () => {
     project.teamMembers.add(
       makeFakeMember({
         recipientId: '2',
-        status: 'approved',
+        status: MemberStatus.APPROVED,
       }),
     );
 
@@ -43,12 +44,12 @@ describe('Manage project team member privilege', () => {
       expect.objectContaining({
         recipientId: project.authorId,
         permissionType: 'owner',
-        status: 'approved',
+        status: MemberStatus.APPROVED,
       }),
       expect.objectContaining({
         recipientId: '2',
         permissionType: 'owner',
-        status: 'approved',
+        status: MemberStatus.APPROVED,
       }),
     ]);
   });
@@ -70,7 +71,7 @@ describe('Manage project team member privilege', () => {
     project.teamMembers.add(
       makeFakeMember({
         recipientId: '2',
-        status: 'approved',
+        status: MemberStatus.APPROVED,
         permissionType: 'member',
       }),
     );

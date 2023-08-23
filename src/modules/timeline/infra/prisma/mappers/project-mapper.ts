@@ -1,4 +1,4 @@
-import { Member } from '@modules/timeline/domain/entities/member';
+import { Member, MemberStatus } from '@modules/timeline/domain/entities/member';
 import { Project } from '@modules/timeline/domain/entities/project';
 import { Role } from '@modules/timeline/domain/entities/role';
 import { Technology } from '@modules/timeline/domain/entities/technology';
@@ -16,15 +16,15 @@ import {
 } from '@prisma/client';
 
 type ToDomainRawProps = RawProject & {
-  projectRole: Array<{ amount: number; role: RawRole }>;
-  technology: RawTechnology[];
-  answer: RawAnswer[];
-  teamMember: RawTeamMember[];
+  projectRoles: Array<{ amount: number; role: RawRole }>;
+  technologies: RawTechnology[];
+  answers: RawAnswer[];
+  teamMembers: RawTeamMember[];
 };
 
 export class ProjectMapper {
   static toDomain(raw: ToDomainRawProps): Project {
-    const roles = raw.projectRole.map((projectRole) => {
+    const roles = raw.projectRoles.map((projectRole) => {
       return Role.create(
         {
           projectId: raw.id,
@@ -35,38 +35,41 @@ export class ProjectMapper {
       );
     });
 
-    const technologies = raw.technology.map((technology) => {
+    const technologies = raw.technologies.map((technology) => {
       return Technology.create(technology.slug, technology.id);
     });
 
-    const teamMembers = raw.teamMember.map((teamMember) => {
+    const teamMembers = raw.teamMembers.map((teamMember) => {
       return Member.create(
         {
           recipientId: teamMember.recipientId,
           createdAt: teamMember.createdAt,
           permissionType: teamMember.permissionType,
-          status: teamMember.status,
+          status: teamMember.status as MemberStatus,
           updatedAt: teamMember.updatedAt,
         },
         teamMember.id,
       );
     });
 
-    const project = Project.create({
-      authorId: raw.authorId,
-      content: raw.content,
-      title: raw.title,
-      requirements: Requirement.create({
-        content: raw.requirementContent,
-        timeAmount: raw.requirementTimeAmount,
-        timeIdentifier: raw.requirementTimeIdentifier,
-      }),
-      roles: new ProjectRoleList(roles),
-      technologies: new ProjectTechnologyList(technologies),
-      teamMembers: new TeamMembersList(teamMembers),
-      createdAt: raw.createdAt,
-      updatedAt: raw.updatedAt ?? undefined,
-    });
+    const project = Project.create(
+      {
+        authorId: raw.authorId,
+        content: raw.content,
+        title: raw.title,
+        requirements: Requirement.create({
+          content: raw.requirementContent,
+          timeAmount: raw.requirementTimeAmount,
+          timeIdentifier: raw.requirementTimeIdentifier,
+        }),
+        roles: new ProjectRoleList(roles),
+        technologies: new ProjectTechnologyList(technologies),
+        teamMembers: new TeamMembersList(teamMembers),
+        createdAt: raw.createdAt,
+        updatedAt: raw.updatedAt ?? undefined,
+      },
+      raw.id,
+    );
 
     return project;
   }

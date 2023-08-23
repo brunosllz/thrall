@@ -1,6 +1,7 @@
 import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
 import { Either, left, right } from '@common/logic/either';
+import { MemberStatus } from '@modules/timeline/domain/entities/member';
 import { Injectable } from '@nestjs/common';
 
 import { ProjectsRepository } from '../repositories/projects-repository';
@@ -41,16 +42,16 @@ export class ManageInviteProjectTeamMemberUseCase {
       return left(new NotAllowedError());
     }
 
-    const haveAPendingInvite = MemberHasInvite.status === 'pending';
+    const haveAPendingInvite = MemberHasInvite.status === MemberStatus.PENDING;
 
     if (!haveAPendingInvite) {
       return left(new NotAllowedError());
     }
 
     if (status === 'accepted') {
-      MemberHasInvite.status = 'approved';
+      MemberHasInvite.status = MemberStatus.APPROVED;
     } else {
-      MemberHasInvite.status = status;
+      MemberHasInvite.status = MemberStatus.REJECTED;
     }
 
     await this.projectsRepository.save(project);

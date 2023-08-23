@@ -1,5 +1,6 @@
 import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
+import { MemberStatus } from '@modules/timeline/domain/entities/member';
 
 import { makeFakeMember } from '@test/factories/make-member';
 import { makeFakeProject } from '@test/factories/make-project';
@@ -27,7 +28,7 @@ describe('Manage invite project team member', () => {
     project.teamMembers.add(
       makeFakeMember({
         recipientId: '2',
-        status: 'pending',
+        status: MemberStatus.PENDING,
       }),
     );
 
@@ -63,7 +64,7 @@ describe('Manage invite project team member', () => {
     project.teamMembers.add(
       makeFakeMember({
         recipientId: '2',
-        status: 'pending',
+        status: MemberStatus.PENDING,
       }),
     );
 
@@ -123,7 +124,7 @@ describe('Manage invite project team member', () => {
     project.teamMembers.add(
       makeFakeMember({
         recipientId: '2',
-        status: 'rejected',
+        status: MemberStatus.REJECTED,
       }),
     );
 
