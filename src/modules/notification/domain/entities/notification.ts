@@ -2,6 +2,7 @@ import { Entity } from '@common/domain/entities/entity';
 import { Optional } from '@common/logic/types/Optional';
 
 export interface NotificationProps {
+  authorId: string;
   recipientId: string;
   title: string;
   content: string;
@@ -10,6 +11,10 @@ export interface NotificationProps {
 }
 
 export class Notification extends Entity<NotificationProps> {
+  get authorId() {
+    return this.props.authorId;
+  }
+
   get recipientId() {
     return this.props.recipientId;
   }

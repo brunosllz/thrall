@@ -145,12 +145,12 @@ model AnswerComment {
 
 model Notification {
   id          String    @id @default(uuid())
+  title       String
   content     String
   authorId    String
   recipientId String
-  isRead      DateTime?
+  readAt      DateTime?
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime? @updatedAt
 
   author   User @relation("Author", fields: [authorId], references: [id])
   receiver User @relation("Receiver", fields: [recipientId], references: [id])
