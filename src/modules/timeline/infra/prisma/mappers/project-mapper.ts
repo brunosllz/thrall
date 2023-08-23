@@ -2,7 +2,10 @@ import { Member, MemberStatus } from '@modules/timeline/domain/entities/member';
 import { Project } from '@modules/timeline/domain/entities/project';
 import { Role } from '@modules/timeline/domain/entities/role';
 import { Technology } from '@modules/timeline/domain/entities/technology';
-import { Requirement } from '@modules/timeline/domain/entities/value-objects/requirement';
+import {
+  Requirement,
+  TimeIdentifier,
+} from '@modules/timeline/domain/entities/value-objects/requirement';
 import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
 import { ProjectRoleList } from '@modules/timeline/domain/entities/watched-list/project-role-list';
 import { ProjectTechnologyList } from '@modules/timeline/domain/entities/watched-list/project-technology-list';
@@ -58,9 +61,9 @@ export class ProjectMapper {
         content: raw.content,
         title: raw.title,
         requirements: Requirement.create({
-          content: raw.requirementContent,
+          content: raw.requirementContent ?? undefined,
           timeAmount: raw.requirementTimeAmount,
-          timeIdentifier: raw.requirementTimeIdentifier,
+          timeIdentifier: raw.requirementTimeIdentifier as TimeIdentifier,
         }),
         roles: new ProjectRoleList(roles),
         technologies: new ProjectTechnologyList(technologies),
@@ -82,7 +85,7 @@ export class ProjectMapper {
         content: project.content,
         title: project.title,
         slug: project.slug.value,
-        requirementContent: project.requirements.value.content,
+        requirementContent: project.requirements.value.content ?? null,
         requirementTimeAmount: project.requirements.value.timeAmount,
         requirementTimeIdentifier: project.requirements.value.timeIdentifier,
         createdAt: project.createdAt,

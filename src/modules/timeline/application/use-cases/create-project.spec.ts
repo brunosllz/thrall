@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { TimeIdentifier } from '@modules/timeline/domain/entities/value-objects/requirement';
 import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
 
 import { InMemoryProjectsRepository } from '../repositories/in-memory/in-memory-projects-repository';
@@ -34,7 +35,7 @@ describe('Create a projects', () => {
       requirements: {
         content: faker.lorem.paragraphs(),
         timeAmount: 2,
-        timeIdentifier: 'week',
+        timeIdentifier: TimeIdentifier.WEEK,
       },
       technologies: [{ slug: 'react' }, { slug: 'react native' }],
     });
@@ -59,7 +60,7 @@ describe('Create a projects', () => {
     ]);
     expect(projectsRepository.items[0].requirements.value).toMatchObject({
       timeAmount: 2,
-      timeIdentifier: 'week',
+      timeIdentifier: TimeIdentifier.WEEK,
     });
   });
 });
