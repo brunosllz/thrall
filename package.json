@@ -43,6 +43,7 @@
     "class-validator": "0.14.0",
     "dotenv": "^16.3.1",
     "nestjs-pino": "3.4.0",
+    "nestjs-prisma": "0.22.0",
     "passport": "0.6.0",
     "passport-jwt": "4.0.1",
     "pg": "^8.11.2",
