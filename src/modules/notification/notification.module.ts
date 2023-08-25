@@ -1,8 +1,16 @@
+import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 
-import { SubscribersModule } from './subscribers/subscribers.module';
+import { HandlersModule } from './application/handlers/handlers.module';
+import { QueuesModule } from './application/queues/queues.module';
 
 @Module({
-  imports: [SubscribersModule],
+  imports: [
+    BullModule.registerQueue({
+      name: 'notifications',
+    }),
+    HandlersModule,
+    QueuesModule,
+  ],
 })
 export class NotificationModule {}
