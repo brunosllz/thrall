@@ -15,6 +15,13 @@ async function bootstrap() {
   const LoggerServiceInstance = app.get(LoggerService);
   const { httpAdapter } = app.get(HttpAdapterHost);
 
+  app.enableCors({
+    origin: true,
+    credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders:
+      'Content-Type,Accept,Authorization,Access-Control-Allow-Origin',
+  });
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(new ValidationPipe());
   app.useLogger(LoggerServiceInstance);

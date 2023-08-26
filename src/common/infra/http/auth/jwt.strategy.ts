@@ -7,6 +7,8 @@ import { AuthUser } from './auth-user';
 
 type Payload = {
   sub: string;
+  iat: number;
+  exp: number;
 };
 
 @Injectable()
@@ -14,9 +16,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
-      secretOrKey: env.JWT_PUBLIC_KEY,
-      algorithms: ['RS256'],
+      ignoreExpiration: true,
+      secretOrKey: env.JWT_SECRET_KEY,
     });
   }
 

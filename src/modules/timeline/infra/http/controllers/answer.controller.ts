@@ -1,4 +1,3 @@
-import { IsPublic } from '@common/infra/http/auth/is-public';
 import { CreateAnswerInProjectUseCase } from '@modules/timeline/application/use-cases/create-answer-in-project';
 import { Body, Controller, Post } from '@nestjs/common';
 
@@ -11,7 +10,6 @@ export class AnswerController {
   ) {}
 
   @Post()
-  @IsPublic()
   async createAnswerInProject(@Body() body: CreateAnswerDTO) {
     const { authorId, content, projectId } = body;
 
