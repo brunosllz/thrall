@@ -1,4 +1,6 @@
 import { Entity } from '@common/domain/entities/entity';
+import { Guard } from '@common/logic/Guard';
+import { Result } from '@common/logic/result';
 import { Optional } from '@common/logic/types/Optional';
 
 import { Slug } from './value-objects/slug';
@@ -6,7 +8,6 @@ import { Slug } from './value-objects/slug';
 export interface RoleProps {
   name: Slug;
   amount: number;
-  projectId: string;
   assigneesId: string[];
 }
 
@@ -23,16 +24,21 @@ export class Role extends Entity<RoleProps> {
     return this.props.assigneesId;
   }
 
-  get projectId() {
-    return this.props.projectId;
-  }
-
   static create(props: Optional<RoleProps, 'assigneesId'>, id?: string) {
-    const projectRole = new Role(
+    const guardResult = Guard.againstNullOrUndefinedBulk([
+      { argument: props.name, argumentName: 'name' },
+      { argument: props.amount, argumentName: 'amount' },
+    ]);
+
+    if (guardResult.failed) {
+      return Result.fail<Role>(guardResult.message);
+    }
+
+    const role = new Role(
       { ...props, assigneesId: props.assigneesId ?? [] },
       id,
     );
 
-    return projectRole;
+    return Result.ok<Role>(role);
   }
 }

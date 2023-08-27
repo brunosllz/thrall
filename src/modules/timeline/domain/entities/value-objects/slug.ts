@@ -1,3 +1,6 @@
+import { Guard } from '@common/logic/Guard';
+import { Result } from '@common/logic/result';
+
 export class Slug {
   readonly value: string;
 
@@ -12,7 +15,13 @@ export class Slug {
    *
    * @param text {string}
    */
-  static createFromText(text: string): Slug {
+  static createFromText(text: string): Result<Slug> {
+    const guardResult = Guard.againstNullOrUndefined('text', text);
+
+    if (guardResult.failed) {
+      return Result.fail<Slug>(guardResult.message);
+    }
+
     const slugText = text
       .normalize('NFKD')
       .toLowerCase()
@@ -23,6 +32,6 @@ export class Slug {
       .replace(/--+/g, '-')
       .replace(/-$/g, '');
 
-    return new Slug(slugText);
+    return Result.ok<Slug>(new Slug(slugText));
   }
 }

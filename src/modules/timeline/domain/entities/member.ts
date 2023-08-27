@@ -1,4 +1,6 @@
 import { Entity } from '@common/domain/entities/entity';
+import { Guard } from '@common/logic/Guard';
+import { Result } from '@common/logic/result';
 import { Optional } from '@common/logic/types/Optional';
 
 export enum MemberStatus {
@@ -7,9 +9,14 @@ export enum MemberStatus {
   PENDING = 'pending',
 }
 
+export enum PermissionType {
+  OWNER = 'owner',
+  MEMBER = 'member',
+}
+
 export interface MemberProps {
   recipientId: string;
-  permissionType: 'owner' | 'member';
+  permissionType: PermissionType;
   status: MemberStatus | null;
   createdAt: Date;
   updatedAt?: Date;
@@ -36,7 +43,7 @@ export class Member extends Entity<MemberProps> {
     return this.props.updatedAt;
   }
 
-  set permissionType(permissionType: 'owner' | 'member') {
+  set permissionType(permissionType: PermissionType) {
     this.props.permissionType = permissionType;
     this.touch();
   }
@@ -54,16 +61,24 @@ export class Member extends Entity<MemberProps> {
     props: Optional<MemberProps, 'createdAt' | 'permissionType' | 'status'>,
     id?: string,
   ) {
+    const guardResult = Guard.againstNullOrUndefinedBulk([
+      { argument: props.recipientId, argumentName: 'recipientId' },
+    ]);
+
+    if (guardResult) {
+      return Result.fail<Member>(guardResult.message);
+    }
+
     const member = new Member(
       {
         ...props,
         status: props.status ?? null,
-        permissionType: props.permissionType ?? 'member',
+        permissionType: props.permissionType ?? PermissionType.MEMBER,
         createdAt: props.createdAt ?? new Date(),
       },
       id,
     );
 
-    return member;
+    return Result.ok<Member>(member);
   }
 }

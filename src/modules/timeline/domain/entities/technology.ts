@@ -1,8 +1,8 @@
 import { Entity } from '@common/domain/entities/entity';
+import { Guard } from '@common/logic/Guard';
+import { Result } from '@common/logic/result';
 
 import { Slug } from './value-objects/slug';
-
-//TODO: maybe need put a label for slug here
 
 interface TechnologyProps {
   slug: Slug;
@@ -19,14 +19,26 @@ export class Technology extends Entity<TechnologyProps> {
   }
 
   static create(slug: string, id?: string) {
+    const guardResult = Guard.againstNullOrUndefined(slug, 'slug');
+
+    if (guardResult.failed) {
+      return Result.fail<Technology>(guardResult.message);
+    }
+
+    const newSlug = Slug.createFromText(slug);
+
+    if (newSlug.isFailure) {
+      return Result.fail<Technology>(newSlug.error);
+    }
+
     const technology = new Technology(
       {
-        slug: Slug.createFromText(slug),
+        slug: newSlug.getValue(),
         createdAt: new Date(),
       },
       id,
     );
 
-    return technology;
+    return Result.ok<Technology>(technology);
   }
 }
