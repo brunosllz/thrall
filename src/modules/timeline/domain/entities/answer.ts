@@ -1,4 +1,6 @@
 import { AggregateRoot } from '@common/domain/entities/aggregate-root';
+import { Guard } from '@common/logic/Guard';
+import { Result } from '@common/logic/result';
 import { Optional } from '@common/logic/types/Optional';
 
 import { AnswerCreatedEvent } from '../events/answer-created';
@@ -50,6 +52,25 @@ export class Answer extends AggregateRoot<AnswerProps> {
   }
 
   static create(props: Optional<AnswerProps, 'createdAt'>, id?: string) {
+    const resultGuard = Guard.againstNullOrUndefinedBulk([
+      {
+        argument: props.projectId,
+        argumentName: 'projectId',
+      },
+      {
+        argument: props.authorId,
+        argumentName: 'authorId',
+      },
+      {
+        argument: props.content,
+        argumentName: 'content',
+      },
+    ]);
+
+    if (resultGuard.failed) {
+      return Result.fail<Answer>(resultGuard.message);
+    }
+
     const answer = new Answer(
       {
         ...props,
@@ -64,6 +85,6 @@ export class Answer extends AggregateRoot<AnswerProps> {
       answer.addDomainEvent(new AnswerCreatedEvent(answer));
     }
 
-    return answer;
+    return Result.ok<Answer>(answer);
   }
 }

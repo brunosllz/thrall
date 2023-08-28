@@ -2,7 +2,9 @@ import { makeFakeProject } from '@test/factories/make-project';
 
 describe('Project', () => {
   it('should be able to create excerpt from project content', () => {
-    const project = makeFakeProject();
+    const project = makeFakeProject({
+      content: 'a'.repeat(150),
+    });
 
     expect(project.excerpt.length).toBeGreaterThanOrEqual(120);
     expect(project.excerpt.length).toBeLessThanOrEqual(123);

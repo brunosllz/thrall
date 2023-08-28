@@ -1,5 +1,6 @@
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
 import { Either, left, right } from '@common/logic/either';
+import { Result } from '@common/logic/result';
 import { AnswerComment } from '@modules/timeline/domain/entities/answer-comment';
 
 import { AnswerCommentsRepository } from '../repositories/answer-comments-repository';
@@ -12,8 +13,8 @@ interface CommentOnAnswerUseCaseRequest {
 }
 
 type CommentOnAnswerUseCaseResponse = Either<
-  ResourceNotFoundError,
-  Record<string, never>
+  ResourceNotFoundError | Result<void>,
+  Result<void>
 >;
 
 export class CommentOnAnswerUseCase {
@@ -27,20 +28,30 @@ export class CommentOnAnswerUseCase {
     answerId,
     content,
   }: CommentOnAnswerUseCaseRequest): Promise<CommentOnAnswerUseCaseResponse> {
-    const answer = await this.answersRepository.findById(answerId);
+    try {
+      const answer = await this.answersRepository.findById(answerId);
 
-    if (!answer) {
-      return left(new ResourceNotFoundError());
+      if (!answer) {
+        return left(new ResourceNotFoundError());
+      }
+
+      const answerCommentOrError = AnswerComment.create({
+        authorId,
+        answerId,
+        content,
+      });
+
+      if (answerCommentOrError.isFailure) {
+        return left(Result.fail(answerCommentOrError.error));
+      }
+
+      const answerComment = answerCommentOrError.getValue();
+
+      await this.answerCommentsRepository.create(answerComment);
+
+      return right(Result.ok());
+    } catch (error) {
+      return left(Result.fail<void>(error));
     }
-
-    const answerComment = AnswerComment.create({
-      authorId,
-      answerId,
-      content,
-    });
-
-    await this.answerCommentsRepository.create(answerComment);
-
-    return right({});
   }
 }

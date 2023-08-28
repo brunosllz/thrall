@@ -1,6 +1,6 @@
 import { WatchedList } from '@common/domain/watched-list';
 
-import { Interested } from '../value-objects/interested';
+import { Interested } from '../interested';
 
 export class ProjectInterestedList extends WatchedList<Interested> {
   compareItems(a: Interested, b: Interested): boolean {

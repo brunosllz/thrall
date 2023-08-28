@@ -20,33 +20,48 @@ describe('Delete a projects', () => {
   });
 
   it('should be able delete a projects', async () => {
-    const projects = makeFakeProject();
+    let errorOccurred = false;
 
-    await projectsRepository.create(projects);
+    try {
+      const projects = makeFakeProject();
 
-    rolesRepository.items.push(
-      makeFakeRole({
-        name: Slug.createFromText('devops'),
-        projectId: projects.id,
-        amount: 1,
-      }),
-      makeFakeRole({
-        name: Slug.createFromText('front end'),
-        projectId: projects.id,
-        amount: 4,
-      }),
-    );
+      await projectsRepository.create(projects);
 
-    await sut.execute({ id: projects.id });
+      rolesRepository.items.push(
+        makeFakeRole({
+          projectId: projects.id,
+          name: Slug.createFromText('devops').getValue(),
+          membersAmount: 1,
+        }),
+        makeFakeRole({
+          projectId: projects.id,
+          name: Slug.createFromText('front end').getValue(),
+          membersAmount: 4,
+        }),
+      );
 
-    expect(projectsRepository.items).toHaveLength(0);
-    expect(rolesRepository.items).toHaveLength(0);
+      await sut.execute({ id: projects.id });
+
+      expect(projectsRepository.items).toHaveLength(0);
+      expect(rolesRepository.items).toHaveLength(0);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 
   it('should be be not able delete a projects with non exist id', async () => {
-    const result = await sut.execute({ id: 'non-id' });
+    let errorOccurred = false;
 
-    expect(result.isLeft()).toBe(true);
-    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+    try {
+      const result = await sut.execute({ id: 'non-id' });
+
+      expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+    expect(errorOccurred).toBeFalsy();
   });
 });

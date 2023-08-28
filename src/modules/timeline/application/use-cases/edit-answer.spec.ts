@@ -17,53 +17,77 @@ describe('Edit a answer', () => {
   });
 
   it('should be able edit a answer', async () => {
-    const answers = makeFakeAnswer({
-      authorId: '1',
-    });
+    let errorOccurred = false;
 
-    await answersRepository.create(answers);
+    try {
+      const answers = makeFakeAnswer({
+        authorId: '1',
+      });
 
-    const result = await sut.execute({
-      answerId: answers.id,
-      authorId: '1',
-      content: 'example content',
-    });
+      await answersRepository.create(answers);
 
-    expect(result.isRight()).toBe(true);
-    expect(answersRepository.items[0]).toMatchObject({
-      content: 'example content',
-    });
+      const result = await sut.execute({
+        answerId: answers.id,
+        authorId: '1',
+        content: 'example content',
+      });
+
+      expect(result.isRight()).toBe(true);
+      expect(answersRepository.items[0]).toMatchObject({
+        content: 'example content',
+      });
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 
   it('should be not able edit a answer with non exists id', async () => {
-    const answers = makeFakeAnswer({
-      authorId: '1',
-    });
+    let errorOccurred = false;
 
-    await answersRepository.create(answers);
+    try {
+      const answers = makeFakeAnswer({
+        authorId: '1',
+      });
 
-    const result = await sut.execute({
-      answerId: 'non-id',
-      authorId: '1',
-      content: 'content example 2',
-    });
+      await answersRepository.create(answers);
 
-    expect(result.isLeft()).toBe(true);
-    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+      const result = await sut.execute({
+        answerId: 'non-id',
+        authorId: '1',
+        content: 'content example 2',
+      });
+
+      expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 
   it('should be not able edit a answers with invalid author id', async () => {
-    const answers = makeFakeAnswer();
+    let errorOccurred = false;
 
-    await answersRepository.create(answers);
+    try {
+      const answers = makeFakeAnswer();
 
-    const result = await sut.execute({
-      answerId: answers.id,
-      authorId: 'non-id',
-      content: 'content example 2',
-    });
+      await answersRepository.create(answers);
 
-    expect(result.isLeft()).toBe(true);
-    expect(result.value).toBeInstanceOf(NotAllowedError);
+      const result = await sut.execute({
+        answerId: answers.id,
+        authorId: 'non-id',
+        content: 'content example 2',
+      });
+
+      expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(NotAllowedError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 });

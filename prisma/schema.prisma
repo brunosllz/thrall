@@ -11,24 +11,22 @@ model User {
   id                    String          @id @default(uuid())
   name                  String
   email                 String          @unique
-  bio                   String?
-  occupation            String?
+  bio                   String
+  occupation            String
   avatarUrl             String
-  city                  String?
-  state                 String?
-  country               String?
-  linkedinLink          String?
-  githubLink            String?
+  city                  String
+  state                 String
+  country               String
+  linkedinLink          String
+  githubLink            String
   createdAt             DateTime        @default(now())
   updatedAt             DateTime?       @updatedAt
-  userName              String?         @unique
-  Account               Account[]
+  slug                  String          @unique
   answers               Answer[]
   answerComments        AnswerComment[]
   sendedNotifications   Notification[]  @relation("Author")
   receivedNotifications Notification[]  @relation("Receiver")
   projects              Project[]
-  session               Session[]
   teamMembers           TeamMember[]
   projectRoles          ProjectRole[]   @relation("ProjectRoleToUser")
   technologies          Technology[]    @relation("TechnologyToUser")
@@ -60,33 +58,33 @@ model Role {
 }
 
 model ProjectRole {
-  id          String  @id @default(uuid())
-  projectId   String
-  roleId      String
-  amount      Int
-  project     Project @relation(fields: [projectId], references: [id])
-  role        Role    @relation(fields: [roleId], references: [id])
-  assigneesId User[]  @relation("ProjectRoleToUser")
+  id            String  @id @default(uuid())
+  projectId     String
+  roleId        String
+  membersAmount Int
+  project       Project @relation(fields: [projectId], references: [id])
+  role          Role    @relation(fields: [roleId], references: [id])
+  assigneesId   User[]  @relation("ProjectRoleToUser")
 
   @@unique([projectId, roleId])
 }
 
 model Project {
-  id                        String          @id @default(uuid())
-  authorId                  String
-  title                     String
-  content                   String
-  slug                      String
-  createdAt                 DateTime        @default(now())
-  updatedAt                 DateTime?       @updatedAt
-  requirementTimeAmount     Int
-  requirementContent        String?
-  requirementTimeIdentifier TIME_IDENTIFIER
-  answers                   Answer[]
-  author                    User            @relation(fields: [authorId], references: [id])
-  projectRoles              ProjectRole[]
-  teamMembers               TeamMember[]
-  technologies              Technology[]    @relation("ProjectToTechnology")
+  id                          String          @id @default(uuid())
+  authorId                    String
+  title                       String
+  content                     String
+  slug                        String
+  createdAt                   DateTime        @default(now())
+  updatedAt                   DateTime?       @updatedAt
+  requirementContent          String?
+  requirementPeriodAmount     Int
+  requirementPeriodIdentifier TIME_IDENTIFIER
+  answers                     Answer[]
+  author                      User            @relation(fields: [authorId], references: [id])
+  projectRoles                ProjectRole[]
+  teamMembers                 TeamMember[]
+  technologies                Technology[]    @relation("ProjectToTechnology")
 
   @@unique([authorId, slug])
 }
@@ -124,34 +122,6 @@ model Notification {
   title       String
   author      User      @relation("Author", fields: [authorId], references: [id])
   receiver    User      @relation("Receiver", fields: [recipientId], references: [id])
-}
-
-model Account {
-  id                String  @id
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  scope             String?
-  accessToken       String?
-  expiresAt         Int?
-  idToken           String?
-  refreshToken      String?
-  sessionState      String?
-  tokenType         String?
-  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
 }
 
 enum MEMBER_PERMISSION_TYPE {

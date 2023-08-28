@@ -1,6 +1,7 @@
 import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
 import { Either, left, right } from '@common/logic/either';
+import { Result } from '@common/logic/result';
 import { Injectable } from '@nestjs/common';
 import { NotFoundError } from 'rxjs';
 
@@ -13,8 +14,8 @@ interface EditAnswerRequest {
 }
 
 type EditAnswerResponse = Either<
-  ResourceNotFoundError | NotFoundError,
-  Record<string, never>
+  ResourceNotFoundError | NotFoundError | Result<void>,
+  Result<void>
 >;
 
 @Injectable()
@@ -26,20 +27,24 @@ export class EditAnswerUseCase {
     authorId,
     content,
   }: EditAnswerRequest): Promise<EditAnswerResponse> {
-    const answer = await this.answersRepository.findById(answerId);
+    try {
+      const answer = await this.answersRepository.findById(answerId);
 
-    if (!answer) {
-      return left(new ResourceNotFoundError());
+      if (!answer) {
+        return left(new ResourceNotFoundError());
+      }
+
+      if (authorId !== answer.authorId) {
+        return left(new NotAllowedError());
+      }
+
+      answer.content = content;
+
+      await this.answersRepository.save(answer);
+
+      return right(Result.ok());
+    } catch (error) {
+      return left(Result.fail<void>(error));
     }
-
-    if (authorId !== answer.authorId) {
-      return left(new NotAllowedError());
-    }
-
-    answer.content = content;
-
-    await this.answersRepository.save(answer);
-
-    return right({});
   }
 }

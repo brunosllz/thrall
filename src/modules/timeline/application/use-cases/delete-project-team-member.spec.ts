@@ -1,6 +1,9 @@
 import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
-import { MemberStatus } from '@modules/timeline/domain/entities/member';
+import {
+  MemberStatus,
+  PermissionType,
+} from '@modules/timeline/domain/entities/member';
 
 import { makeFakeMember } from '@test/factories/make-member';
 import { makeFakeProject } from '@test/factories/make-project';
@@ -21,86 +24,121 @@ describe('Delete project team member', () => {
   });
 
   it('should be able to remove a member of team', async () => {
-    const project = makeFakeProject();
-    project.teamMembers.add(
-      makeFakeMember({
-        recipientId: '2',
-        status: MemberStatus.APPROVED,
-      }),
-    );
+    let errorOccurred = false;
 
-    await projectsRepository.create(project);
+    try {
+      const project = makeFakeProject();
+      project.teamMembers.add(
+        makeFakeMember({
+          recipientId: '2',
+          status: MemberStatus.APPROVED,
+        }),
+      );
 
-    expect(projectsRepository.items[0].teamMembers.getItems()).toHaveLength(2);
+      await projectsRepository.create(project);
 
-    const result = await sut.execute({
-      memberId: '2',
-      ownerId: project.authorId,
-      projectId: project.id,
-    });
+      expect(projectsRepository.items[0].teamMembers.getItems()).toHaveLength(
+        2,
+      );
 
-    expect(result.isRight()).toBe(true);
-    expect(projectsRepository.items[0].teamMembers.getItems()).toHaveLength(1);
-    expect(projectsRepository.items[0].teamMembers.getItems()).toEqual([
-      expect.objectContaining({
-        recipientId: project.authorId,
-        permissionType: 'owner',
-        status: MemberStatus.APPROVED,
-      }),
-    ]);
+      const result = await sut.execute({
+        memberId: '2',
+        ownerId: project.authorId,
+        projectId: project.id,
+      });
+
+      expect(result.isRight()).toBe(true);
+      expect(projectsRepository.items[0].teamMembers.getItems()).toHaveLength(
+        1,
+      );
+      expect(projectsRepository.items[0].teamMembers.getItems()).toEqual([
+        expect.objectContaining({
+          recipientId: project.authorId,
+          permissionType: 'owner',
+          status: MemberStatus.APPROVED,
+        }),
+      ]);
+    } catch (error) {
+      errorOccurred = true;
+    }
+    expect(errorOccurred).toBeFalsy();
   });
 
   it('should be not able to remove a member of with non exist project id', async () => {
-    const result = await sut.execute({
-      ownerId: '1',
-      projectId: 'non-id',
-      memberId: '2',
-    });
+    let errorOccurred = false;
 
-    expect(result.isLeft()).toBe(true);
-    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+    try {
+      const result = await sut.execute({
+        ownerId: '1',
+        projectId: 'non-id',
+        memberId: '2',
+      });
+
+      expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 
   it("should be not able to remove member of team if isn't a owner", async () => {
-    const project = makeFakeProject();
-    project.teamMembers.add(
-      makeFakeMember({
-        recipientId: '2',
-        status: MemberStatus.APPROVED,
-        permissionType: 'member',
-      }),
-    );
+    let errorOccurred = false;
 
-    await projectsRepository.create(project);
+    try {
+      const project = makeFakeProject();
+      project.teamMembers.add(
+        makeFakeMember({
+          recipientId: '2',
+          status: MemberStatus.APPROVED,
+          permissionType: PermissionType.MEMBER,
+        }),
+      );
 
-    const result = await sut.execute({
-      ownerId: '2',
-      projectId: project.id,
-      memberId: project.authorId,
-    });
+      await projectsRepository.create(project);
 
-    expect(result.isLeft()).toBe(true);
-    expect(result.value).toBeInstanceOf(NotAllowedError);
+      const result = await sut.execute({
+        ownerId: '2',
+        projectId: project.id,
+        memberId: project.authorId,
+      });
+
+      expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(NotAllowedError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 
   it('should be not able to remove itself if just have a owner', async () => {
-    const project = makeFakeProject();
-    project.teamMembers.add(
-      makeFakeMember({
-        recipientId: '2',
-        status: MemberStatus.APPROVED,
-      }),
-    );
+    let errorOccurred = false;
 
-    await projectsRepository.create(project);
+    try {
+      const project = makeFakeProject();
+      project.teamMembers.add(
+        makeFakeMember({
+          recipientId: '2',
+          status: MemberStatus.APPROVED,
+        }),
+      );
 
-    const result = await sut.execute({
-      ownerId: project.authorId,
-      projectId: project.id,
-      memberId: project.authorId,
-    });
+      await projectsRepository.create(project);
 
-    expect(result.isLeft()).toBe(true);
-    expect(result.value).toBeInstanceOf(NotAllowedError);
+      const result = await sut.execute({
+        ownerId: project.authorId,
+        projectId: project.id,
+        memberId: project.authorId,
+      });
+
+      expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(NotAllowedError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 });

@@ -2,6 +2,7 @@ import { PrismaService } from '@common/infra/prisma/prisma.service';
 import { PaginationParams } from '@common/repositories/pagination-params';
 import { ProjectsRepository } from '@modules/timeline/application/repositories/projects-repository';
 import { Project } from '@modules/timeline/domain/entities/project';
+import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
 import { Injectable } from '@nestjs/common';
 import { MEMBER_STATUS } from '@prisma/client';
 
@@ -11,6 +12,19 @@ import { ProjectMapper } from '../mappers/project-mapper';
 export class PrismaProjectsRepository extends ProjectsRepository {
   constructor(private readonly prisma: PrismaService) {
     super();
+  }
+  async exists({ authorId, slug }: { authorId: string; slug: Slug }) {
+    const projectAllReadyExists = await this.prisma.project.findUnique({
+      where: {
+        authorId_slug: { authorId, slug: slug.value },
+      },
+    });
+
+    if (projectAllReadyExists) {
+      return true;
+    }
+
+    return false;
   }
 
   async findById(id: string) {
@@ -106,7 +120,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
             projectRoles: {
               create: {
                 projectId: createdProject.id,
-                membersAmount: role.amount,
+                membersAmount: role.membersAmount,
               },
             },
           },
@@ -116,7 +130,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
             projectRoles: {
               create: {
                 projectId: createdProject.id,
-                membersAmount: role.amount,
+                membersAmount: role.membersAmount,
               },
             },
           },

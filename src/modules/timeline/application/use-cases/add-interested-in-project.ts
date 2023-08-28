@@ -1,5 +1,6 @@
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
 import { Either, left, right } from '@common/logic/either';
+import { Result } from '@common/logic/result';
 
 import { ProjectsRepository } from '../repositories/projects-repository';
 
@@ -9,8 +10,8 @@ interface AddInterestedInProjectRequest {
 }
 
 type AddInterestedInProjectResponse = Either<
-  ResourceNotFoundError,
-  Record<string, never>
+  ResourceNotFoundError | Result<void>,
+  Result<void>
 >;
 
 export class AddInterestedInProject {
@@ -20,16 +21,24 @@ export class AddInterestedInProject {
     projectId,
     userId,
   }: AddInterestedInProjectRequest): Promise<AddInterestedInProjectResponse> {
-    const project = await this.projectsRepository.findById(projectId);
+    try {
+      const project = await this.projectsRepository.findById(projectId);
 
-    if (!project) {
-      return left(new ResourceNotFoundError());
+      if (!project) {
+        return left(new ResourceNotFoundError());
+      }
+
+      const addedInterestedOrError = project.addInterested(userId);
+
+      if (addedInterestedOrError?.isFailure) {
+        return left(Result.fail(addedInterestedOrError.error));
+      }
+
+      await this.projectsRepository.save(project);
+
+      return right(Result.ok());
+    } catch (error) {
+      return left(Result.fail<void>(error));
     }
-
-    project.addInterested(userId);
-
-    await this.projectsRepository.save(project);
-
-    return right({});
   }
 }

@@ -15,28 +15,44 @@ describe('Delete answer comment comment', () => {
   });
 
   it('should be able to delete a answer comment', async () => {
-    const answerComment = makeFakeAnswerComment({}, '1');
+    let errorOcurred = false;
 
-    await answerCommentRepository.create(answerComment);
+    try {
+      const answerComment = makeFakeAnswerComment({}, '1');
 
-    const result = await sut.execute({
-      id: '1',
-    });
+      await answerCommentRepository.create(answerComment);
 
-    expect(result.isRight()).toBe(true);
-    expect(answerCommentRepository.items).toHaveLength(0);
+      const result = await sut.execute({
+        id: '1',
+      });
+
+      expect(result.isRight()).toBe(true);
+      expect(answerCommentRepository.items).toHaveLength(0);
+    } catch (error) {
+      errorOcurred = true;
+    }
+
+    expect(errorOcurred).toBeFalsy();
   });
 
   it('should be not able to delete a answer comment with non exist id', async () => {
-    const answerComment = makeFakeAnswerComment({}, '1');
+    let errorOcurred = false;
 
-    await answerCommentRepository.create(answerComment);
+    try {
+      const answerComment = makeFakeAnswerComment({}, '1');
 
-    const result = await sut.execute({
-      id: 'non-exist',
-    });
+      await answerCommentRepository.create(answerComment);
 
-    expect(result.isLeft()).toBe(true);
-    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+      const result = await sut.execute({
+        id: 'non-exist',
+      });
+
+      expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+    } catch (error) {
+      errorOcurred = true;
+    }
+
+    expect(errorOcurred).toBeFalsy();
   });
 });

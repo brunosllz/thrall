@@ -1,6 +1,7 @@
 import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
 import { Either, left, right } from '@common/logic/either';
+import { Result } from '@common/logic/result';
 import { MemberStatus } from '@modules/timeline/domain/entities/member';
 import { Injectable } from '@nestjs/common';
 
@@ -9,12 +10,12 @@ import { ProjectsRepository } from '../repositories/projects-repository';
 interface ManageInviteProjectTeamMemberRequest {
   memberId: string;
   projectId: string;
-  status: 'accepted' | 'rejected';
+  status: 'approved' | 'rejected';
 }
 
 type ManageInviteProjectTeamMemberResponse = Either<
-  ResourceNotFoundError | NotAllowedError,
-  Record<string, never>
+  ResourceNotFoundError | NotAllowedError | Result<void>,
+  Result<void>
 >;
 
 @Injectable()
@@ -26,36 +27,43 @@ export class ManageInviteProjectTeamMemberUseCase {
     projectId,
     status,
   }: ManageInviteProjectTeamMemberRequest): Promise<ManageInviteProjectTeamMemberResponse> {
-    const project = await this.projectsRepository.findById(projectId);
+    try {
+      const project = await this.projectsRepository.findById(projectId);
 
-    if (!project) {
-      return left(new ResourceNotFoundError());
+      if (!project) {
+        return left(new ResourceNotFoundError());
+      }
+
+      const teamMembers = project.teamMembers.getItems();
+
+      const MemberHasInvite = teamMembers.find(
+        (member) =>
+          member.recipientId === memberId &&
+          member.status === MemberStatus.PENDING,
+      );
+
+      if (!MemberHasInvite) {
+        return left(new NotAllowedError());
+      }
+
+      const haveAPendingInvite =
+        MemberHasInvite.status === MemberStatus.PENDING;
+
+      if (!haveAPendingInvite) {
+        return left(new NotAllowedError());
+      }
+
+      if (status === MemberStatus.APPROVED) {
+        project.acceptInviteTeamMember(memberId);
+      } else {
+        project.rejectInviteTeamMember(memberId);
+      }
+
+      await this.projectsRepository.save(project);
+
+      return right(Result.ok<void>());
+    } catch (error) {
+      return left(Result.fail<void>(error));
     }
-
-    const teamMembers = project.teamMembers.getItems();
-
-    const MemberHasInvite = teamMembers.find(
-      (member) => member.recipientId === memberId,
-    );
-
-    if (!MemberHasInvite) {
-      return left(new NotAllowedError());
-    }
-
-    const haveAPendingInvite = MemberHasInvite.status === MemberStatus.PENDING;
-
-    if (!haveAPendingInvite) {
-      return left(new NotAllowedError());
-    }
-
-    if (status === 'accepted') {
-      MemberHasInvite.status = MemberStatus.APPROVED;
-    } else {
-      MemberHasInvite.status = MemberStatus.REJECTED;
-    }
-
-    await this.projectsRepository.save(project);
-
-    return right({});
   }
 }
