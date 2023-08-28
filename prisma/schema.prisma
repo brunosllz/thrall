@@ -7,88 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id                    String          @id @default(uuid())
-  name                  String
-  email                 String          @unique
-  bio                   String
-  occupation            String
-  avatarUrl             String
-  city                  String
-  state                 String
-  country               String
-  linkedinLink          String
-  githubLink            String
-  createdAt             DateTime        @default(now())
-  updatedAt             DateTime?       @updatedAt
-  slug                  String          @unique
-  answers               Answer[]
-  answerComments        AnswerComment[]
-  sendedNotifications   Notification[]  @relation("Author")
-  receivedNotifications Notification[]  @relation("Receiver")
-  projects              Project[]
-  teamMembers           TeamMember[]
-  projectRoles          ProjectRole[]   @relation("ProjectRoleToUser")
-  technologies          Technology[]    @relation("TechnologyToUser")
-}
-
-model Technology {
-  id      String    @id @default(uuid())
-  slug    String    @unique
-  project Project[] @relation("ProjectToTechnology")
-  user    User[]    @relation("TechnologyToUser")
-}
-
-model TeamMember {
-  id             String                 @id @default(uuid())
-  recipientId    String
-  permissionType MEMBER_PERMISSION_TYPE
-  status         MEMBER_STATUS
-  projectId      String
-  createdAt      DateTime               @default(now())
-  updatedAt      DateTime               @updatedAt
-  project        Project                @relation(fields: [projectId], references: [id])
-  member         User                   @relation(fields: [recipientId], references: [id])
-}
-
-model Role {
-  id           String        @id @default(uuid())
-  name         String        @unique
-  projectRoles ProjectRole[]
-}
-
-model ProjectRole {
-  id            String  @id @default(uuid())
-  projectId     String
-  roleId        String
-  membersAmount Int
-  project       Project @relation(fields: [projectId], references: [id])
-  role          Role    @relation(fields: [roleId], references: [id])
-  assigneesId   User[]  @relation("ProjectRoleToUser")
-
-  @@unique([projectId, roleId])
-}
-
-model Project {
-  id                          String          @id @default(uuid())
-  authorId                    String
-  title                       String
-  content                     String
-  slug                        String
-  createdAt                   DateTime        @default(now())
-  updatedAt                   DateTime?       @updatedAt
-  requirementContent          String?
-  requirementPeriodAmount     Int
-  requirementPeriodIdentifier TIME_IDENTIFIER
-  answers                     Answer[]
-  author                      User            @relation(fields: [authorId], references: [id])
-  projectRoles                ProjectRole[]
-  teamMembers                 TeamMember[]
-  technologies                Technology[]    @relation("ProjectToTechnology")
-
-  @@unique([authorId, slug])
-}
-
 model Answer {
   id            String          @id @default(uuid())
   content       String
@@ -96,7 +14,7 @@ model Answer {
   projectId     String
   createdAt     DateTime        @default(now())
   updatedAt     DateTime?       @updatedAt
-  author        User            @relation(fields: [authorId], references: [id])
+  User          User            @relation(fields: [authorId], references: [id])
   project       Project         @relation(fields: [projectId], references: [id])
   answerComment AnswerComment[]
 }
@@ -109,19 +27,132 @@ model AnswerComment {
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
   answer    Answer    @relation(fields: [answerId], references: [id])
-  author    User      @relation(fields: [authorId], references: [id])
+  user      User      @relation(fields: [authorId], references: [id])
 }
 
 model Notification {
-  id          String    @id @default(uuid())
-  content     String
-  authorId    String
-  recipientId String
-  createdAt   DateTime  @default(now())
-  readAt      DateTime?
-  title       String
-  author      User      @relation("Author", fields: [authorId], references: [id])
-  receiver    User      @relation("Receiver", fields: [recipientId], references: [id])
+  id                String    @id
+  content           String
+  authorId          String
+  recipientId       String
+  createdAt         DateTime  @default(now())
+  readAt            DateTime?
+  title             String
+  authorIdToUser    User      @relation("NotificationAuthorIdToUser", fields: [authorId], references: [id])
+  recipientIdToUser User      @relation("NotificationRecipientIdToUser", fields: [recipientId], references: [id])
+}
+
+model Project {
+  id                          String            @id @default(uuid())
+  authorId                    String
+  title                       String
+  content                     String
+  slug                        String
+  createdAt                   DateTime          @default(now())
+  updatedAt                   DateTime?         @updatedAt
+  requirementPeriodAmount     Int
+  requirementContent          String?
+  requirementPeriodIdentifier PERIOD_IDENTIFIER
+  answers                     Answer[]
+  users                       User              @relation(fields: [authorId], references: [id])
+  projectRoles                ProjectRole[]
+  teamMembers                 TeamMember[]
+  technologies                Technology[]
+
+  @@unique([authorId, slug])
+}
+
+model ProjectRole {
+  id            String  @id @default(uuid())
+  projectId     String
+  roleId        String
+  membersAmount Int
+  project       Project @relation(fields: [projectId], references: [id])
+  role          Role    @relation(fields: [roleId], references: [id])
+  users         User[]
+
+  @@unique([projectId, roleId])
+}
+
+model Role {
+  id           String        @id @default(uuid())
+  name         String        @unique
+  projectRoles ProjectRole[]
+}
+
+model TeamMember {
+  id             String                 @id @default(uuid())
+  recipientId    String
+  permissionType MEMBER_PERMISSION_TYPE
+  status         MEMBER_STATUS
+  projectId      String
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime?              @updatedAt
+  project        Project                @relation(fields: [projectId], references: [id])
+  user           User                   @relation(fields: [recipientId], references: [id])
+}
+
+model Technology {
+  id       String    @id @default(uuid())
+  slug     String    @unique
+  projects Project[]
+  users    User[]
+}
+
+model User {
+  id                        String          @id @default(uuid())
+  name                      String
+  email                     String          @unique
+  bio                       String?
+  occupation                String?
+  avatarUrl                 String
+  city                      String?
+  state                     String?
+  country                   String?
+  linkedinLink              String?
+  githubLink                String?
+  createdAt                 DateTime        @default(now())
+  updatedAt                 DateTime?       @updatedAt
+  userName                  String?         @unique
+  Answer                    Answer[]
+  AnswerComment             AnswerComment[]
+  authorIdToNotifcation     Notification[]  @relation("NotificationAuthorIdToUser")
+  recipientIdToNotification Notification[]  @relation("NotificationRecipientIdToUser")
+  projects                  Project[]
+  teamMember                TeamMember[]
+  projectRole               ProjectRole[]
+  technologies              Technology[]
+  account                   Account[]
+  session                   Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refreshToken      String? @db.Text
+  accessToken       String? @db.Text
+  expiresAt         Int?
+  tokenType         String?
+  scope             String?
+  idToken           String? @db.Text
+  sessionState      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 enum MEMBER_PERMISSION_TYPE {
@@ -135,7 +166,7 @@ enum MEMBER_STATUS {
   approved
 }
 
-enum TIME_IDENTIFIER {
+enum PERIOD_IDENTIFIER {
   day
   week
   month

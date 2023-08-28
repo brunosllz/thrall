@@ -1,4 +1,5 @@
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
+import { Result } from '@common/logic/result';
 import { CreateProjectUseCase } from '@modules/timeline/application/use-cases/create-project';
 import { Body, Controller, Post } from '@nestjs/common';
 
@@ -23,6 +24,13 @@ export class ProjectController {
 
     if (result.isLeft()) {
       const error = result.value;
+
+      if (error instanceof Result) {
+        return {
+          statusCode: 400,
+          message: error.errorValue(),
+        };
+      }
 
       if (error instanceof AlreadyExistsError) {
         return {
