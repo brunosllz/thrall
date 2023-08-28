@@ -23,7 +23,7 @@ import {
 } from '@prisma/client';
 
 type ToDomainRawProps = RawProject & {
-  projectRoles: Array<{ amount: number; role: RawRole }>;
+  projectRoles: Array<{ membersAmount: number; role: RawRole }>;
   technologies: RawTechnology[];
   answers: RawAnswer[];
   teamMembers: RawTeamMember[];
@@ -34,7 +34,8 @@ export class ProjectMapper {
     const roles = raw.projectRoles.map((projectRole) => {
       return Role.create(
         {
-          membersAmount: projectRole.amount,
+          projectId: raw.id,
+          membersAmount: projectRole.membersAmount,
           name: Slug.createFromText(projectRole.role.name).getValue(),
         },
         projectRole.role.id,
@@ -65,8 +66,8 @@ export class ProjectMapper {
         title: raw.title,
         requirement: Requirement.create({
           content: raw.requirementContent ?? undefined,
-          periodAmount: raw.requirementTimeAmount,
-          periodIdentifier: raw.requirementTimeIdentifier as PeriodIdentifier,
+          periodAmount: raw.requirementPeriodAmount,
+          periodIdentifier: raw.requirementPeriodIdentifier as PeriodIdentifier,
         }).getValue(),
         roles: new ProjectRoleList(roles),
         technologies: new ProjectTechnologyList(technologies),
@@ -89,8 +90,8 @@ export class ProjectMapper {
         title: project.title,
         slug: project.slug.value,
         requirementContent: project.requirement.value.content ?? null,
-        requirementTimeAmount: project.requirement.value.periodAmount,
-        requirementTimeIdentifier: project.requirement.value.periodIdentifier,
+        requirementPeriodAmount: project.requirement.value.periodAmount,
+        requirementPeriodIdentifier: project.requirement.value.periodIdentifier,
         createdAt: project.createdAt,
         updatedAt: project.updatedAt,
       },
