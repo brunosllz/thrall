@@ -19,7 +19,7 @@ import {
 } from '@prisma/client';
 
 type ToDomainRawProps = RawProject & {
-  projectRoles: Array<{ amount: number; role: RawRole }>;
+  projectRoles: Array<{ membersAmount: number; role: RawRole }>;
   technologies: RawTechnology[];
   answers: RawAnswer[];
   teamMembers: RawTeamMember[];
@@ -31,7 +31,7 @@ export class ProjectMapper {
       return Role.create(
         {
           projectId: raw.id,
-          amount: projectRole.amount,
+          amount: projectRole.membersAmount,
           name: Slug.createFromText(projectRole.role.name),
         },
         projectRole.role.id,
@@ -62,8 +62,8 @@ export class ProjectMapper {
         title: raw.title,
         requirements: Requirement.create({
           content: raw.requirementContent ?? undefined,
-          timeAmount: raw.requirementTimeAmount,
-          timeIdentifier: raw.requirementTimeIdentifier as TimeIdentifier,
+          timeAmount: raw.requirementPeriodAmount,
+          timeIdentifier: raw.requirementPeriodIdentifier as TimeIdentifier,
         }),
         roles: new ProjectRoleList(roles),
         technologies: new ProjectTechnologyList(technologies),
@@ -86,8 +86,8 @@ export class ProjectMapper {
         title: project.title,
         slug: project.slug.value,
         requirementContent: project.requirements.value.content ?? null,
-        requirementTimeAmount: project.requirements.value.timeAmount,
-        requirementTimeIdentifier: project.requirements.value.timeIdentifier,
+        requirementPeriodAmount: project.requirements.value.timeAmount,
+        requirementPeriodIdentifier: project.requirements.value.timeIdentifier,
         createdAt: project.createdAt,
         updatedAt: project.updatedAt,
       },

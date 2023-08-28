@@ -20,7 +20,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
         answers: true,
         projectRoles: {
           select: {
-            amount: true,
+            membersAmount: true,
             role: true,
           },
         },
@@ -43,7 +43,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
         answers: true,
         projectRoles: {
           select: {
-            amount: true,
+            membersAmount: true,
             role: true,
           },
         },
@@ -65,7 +65,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
         answers: true,
         projectRoles: {
           select: {
-            amount: true,
+            membersAmount: true,
             role: true,
           },
         },
@@ -106,7 +106,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
             projectRoles: {
               create: {
                 projectId: createdProject.id,
-                amount: role.amount,
+                membersAmount: role.amount,
               },
             },
           },
@@ -116,7 +116,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
             projectRoles: {
               create: {
                 projectId: createdProject.id,
-                amount: role.amount,
+                membersAmount: role.amount,
               },
             },
           },
