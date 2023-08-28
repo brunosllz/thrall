@@ -11,7 +11,7 @@ export function makeFakeUser(override = {} as Overrides, id?: string) {
   const user = User.create(
     {
       name: faker.person.fullName(),
-      slug: faker.internet.userName(),
+      userName: faker.internet.userName(),
       address: {
         city: faker.location.city(),
         country: faker.location.country(),

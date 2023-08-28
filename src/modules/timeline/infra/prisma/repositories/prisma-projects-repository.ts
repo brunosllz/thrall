@@ -140,8 +140,18 @@ export class PrismaProjectsRepository extends ProjectsRepository {
 
     await Promise.all(
       rawTechnologiesItems.map(async (technology) => {
-        await this.prisma.technology.create({
-          data: {
+        await this.prisma.technology.upsert({
+          where: {
+            slug: technology.slug.value,
+          },
+          update: {
+            project: {
+              connect: {
+                id: createdProject.id,
+              },
+            },
+          },
+          create: {
             id: technology.id,
             slug: technology.slug.value,
             project: {

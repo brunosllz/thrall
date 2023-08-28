@@ -7,18 +7,18 @@ export class UserMapper {
     const user = User.create({
       avatarUrl: raw.avatarUrl,
       address: {
-        city: raw.city,
-        country: raw.country,
-        state: raw.state,
+        city: raw.city ?? '',
+        country: raw.country ?? '',
+        state: raw.state ?? '',
       },
-      bio: raw.bio,
+      bio: raw.bio ?? '',
       email: Email.create(raw.email).value as Email,
-      slug: raw.slug,
+      userName: raw.slug ?? '',
       name: raw.name,
-      occupation: raw.occupation,
+      occupation: raw.occupation ?? '',
       socialMedia: {
-        githubLink: raw.githubLink,
-        linkedinLink: raw.linkedinLink,
+        githubLink: raw.githubLink ?? '',
+        linkedinLink: raw.linkedinLink ?? '',
       },
     });
 
@@ -29,7 +29,7 @@ export class UserMapper {
     return {
       id: user.id,
       avatarUrl: user.avatarUrl,
-      slug: user.slug,
+      slug: user.userName,
       bio: user.bio,
       city: user.address.city,
       country: user.address.country,

@@ -2,15 +2,17 @@ import { DomainEvents } from '@common/domain/events/domain-events';
 import { EventHandler } from '@common/domain/events/event-handler';
 import { ProjectsRepository } from '@modules/timeline/application/repositories/projects-repository';
 import { AnswerCreatedEvent } from '@modules/timeline/domain/events/answer-created';
+import { InjectQueue } from '@nestjs/bull';
 import { Injectable } from '@nestjs/common';
+import { Queue } from 'bull';
 
-import { SendNotificationUseCase } from '../application/use-cases/send-notification';
+import { SendNotificationJob } from '../jobs/send-notification-job';
 
 @Injectable()
 export class OnAnswerCreated implements EventHandler {
   constructor(
     private projectsRepository: ProjectsRepository,
-    private sendNotification: SendNotificationUseCase,
+    @InjectQueue('notifications') private notificationQueue: Queue,
   ) {
     this.setupSubscriptions();
   }
@@ -26,14 +28,15 @@ export class OnAnswerCreated implements EventHandler {
     const project = await this.projectsRepository.findById(answer.projectId);
 
     if (project) {
-      await this.sendNotification.execute({
-        authorId: answer.authorId,
-        recipientId: project.authorId,
-        title: `Nova resposta em "${project.title
-          .substring(0, 40)
-          .concat('...')}"`,
-        content: answer.excerpt,
-      });
+      await this.notificationQueue.add(
+        'answer-created',
+        new SendNotificationJob({
+          authorId: answer.authorId,
+          recipientId: project.authorId,
+          title: `Nova resposta em ${project.title}`,
+          content: answer.excerpt,
+        }),
+      );
     }
   }
 }

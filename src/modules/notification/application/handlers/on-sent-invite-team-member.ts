@@ -3,9 +3,9 @@ import { EventHandler } from '@common/domain/events/event-handler';
 import { ProjectsRepository } from '@modules/timeline/application/repositories/projects-repository';
 import { SendInviteTeamMemberEvent } from '@modules/timeline/domain/events/send-invite-team-member';
 
-import { SendNotificationUseCase } from '../application/use-cases/send-notification';
+import { SendNotificationUseCase } from '../use-cases/send-notification';
 
-export class OnSendInviteTeamMember implements EventHandler {
+export class OnSentInviteTeamMember implements EventHandler {
   constructor(
     private projectsRepository: ProjectsRepository,
     private sendNotification: SendNotificationUseCase,

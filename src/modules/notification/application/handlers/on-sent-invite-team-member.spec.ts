@@ -4,9 +4,9 @@ import { InMemoryRolesRepository } from '@modules/timeline/application/repositor
 import { makeFakeProject } from '@test/factories/make-project';
 import { waitFor } from '@test/factories/utils/wait-for';
 
-import { InMemoryNotificationsRepository } from '../application/repositories/in-memory/in-memory-notifications-repository';
-import { SendNotificationUseCase } from '../application/use-cases/send-notification';
-import { OnSendInviteTeamMember } from './on-send-invite-team-member';
+import { InMemoryNotificationsRepository } from '../repositories/in-memory/in-memory-notifications-repository';
+import { SendNotificationUseCase } from '../use-cases/send-notification';
+import { OnSentInviteTeamMember } from './on-sent-invite-team-member';
 
 let notificationsRepository: InMemoryNotificationsRepository;
 let projectsRepository: InMemoryProjectsRepository;
@@ -28,7 +28,7 @@ describe('On send invite team member', () => {
 
     sendNotificationExecuteSpy = jest.spyOn(sendNotificationUseCase, 'execute');
 
-    new OnSendInviteTeamMember(projectsRepository, sendNotificationUseCase);
+    new OnSentInviteTeamMember(projectsRepository, sendNotificationUseCase);
   });
 
   it('should send a notification when send a invite to team member', async () => {

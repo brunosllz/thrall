@@ -35,6 +35,20 @@ export class DomainEvents {
     return this.markedAggregates.find((aggregate) => aggregate.id === id);
   }
 
+  private static dispatch(event: DomainEvent) {
+    const eventClassName: string = event.constructor.name;
+
+    const isEventRegistered = eventClassName in this.handlersMap;
+
+    if (isEventRegistered) {
+      const handlers = this.handlersMap[eventClassName];
+
+      for (const handler of handlers) {
+        handler(event);
+      }
+    }
+  }
+
   public static dispatchEventsForAggregate(id: string) {
     const aggregate = this.findMarkedAggregateByID(id);
 
@@ -64,19 +78,5 @@ export class DomainEvents {
 
   public static clearMarkedAggregates() {
     this.markedAggregates = [];
-  }
-
-  private static dispatch(event: DomainEvent) {
-    const eventClassName: string = event.constructor.name;
-
-    const isEventRegistered = eventClassName in this.handlersMap;
-
-    if (isEventRegistered) {
-      const handlers = this.handlersMap[eventClassName];
-
-      for (const handler of handlers) {
-        handler(event);
-      }
-    }
   }
 }
