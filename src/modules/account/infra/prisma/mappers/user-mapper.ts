@@ -13,7 +13,7 @@ export class UserMapper {
       },
       bio: raw.bio ?? '',
       email: Email.create(raw.email).value as Email,
-      userName: raw.slug ?? '',
+      userName: raw.userName ?? '',
       name: raw.name,
       occupation: raw.occupation ?? '',
       socialMedia: {
@@ -29,7 +29,7 @@ export class UserMapper {
     return {
       id: user.id,
       avatarUrl: user.avatarUrl,
-      slug: user.userName,
+      userName: user.userName,
       bio: user.bio,
       city: user.address.city,
       country: user.address.country,

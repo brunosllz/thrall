@@ -145,7 +145,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
             slug: technology.slug.value,
           },
           update: {
-            project: {
+            projects: {
               connect: {
                 id: createdProject.id,
               },
@@ -154,7 +154,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
           create: {
             id: technology.id,
             slug: technology.slug.value,
-            project: {
+            projects: {
               connect: {
                 id: createdProject.id,
               },

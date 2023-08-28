@@ -42,7 +42,7 @@ interface ProjectDTO {
 type CreateProjectRequest = ProjectDTO;
 
 type CreateProjectResponse = Either<
-  AlreadyExistsError | Result<void>,
+  AlreadyExistsError | Result<any>,
   Result<void>
 >;
 
@@ -90,15 +90,31 @@ export class CreateProjectUseCase {
       const project = projectOrError.getValue();
 
       const createdRoles = roles.map((role) => {
-        return Role.create({
+        const roleOrError = Role.create({
           membersAmount: role.membersAmount,
           projectId: project.id,
           name: Slug.createFromText(role.name).getValue(),
-        }).getValue();
+        });
+
+        if (roleOrError.isFailure) {
+          throw roleOrError.errorValue();
+        }
+
+        const createdRole = roleOrError.getValue();
+
+        return createdRole;
       });
 
       const createdTechnologies = technologies.map((technology) => {
-        return Technology.create(technology.slug).getValue();
+        const technologyOrError = Technology.create(technology.slug);
+
+        if (technologyOrError.isFailure) {
+          throw technologyOrError.errorValue();
+        }
+
+        const createdTechnology = technologyOrError.getValue();
+
+        return createdTechnology;
       });
 
       project.roles = new ProjectRoleList(createdRoles);
@@ -108,7 +124,7 @@ export class CreateProjectUseCase {
 
       return right(Result.ok());
     } catch (error) {
-      return left(Result.fail<void>(error));
+      return left(Result.fail<any>(error));
     }
   }
 }

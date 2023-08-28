@@ -53,7 +53,7 @@ export class ProjectMapper {
           createdAt: teamMember.createdAt,
           permissionType: teamMember.permissionType as PermissionType,
           status: teamMember.status as MemberStatus,
-          updatedAt: teamMember.updatedAt,
+          updatedAt: teamMember.updatedAt ?? undefined,
         },
         teamMember.id,
       ).getValue();
