@@ -20,7 +20,7 @@ export class Requirement {
     this.value = props;
   }
 
-  static create(props: RequirementProps) {
+  static create(props: RequirementProps): Result<Requirement> {
     const guardResult = Guard.againstNullOrUndefinedBulk([
       { argument: props.periodAmount, argumentName: 'periodAmount' },
       { argument: props.periodIdentifier, argumentName: 'periodIdentifier' },

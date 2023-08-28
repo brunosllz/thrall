@@ -15,7 +15,7 @@ export function makeFakeAnswer(override: Overrides = {}, id?: string) {
       ...override,
     },
     id,
-  );
+  ).getValue();
 
   return answer;
 }

@@ -1,7 +1,7 @@
 import { DomainEvents } from '@common/domain/events/domain-events';
-import { AsyncMaybe } from '@common/logic/types/Maybe';
 import { PaginationParams } from '@common/repositories/pagination-params';
 import { Project } from '@modules/timeline/domain/entities/project';
+import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
 
 import { ProjectsRepository } from '../projects-repository';
 import { RolesRepository } from '../roles-repository';
@@ -13,7 +13,19 @@ export class InMemoryProjectsRepository extends ProjectsRepository {
     super();
   }
 
-  async findById(id: string): AsyncMaybe<Project> {
+  async exists({ authorId, slug }: { authorId: string; slug: Slug }) {
+    const hasItem = this.items.find((project) => {
+      return project.authorId === authorId && project.slug.value === slug.value;
+    });
+
+    if (hasItem) {
+      return true;
+    }
+
+    return false;
+  }
+
+  async findById(id: string) {
     const project = this.items.find((project) => project.id === id);
 
     if (!project) {
@@ -31,8 +43,10 @@ export class InMemoryProjectsRepository extends ProjectsRepository {
     return projects;
   }
 
-  async findBySlug(slug: string) {
-    const project = this.items.find((project) => project.slug.value === slug);
+  async findBySlug(slug: string, authorId: string) {
+    const project = this.items.find(
+      (project) => project.slug.value === slug && project.authorId === authorId,
+    );
 
     if (!project) {
       return null;

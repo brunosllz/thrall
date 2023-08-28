@@ -1,4 +1,4 @@
-import { TimeIdentifier } from '@modules/timeline/domain/entities/value-objects/requirement';
+import { PeriodIdentifier } from '@modules/timeline/domain/entities/value-objects/requirement';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -20,17 +20,17 @@ class Requirements {
 
   @IsNotEmpty()
   @IsNumber()
-  timeAmount: number;
+  periodAmount: number;
 
   @IsNotEmpty()
-  @IsEnum(TimeIdentifier)
-  timeIdentifier: TimeIdentifier;
+  @IsEnum(PeriodIdentifier)
+  periodIdentifier: PeriodIdentifier;
 }
 
 class Roles {
   @IsNotEmpty()
   @IsNumber()
-  amount: number;
+  membersAmount: number;
 
   @IsNotEmpty()
   @IsString()
@@ -59,7 +59,7 @@ export class CreateProjectDTO {
   @ValidateNested()
   @Type(() => Requirements)
   @IsObject()
-  requirements: Requirements;
+  requirement: Requirements;
 
   @IsNotEmpty()
   @IsArray()

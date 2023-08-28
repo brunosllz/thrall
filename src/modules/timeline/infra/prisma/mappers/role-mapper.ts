@@ -8,12 +8,11 @@ export class RoleMapper {
   static toDomain(raw: ToDomainRawProps): Role {
     const role = Role.create(
       {
-        amount: raw.amount,
-        name: Slug.createFromText(raw.role.name),
-        projectId: raw.projectId,
+        membersAmount: raw.amount,
+        name: Slug.createFromText(raw.role.name).getValue(),
       },
       raw.role.id,
-    );
+    ).getValue();
 
     return role;
   }

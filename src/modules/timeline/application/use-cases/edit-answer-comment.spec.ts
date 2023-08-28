@@ -17,53 +17,77 @@ describe('Edit a answer comment', () => {
   });
 
   it('should be able edit a answer comment', async () => {
-    const answerComment = makeFakeAnswerComment({
-      authorId: '1',
-    });
+    let errorOccurred = false;
 
-    await answerCommentsRepository.create(answerComment);
+    try {
+      const answerComment = makeFakeAnswerComment({
+        authorId: '1',
+      });
 
-    const result = await sut.execute({
-      answerCommentId: answerComment.id,
-      authorId: '1',
-      content: 'example content',
-    });
+      await answerCommentsRepository.create(answerComment);
 
-    expect(result.isRight()).toBe(true);
-    expect(answerCommentsRepository.items[0]).toMatchObject({
-      content: 'example content',
-    });
+      const result = await sut.execute({
+        answerCommentId: answerComment.id,
+        authorId: '1',
+        content: 'example content',
+      });
+
+      expect(result.isRight()).toBe(true);
+      expect(answerCommentsRepository.items[0]).toMatchObject({
+        content: 'example content',
+      });
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 
   it('should be not able edit a answer comment with non exists id', async () => {
-    const answerComment = makeFakeAnswerComment({
-      authorId: '1',
-    });
+    let errorOccurred = false;
 
-    await answerCommentsRepository.create(answerComment);
+    try {
+      const answerComment = makeFakeAnswerComment({
+        authorId: '1',
+      });
 
-    const result = await sut.execute({
-      answerCommentId: 'non-id',
-      authorId: '1',
-      content: 'content example 2',
-    });
+      await answerCommentsRepository.create(answerComment);
 
-    expect(result.isLeft()).toBe(true);
-    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+      const result = await sut.execute({
+        answerCommentId: 'non-id',
+        authorId: '1',
+        content: 'content example 2',
+      });
+
+      expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 
   it('should be not able edit a answer comment with invalid author id', async () => {
-    const answerComment = makeFakeAnswerComment();
+    let errorOccurred = false;
 
-    await answerCommentsRepository.create(answerComment);
+    try {
+      const answerComment = makeFakeAnswerComment();
 
-    const result = await sut.execute({
-      answerCommentId: answerComment.id,
-      authorId: 'non-id',
-      content: 'content example 2',
-    });
+      await answerCommentsRepository.create(answerComment);
 
-    expect(result.isLeft()).toBe(true);
-    expect(result.value).toBeInstanceOf(NotAllowedError);
+      const result = await sut.execute({
+        answerCommentId: answerComment.id,
+        authorId: 'non-id',
+        content: 'content example 2',
+      });
+
+      expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(NotAllowedError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 });

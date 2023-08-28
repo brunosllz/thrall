@@ -4,6 +4,7 @@ import { Result } from '@common/logic/result';
 import { Optional } from '@common/logic/types/Optional';
 
 import { ExpressProjectInterestEvent } from '../events/express-project-interest';
+import { RejectedInviteTeamMemberEvent } from '../events/rejected-invite-team-member';
 import { SendInviteTeamMemberEvent } from '../events/send-invite-team-member';
 import { Interested } from './interested';
 import { Member, MemberStatus, PermissionType } from './member';
@@ -21,7 +22,7 @@ export interface ProjectProps {
   slug: Slug;
   roles: ProjectRoleList;
   technologies: ProjectTechnologyList;
-  requirements: Requirement;
+  requirement: Requirement;
   interested: ProjectInterestedList;
   teamMembers: TeamMembersList;
   createdAt: Date;
@@ -61,8 +62,8 @@ export class Project extends AggregateRoot<ProjectProps> {
     return this.props.technologies;
   }
 
-  get requirements() {
-    return this.props.requirements;
+  get requirement() {
+    return this.props.requirement;
   }
 
   get interested() {
@@ -102,8 +103,8 @@ export class Project extends AggregateRoot<ProjectProps> {
     this.touch();
   }
 
-  set requirements(requirements: Requirement) {
-    this.props.requirements = requirements;
+  set requirement(requirement: Requirement) {
+    this.props.requirement = requirement;
     this.touch();
   }
 
@@ -154,9 +155,15 @@ export class Project extends AggregateRoot<ProjectProps> {
       return Result.fail<Project>('It is already interested');
     }
 
-    const interested = Interested.create({
+    const interestedOrError = Interested.create({
       recipientId,
     });
+
+    if (interestedOrError.isFailure) {
+      return Result.fail<Project>(interestedOrError.error);
+    }
+
+    const interested = interestedOrError.getValue();
 
     this.interested.add(interested);
 
@@ -165,6 +172,34 @@ export class Project extends AggregateRoot<ProjectProps> {
         project: this,
         recipientId: recipientId,
       }),
+    );
+  }
+
+  acceptInviteTeamMember(memberId: string) {
+    const teamMembers = this.teamMembers.getItems();
+
+    const member = teamMembers.find(
+      (member) => member.recipientId === memberId,
+    );
+
+    if (member) {
+      member.status = MemberStatus.APPROVED;
+    }
+  }
+
+  rejectInviteTeamMember(memberId: string) {
+    const teamMembers = this.teamMembers.getItems();
+
+    const member = teamMembers.find(
+      (member) => member.recipientId === memberId,
+    );
+
+    if (member) {
+      member.status = MemberStatus.REJECTED;
+    }
+
+    this.addDomainEvent(
+      new RejectedInviteTeamMemberEvent({ memberId, projectId: this.id }),
     );
   }
 
@@ -212,7 +247,7 @@ export class Project extends AggregateRoot<ProjectProps> {
     const project = new Project(
       {
         ...props,
-        slug,
+        slug: slug,
         roles: props.roles ?? new ProjectRoleList(),
         technologies: props.technologies ?? new ProjectTechnologyList(),
         interested: props.interested ?? new ProjectInterestedList(),

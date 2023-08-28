@@ -1,6 +1,8 @@
 import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
 import { Either, left, right } from '@common/logic/either';
+import { Result } from '@common/logic/result';
+import { PermissionType } from '@modules/timeline/domain/entities/member';
 import { Injectable } from '@nestjs/common';
 
 import { ProjectsRepository } from '../repositories/projects-repository';
@@ -12,8 +14,8 @@ interface SendInviteProjectTeamMemberRequest {
 }
 
 type SendInviteProjectTeamMemberResponse = Either<
-  ResourceNotFoundError | NotAllowedError,
-  Record<string, never>
+  ResourceNotFoundError | NotAllowedError | Result<void>,
+  Result<void>
 >;
 
 @Injectable()
@@ -25,34 +27,37 @@ export class SendInviteProjectTeamMemberUseCase {
     recipientId,
     ownerId,
   }: SendInviteProjectTeamMemberRequest): Promise<SendInviteProjectTeamMemberResponse> {
-    const project = await this.projectsRepository.findById(projectId);
+    try {
+      const project = await this.projectsRepository.findById(projectId);
 
-    if (!project) {
-      return left(new ResourceNotFoundError());
+      if (!project) {
+        return left(new ResourceNotFoundError());
+      }
+
+      const teamMembers = project.teamMembers.getItems();
+
+      const isMemberOfTeam = teamMembers.find(
+        (member) => member.recipientId === ownerId,
+      );
+
+      if (!isMemberOfTeam) {
+        return left(new NotAllowedError());
+      }
+
+      const hasOwnerPermission =
+        isMemberOfTeam.permissionType === PermissionType.OWNER;
+
+      if (!hasOwnerPermission) {
+        return left(new NotAllowedError());
+      }
+
+      project.sendInviteTeamMember(recipientId, ownerId);
+
+      await this.projectsRepository.save(project);
+
+      return right(Result.ok());
+    } catch (error) {
+      return left(Result.fail<void>(error));
     }
-
-    const teamMembers = project.teamMembers.getItems();
-
-    const isMemberOfTeam = teamMembers.find(
-      (member) => member.recipientId === ownerId,
-    );
-
-    if (!isMemberOfTeam) {
-      return left(new NotAllowedError());
-    }
-
-    const hasOwnerPermission = isMemberOfTeam.permissionType === 'owner';
-
-    if (!hasOwnerPermission) {
-      return left(new NotAllowedError());
-    }
-
-    //TODO: Validate if recipient is already exist
-
-    project.sendInviteTeamMember(recipientId, ownerId);
-
-    await this.projectsRepository.save(project);
-
-    return right({});
   }
 }

@@ -16,7 +16,7 @@ export function makeFakeAnswerComment(
       ...override,
     },
     id,
-  );
+  ).getValue();
 
   return answerComment;
 }

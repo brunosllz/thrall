@@ -12,7 +12,7 @@ export class AnswerMapper {
         updatedAt: raw.updatedAt ?? undefined,
       },
       raw.id,
-    );
+    ).getValue();
 
     return answer;
   }

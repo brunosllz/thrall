@@ -10,7 +10,7 @@ export function makeFakeMember(override = {} as Overrides, id?: string) {
       ...override,
     },
     id,
-  );
+  ).getValue();
 
   return member;
 }

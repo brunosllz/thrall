@@ -47,7 +47,7 @@ export class Guard {
       if (!result.succeeded) return result;
     }
 
-    return { succeeded: true, failed: true };
+    return { succeeded: true, failed: false };
   }
 
   public static isOneOf(

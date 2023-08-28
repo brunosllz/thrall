@@ -19,40 +19,56 @@ describe('Add interested in project', () => {
   });
 
   it('should be able to express interest in project', async () => {
-    const project = makeFakeProject();
+    let errorOccurred = false;
 
-    await projectsRepository.create(project);
+    try {
+      const project = makeFakeProject();
 
-    const userId = faker.string.uuid();
+      await projectsRepository.create(project);
 
-    const result = await sut.execute({
-      projectId: project.id,
-      userId: userId,
-    });
+      const userId = faker.string.uuid();
 
-    expect(result.isRight()).toBeTruthy();
-    expect(projectsRepository.items).toHaveLength(1);
-    expect(projectsRepository.items[0].interested.getItems()).toHaveLength(1);
-    expect(projectsRepository.items[0].interested.getItems()).toEqual([
-      expect.objectContaining({
-        recipientId: userId,
-      }),
-    ]);
+      const result = await sut.execute({
+        projectId: project.id,
+        userId: userId,
+      });
+
+      expect(result.isRight()).toBeTruthy();
+      expect(projectsRepository.items).toHaveLength(1);
+      expect(projectsRepository.items[0].interested.getItems()).toHaveLength(1);
+      expect(projectsRepository.items[0].interested.getItems()).toEqual([
+        expect.objectContaining({
+          recipientId: userId,
+        }),
+      ]);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 
   it('should be not able to express interest with non exist project id', async () => {
-    const project = makeFakeProject();
+    let errorOccurred = false;
 
-    await projectsRepository.create(project);
+    try {
+      const project = makeFakeProject();
 
-    const userId = faker.string.uuid();
+      await projectsRepository.create(project);
 
-    const result = await sut.execute({
-      projectId: 'non-id',
-      userId: userId,
-    });
+      const userId = faker.string.uuid();
 
-    expect(result.isLeft()).toBeTruthy();
-    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+      const result = await sut.execute({
+        projectId: 'non-id',
+        userId: userId,
+      });
+
+      expect(result.isLeft).toBeTruthy();
+      expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 });

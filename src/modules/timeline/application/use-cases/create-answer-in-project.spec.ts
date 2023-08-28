@@ -13,17 +13,24 @@ describe('Create answer in project', () => {
   });
 
   it('should be able to create a answer', async () => {
-    const result = await sut.execute({
-      authorId: '1',
-      projectId: '1',
-      content: faker.lorem.paragraphs(),
-    });
+    let errorOccurred = false;
+    try {
+      const result = await sut.execute({
+        authorId: '1',
+        projectId: '1',
+        content: faker.lorem.paragraphs(),
+      });
 
-    expect(result.isRight()).toBe(true);
-    expect(answerRepository.items).toHaveLength(1);
-    expect(answerRepository.items[0]).toMatchObject({
-      authorId: '1',
-      projectId: '1',
-    });
+      expect(result.isRight()).toBe(true);
+      expect(answerRepository.items).toHaveLength(1);
+      expect(answerRepository.items[0]).toMatchObject({
+        authorId: '1',
+        projectId: '1',
+      });
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 });

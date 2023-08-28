@@ -65,7 +65,7 @@ export class Member extends Entity<MemberProps> {
       { argument: props.recipientId, argumentName: 'recipientId' },
     ]);
 
-    if (guardResult) {
+    if (guardResult.failed) {
       return Result.fail<Member>(guardResult.message);
     }
 

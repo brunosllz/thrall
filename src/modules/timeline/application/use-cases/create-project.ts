@@ -1,72 +1,114 @@
-import { Either, right } from '@common/logic/either';
+import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
+import { Either, left, right } from '@common/logic/either';
+import { Result } from '@common/logic/result';
 import { Role } from '@modules/timeline/domain/entities/role';
 import { Technology } from '@modules/timeline/domain/entities/technology';
 import {
   Requirement,
-  TimeIdentifier,
+  PeriodIdentifier,
 } from '@modules/timeline/domain/entities/value-objects/requirement';
 import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
-import { ProjectRoleList } from '@modules/timeline/domain/entities/watched-list/project-role-list';
-import { ProjectTechnologyList } from '@modules/timeline/domain/entities/watched-list/project-technology-list';
+import { ProjectRoleList } from '@modules/timeline/domain/entities/watched-lists/project-role-list';
+import { ProjectTechnologyList } from '@modules/timeline/domain/entities/watched-lists/project-technology-list';
 import { Injectable } from '@nestjs/common';
 
 import { Project } from '../../domain/entities/project';
 import { ProjectsRepository } from '../repositories/projects-repository';
 
-interface CreateProjectRequest {
+interface RequirementDTO {
+  periodAmount: number;
+  periodIdentifier: PeriodIdentifier;
+  content: string;
+}
+
+interface TechnologyDTO {
+  slug: string;
+}
+
+interface RoleDTO {
+  name: string;
+  membersAmount: number;
+}
+
+interface ProjectDTO {
   authorId: string;
   content: string;
   title: string;
-  roles: Array<{
-    name: string;
-    amount: number;
-  }>;
-  technologies: Array<{ slug: string }>;
-  requirements: {
-    timeAmount: number;
-    timeIdentifier: TimeIdentifier;
-    content: string;
-  };
+  roles: Array<RoleDTO>;
+  technologies: Array<TechnologyDTO>;
+  requirement: RequirementDTO;
 }
 
-type CreateProjectResponse = Either<null, Record<string, never>>;
+type CreateProjectRequest = ProjectDTO;
+
+type CreateProjectResponse = Either<
+  AlreadyExistsError | Result<void>,
+  Result<void>
+>;
 
 @Injectable()
 export class CreateProjectUseCase {
   constructor(private readonly projectsRepository: ProjectsRepository) {}
 
   async execute({
-    content,
-    title,
-    roles,
     authorId,
-    requirements,
+    content,
+    roles,
     technologies,
+    title,
+    ...request
   }: CreateProjectRequest): Promise<CreateProjectResponse> {
-    const project = Project.create({
-      authorId,
-      content,
-      title,
-      requirements: Requirement.create(requirements),
-    });
-
-    const createdRoles = roles.map((role) => {
-      return Role.create({
-        projectId: project.id,
-        amount: role.amount,
-        name: Slug.createFromText(role.name),
+    try {
+      const projectAlreadyExists = await this.projectsRepository.exists({
+        authorId: authorId,
+        slug: Slug.createFromText(title).getValue(),
       });
-    });
 
-    const createdTechnologies = technologies.map((technology) => {
-      return Technology.create(technology.slug);
-    });
+      if (projectAlreadyExists) {
+        return left(new AlreadyExistsError('title'));
+      }
 
-    project.roles = new ProjectRoleList(createdRoles);
-    project.technologies = new ProjectTechnologyList(createdTechnologies);
+      const requirementOrError = Requirement.create(request.requirement);
 
-    await this.projectsRepository.create(project);
+      if (requirementOrError.isFailure) {
+        return left(Result.fail(requirementOrError.error));
+      }
 
-    return right({});
+      const requirement = requirementOrError.getValue();
+
+      const projectOrError = Project.create({
+        authorId,
+        content,
+        title,
+        requirement,
+      });
+
+      if (projectOrError.isFailure) {
+        return left(Result.fail(projectOrError.error));
+      }
+
+      const project = projectOrError.getValue();
+
+      const createdRoles = roles.map((role) => {
+        return Role.create({
+          membersAmount: role.membersAmount,
+          projectId: project.id,
+          name: Slug.createFromText(role.name).getValue(),
+        }).getValue();
+      });
+
+      const createdTechnologies = technologies.map((technology) => {
+        return Technology.create(technology.slug).getValue();
+      });
+
+      project.roles = new ProjectRoleList(createdRoles);
+      project.technologies = new ProjectTechnologyList(createdTechnologies);
+
+      await this.projectsRepository.create(project);
+
+      return right(Result.ok());
+    } catch (error) {
+      return left(Result.fail<void>(error));
+    }
   }
 }

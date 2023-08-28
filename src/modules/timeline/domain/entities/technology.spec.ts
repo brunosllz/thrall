@@ -5,6 +5,6 @@ describe('Technology', () => {
     const technology = Technology.create('react');
 
     expect(technology.isSuccess).toBeTruthy();
-    expect(technology.getValue().slug).toEqual('react');
+    expect(technology.getValue().slug.value).toEqual('react');
   });
 });

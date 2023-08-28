@@ -1,15 +1,19 @@
-import { Member, MemberStatus } from '@modules/timeline/domain/entities/member';
+import {
+  Member,
+  MemberStatus,
+  PermissionType,
+} from '@modules/timeline/domain/entities/member';
 import { Project } from '@modules/timeline/domain/entities/project';
 import { Role } from '@modules/timeline/domain/entities/role';
 import { Technology } from '@modules/timeline/domain/entities/technology';
 import {
+  PeriodIdentifier,
   Requirement,
-  TimeIdentifier,
 } from '@modules/timeline/domain/entities/value-objects/requirement';
 import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
-import { ProjectRoleList } from '@modules/timeline/domain/entities/watched-list/project-role-list';
-import { ProjectTechnologyList } from '@modules/timeline/domain/entities/watched-list/project-technology-list';
-import { TeamMembersList } from '@modules/timeline/domain/entities/watched-list/team-members-list';
+import { ProjectRoleList } from '@modules/timeline/domain/entities/watched-lists/project-role-list';
+import { ProjectTechnologyList } from '@modules/timeline/domain/entities/watched-lists/project-technology-list';
+import { TeamMembersList } from '@modules/timeline/domain/entities/watched-lists/team-members-list';
 import {
   Answer as RawAnswer,
   Project as RawProject,
@@ -30,16 +34,15 @@ export class ProjectMapper {
     const roles = raw.projectRoles.map((projectRole) => {
       return Role.create(
         {
-          projectId: raw.id,
-          amount: projectRole.amount,
-          name: Slug.createFromText(projectRole.role.name),
+          membersAmount: projectRole.amount,
+          name: Slug.createFromText(projectRole.role.name).getValue(),
         },
         projectRole.role.id,
-      );
+      ).getValue();
     });
 
     const technologies = raw.technologies.map((technology) => {
-      return Technology.create(technology.slug, technology.id);
+      return Technology.create(technology.slug, technology.id).getValue();
     });
 
     const teamMembers = raw.teamMembers.map((teamMember) => {
@@ -47,12 +50,12 @@ export class ProjectMapper {
         {
           recipientId: teamMember.recipientId,
           createdAt: teamMember.createdAt,
-          permissionType: teamMember.permissionType,
+          permissionType: teamMember.permissionType as PermissionType,
           status: teamMember.status as MemberStatus,
           updatedAt: teamMember.updatedAt,
         },
         teamMember.id,
-      );
+      ).getValue();
     });
 
     const project = Project.create(
@@ -60,11 +63,11 @@ export class ProjectMapper {
         authorId: raw.authorId,
         content: raw.content,
         title: raw.title,
-        requirements: Requirement.create({
+        requirement: Requirement.create({
           content: raw.requirementContent ?? undefined,
-          timeAmount: raw.requirementTimeAmount,
-          timeIdentifier: raw.requirementTimeIdentifier as TimeIdentifier,
-        }),
+          periodAmount: raw.requirementTimeAmount,
+          periodIdentifier: raw.requirementTimeIdentifier as PeriodIdentifier,
+        }).getValue(),
         roles: new ProjectRoleList(roles),
         technologies: new ProjectTechnologyList(technologies),
         teamMembers: new TeamMembersList(teamMembers),
@@ -72,7 +75,7 @@ export class ProjectMapper {
         updatedAt: raw.updatedAt ?? undefined,
       },
       raw.id,
-    );
+    ).getValue();
 
     return project;
   }
@@ -85,9 +88,9 @@ export class ProjectMapper {
         content: project.content,
         title: project.title,
         slug: project.slug.value,
-        requirementContent: project.requirements.value.content ?? null,
-        requirementTimeAmount: project.requirements.value.timeAmount,
-        requirementTimeIdentifier: project.requirements.value.timeIdentifier,
+        requirementContent: project.requirement.value.content ?? null,
+        requirementTimeAmount: project.requirement.value.periodAmount,
+        requirementTimeIdentifier: project.requirement.value.periodIdentifier,
         createdAt: project.createdAt,
         updatedAt: project.updatedAt,
       },

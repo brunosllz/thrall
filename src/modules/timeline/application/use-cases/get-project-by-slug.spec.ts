@@ -18,30 +18,48 @@ describe('Get project by slug', () => {
   });
 
   it('should be able to get a project by slug', async () => {
-    const project = makeFakeProject({
-      title: 'title example',
-    });
+    let errorOccurred = false;
 
-    await projectsRepository.create(project);
+    try {
+      const project = makeFakeProject({
+        authorId: '1',
+        title: 'title example',
+      });
 
-    const result = await sut.execute({
-      slug: 'title-example',
-    });
+      await projectsRepository.create(project);
 
-    expect(result.isRight()).toBe(true);
-    expect(result.value).toMatchObject({
-      project: expect.objectContaining({
-        title: project.title,
-      }),
-    });
+      const result = await sut.execute({
+        slug: 'title-example',
+        authorId: '1',
+      });
+
+      expect(result.isRight()).toBe(true);
+      expect(result.value).toMatchObject({
+        _value: expect.objectContaining({
+          title: project.title,
+        }),
+      });
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 
   it('should be not able get a project with non exist slug', async () => {
-    const result = await sut.execute({
-      slug: 'non-exist-slug',
-    });
+    let errorOccurred = false;
+    try {
+      const result = await sut.execute({
+        slug: 'non-exist-slug',
+        authorId: '1',
+      });
 
-    expect(result.isLeft()).toBe(true);
-    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+      expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 });

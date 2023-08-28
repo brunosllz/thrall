@@ -16,7 +16,7 @@ export class Slug {
    * @param text {string}
    */
   static createFromText(text: string): Result<Slug> {
-    const guardResult = Guard.againstNullOrUndefined('text', text);
+    const guardResult = Guard.againstNullOrUndefined(text, 'text');
 
     if (guardResult.failed) {
       return Result.fail<Slug>(guardResult.message);

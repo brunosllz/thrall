@@ -82,11 +82,11 @@ model Role {
 }
 
 model ProjectRole {
-  id          String @id @default(uuid())
-  projectId   String
-  roleId      String
-  amount      Int
-  assigneesId User[]
+  id            String @id @default(uuid())
+  projectId     String
+  roleId        String
+  membersAmount Int
+  assigneesId   User[]
 
   project Project @relation(fields: [projectId], references: [id])
   role    Role    @relation(fields: [roleId], references: [id])
@@ -97,15 +97,15 @@ model ProjectRole {
 model Project {
   id String @id @default(uuid())
 
-  authorId                  String
-  title                     String
-  content                   String
-  slug                      String
-  requirementTimeAmount     Int
-  requirementTimeIdentifier TIME_IDENTIFIER
-  requirementContent        String?
-  createdAt                 DateTime        @default(now())
-  updatedAt                 DateTime?       @updatedAt
+  authorId                    String
+  title                       String
+  content                     String
+  slug                        String
+  requirementPeriodAmount     Int
+  requirementPeriodIdentifier TIME_IDENTIFIER
+  requirementContent          String?
+  createdAt                   DateTime        @default(now())
+  updatedAt                   DateTime?       @updatedAt
 
   teamMembers  TeamMember[]
   answers      Answer[]

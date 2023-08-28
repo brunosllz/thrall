@@ -1,4 +1,5 @@
-import { Either, right } from '@common/logic/either';
+import { Either, left, right } from '@common/logic/either';
+import { Result } from '@common/logic/result';
 import { Injectable } from '@nestjs/common';
 
 import { Answer } from '../../domain/entities/answer';
@@ -10,10 +11,7 @@ interface CreateAnswerInProjectRequest {
   content: string;
 }
 
-type CreateAnswerInProjectResponse = Either<
-  Record<string, never>,
-  Record<string, never>
->;
+type CreateAnswerInProjectResponse = Either<Result<void>, Result<void>>;
 
 @Injectable()
 export class CreateAnswerInProjectUseCase {
@@ -24,14 +22,24 @@ export class CreateAnswerInProjectUseCase {
     projectId,
     authorId,
   }: CreateAnswerInProjectRequest): Promise<CreateAnswerInProjectResponse> {
-    const answer = Answer.create({
-      authorId,
-      projectId,
-      content,
-    });
+    try {
+      const answerOrError = Answer.create({
+        authorId,
+        projectId,
+        content,
+      });
 
-    await this.answersRepository.create(answer);
+      if (answerOrError.isFailure) {
+        return left(Result.fail<void>(answerOrError.error));
+      }
 
-    return right({});
+      const answer = answerOrError.getValue();
+
+      await this.answersRepository.create(answer);
+
+      return right(Result.ok());
+    } catch (error) {
+      return left(Result.fail<void>(error));
+    }
   }
 }

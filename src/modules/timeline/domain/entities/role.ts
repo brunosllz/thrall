@@ -7,8 +7,9 @@ import { Slug } from './value-objects/slug';
 
 export interface RoleProps {
   name: Slug;
-  amount: number;
+  membersAmount: number;
   assigneesId: string[];
+  projectId: string;
 }
 
 export class Role extends Entity<RoleProps> {
@@ -16,18 +17,23 @@ export class Role extends Entity<RoleProps> {
     return this.props.name;
   }
 
-  get amount() {
-    return this.props.amount;
+  get membersAmount() {
+    return this.props.membersAmount;
   }
 
   get assigneesId() {
     return this.props.assigneesId;
   }
 
+  get projectId() {
+    return this.props.projectId;
+  }
+
   static create(props: Optional<RoleProps, 'assigneesId'>, id?: string) {
     const guardResult = Guard.againstNullOrUndefinedBulk([
       { argument: props.name, argumentName: 'name' },
-      { argument: props.amount, argumentName: 'amount' },
+      { argument: props.membersAmount, argumentName: 'membersAmount' },
+      { argument: props.projectId, argumentName: 'projectId' },
     ]);
 
     if (guardResult.failed) {
@@ -35,7 +41,10 @@ export class Role extends Entity<RoleProps> {
     }
 
     const role = new Role(
-      { ...props, assigneesId: props.assigneesId ?? [] },
+      {
+        ...props,
+        assigneesId: props.assigneesId ?? [],
+      },
       id,
     );
 
