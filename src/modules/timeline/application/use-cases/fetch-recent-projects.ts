@@ -1,4 +1,5 @@
-import { Either, right } from '@common/logic/either';
+import { Either, left, right } from '@common/logic/either';
+import { Result } from '@common/logic/result';
 import { Project } from '@modules/timeline/domain/entities/project';
 
 import { ProjectsRepository } from '../repositories/projects-repository';
@@ -9,10 +10,8 @@ interface FetchRecentProjectsUseCaseRequest {
 }
 
 type FetchRecentProjectsUseCaseResponse = Either<
-  null,
-  {
-    projects: Project[];
-  }
+  Result<void>,
+  Result<Project[]>
 >;
 
 export class FetchRecentProjectsUseCase {
@@ -22,13 +21,17 @@ export class FetchRecentProjectsUseCase {
     pageSize,
     pageIndex,
   }: FetchRecentProjectsUseCaseRequest): Promise<FetchRecentProjectsUseCaseResponse> {
-    const projects = await this.projectsRepository.findManyRecent({
-      pageIndex,
-      pageSize,
-    });
+    try {
+      const projects = await this.projectsRepository.findManyRecent({
+        pageIndex,
+        pageSize,
+      });
 
-    return right({
-      projects,
-    });
+      return right(Result.ok(projects));
+    } catch (error) {
+      console.log(error);
+
+      return left(Result.fail<void>(error));
+    }
   }
 }

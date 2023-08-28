@@ -17,9 +17,9 @@ const nodeEnv = z.enum(['development', 'production', 'test']);
 const envSchema = z.object({
   NODE_ENV: nodeEnv.default('development'),
   APP_NAME: z.string().default('Thrall'),
-  PORT: z.coerce.number().default(3000),
+  PORT: z.coerce.number().default(3333),
   DATABASE_URL: z.string().url(),
-  JWT_PUBLIC_KEY: z.string(),
+  JWT_SECRET_KEY: z.string(),
 });
 
 const _env = envSchema.safeParse(process.env);

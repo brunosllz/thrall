@@ -12,7 +12,7 @@ export class AnswerCommentMapper {
         updatedAt: raw.updatedAt ?? undefined,
       },
       raw.id,
-    );
+    ).getValue();
 
     return answerComment;
   }

@@ -1,4 +1,5 @@
-import { Either, right } from '@common/logic/either';
+import { Either, left, right } from '@common/logic/either';
+import { Result } from '@common/logic/result';
 import { AnswerComment } from '@modules/timeline/domain/entities/answer-comment';
 
 import { AnswerCommentsRepository } from '../repositories/answer-comments-repository';
@@ -10,10 +11,8 @@ interface FetchAnswerCommentsUseCaseRequest {
 }
 
 type FetchAnswerCommentsUseCaseResponse = Either<
-  null,
-  {
-    answerComments: AnswerComment[];
-  }
+  Result<void>,
+  Result<AnswerComment[]>
 >;
 
 export class FetchAnswerCommentsUseCase {
@@ -24,14 +23,16 @@ export class FetchAnswerCommentsUseCase {
     pageIndex,
     pageSize,
   }: FetchAnswerCommentsUseCaseRequest): Promise<FetchAnswerCommentsUseCaseResponse> {
-    const answerComments =
-      await this.answerCommentsRepository.findManyByAnswerId(answerId, {
-        pageIndex,
-        pageSize,
-      });
+    try {
+      const answerComments =
+        await this.answerCommentsRepository.findManyByAnswerId(answerId, {
+          pageIndex,
+          pageSize,
+        });
 
-    return right({
-      answerComments,
-    });
+      return right(Result.ok(answerComments));
+    } catch (error) {
+      return left(Result.fail<void>(error));
+    }
   }
 }

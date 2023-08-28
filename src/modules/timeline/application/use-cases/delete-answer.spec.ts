@@ -15,28 +15,44 @@ describe('Delete answer', () => {
   });
 
   it('should be able to delete a answer', async () => {
-    const answer = makeFakeAnswer({}, '1');
+    let errorOccurred = false;
 
-    await answerRepository.create(answer);
+    try {
+      const answer = makeFakeAnswer({}, '1');
 
-    const result = await sut.execute({
-      id: '1',
-    });
+      await answerRepository.create(answer);
 
-    expect(result.isRight()).toBe(true);
-    expect(answerRepository.items).toHaveLength(0);
+      const result = await sut.execute({
+        id: '1',
+      });
+
+      expect(result.isRight()).toBe(true);
+      expect(answerRepository.items).toHaveLength(0);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 
   it('should be not able to delete a answer with non exist id', async () => {
-    const answer = makeFakeAnswer({}, '1');
+    let errorOccurred = false;
 
-    await answerRepository.create(answer);
+    try {
+      const answer = makeFakeAnswer({}, '1');
 
-    const result = await sut.execute({
-      id: 'non-exist',
-    });
+      await answerRepository.create(answer);
 
-    expect(result.isLeft()).toBe(true);
-    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+      const result = await sut.execute({
+        id: 'non-exist',
+      });
+
+      expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 });

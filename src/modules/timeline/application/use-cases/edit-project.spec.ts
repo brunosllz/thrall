@@ -21,83 +21,107 @@ describe('Edit a projects', () => {
     sut = new EditProjectUseCase(projectsRepository, rolesRepository);
   });
 
-  it('should be able edit a projects', async () => {
-    const projects = makeFakeProject({
-      authorId: '1',
-    });
+  it('should be able edit a project', async () => {
+    let errorOccurred = false;
 
-    await projectsRepository.create(projects);
+    try {
+      const projects = makeFakeProject({
+        authorId: '1',
+      });
 
-    rolesRepository.items.push(
-      makeFakeRole(
-        {
-          name: Slug.createFromText('devops'),
-          projectId: projects.id,
-          amount: 1,
-        },
-        '1',
-      ),
-    );
+      await projectsRepository.create(projects);
 
-    await sut.execute({
-      projectId: projects.id,
-      authorId: '1',
-      title: 'example title',
-      content: 'example content',
-      roles: [
-        { id: '1', name: 'front-end', amount: 3 },
-        { name: 'back-end', amount: 2 },
-      ],
-    });
+      rolesRepository.items.push(
+        makeFakeRole(
+          {
+            projectId: projects.id,
+            name: Slug.createFromText('devops').getValue(),
+            membersAmount: 1,
+          },
+          '1',
+        ),
+      );
 
-    expect(projectsRepository.items[0]).toMatchObject({
-      title: 'example title',
-      content: 'example content',
-    });
-    expect(projectsRepository.items[0].roles.currentItems).toHaveLength(2);
-    expect(projectsRepository.items[0].roles.currentItems[0]).toMatchObject({
-      name: Slug.createFromText('front end'),
-      amount: 3,
-    });
-    expect(projectsRepository.items[0].roles.currentItems[1]).toMatchObject({
-      name: Slug.createFromText('back end'),
-      amount: 2,
-    });
+      await sut.execute({
+        projectId: projects.id,
+        authorId: '1',
+        title: 'example title',
+        content: 'example content',
+        roles: [
+          { id: '1', name: 'front-end', amount: 3 },
+          { name: 'back-end', amount: 2 },
+        ],
+      });
+
+      expect(projectsRepository.items[0]).toMatchObject({
+        title: 'example title',
+        content: 'example content',
+      });
+      expect(projectsRepository.items[0].roles.currentItems).toHaveLength(2);
+      expect(projectsRepository.items[0].roles.currentItems[0]).toMatchObject({
+        name: Slug.createFromText('front end').getValue(),
+        membersAmount: 3,
+      });
+      expect(projectsRepository.items[0].roles.currentItems[1]).toMatchObject({
+        name: Slug.createFromText('back end').getValue(),
+        membersAmount: 2,
+      });
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 
   it('should be not able edit a projects with non exists id', async () => {
-    const projects = makeFakeProject({
-      authorId: '1',
-    });
+    let errorOccurred = false;
 
-    await projectsRepository.create(projects);
+    try {
+      const projects = makeFakeProject({
+        authorId: '1',
+      });
 
-    const result = await sut.execute({
-      projectId: 'non-id',
-      authorId: '1',
-      title: 'title example',
-      content: 'content example 2',
-      roles: [],
-    });
+      await projectsRepository.create(projects);
 
-    expect(result.isLeft()).toBe(true);
-    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+      const result = await sut.execute({
+        projectId: 'non-id',
+        authorId: '1',
+        title: 'title example',
+        content: 'content example 2',
+        roles: [],
+      });
+
+      expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 
   it('should be not able edit a projects with invalid author id', async () => {
-    const projects = makeFakeProject();
+    let errorOccurred = false;
 
-    await projectsRepository.create(projects);
+    try {
+      const projects = makeFakeProject();
 
-    const result = await sut.execute({
-      projectId: projects.id,
-      authorId: 'non-id',
-      title: 'title example',
-      content: 'content example 2',
-      roles: [],
-    });
+      await projectsRepository.create(projects);
 
-    expect(result.isLeft()).toBe(true);
-    expect(result.value).toBeInstanceOf(NotAllowedError);
+      const result = await sut.execute({
+        projectId: projects.id,
+        authorId: 'non-id',
+        title: 'title example',
+        content: 'content example 2',
+        roles: [],
+      });
+
+      expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(NotAllowedError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 });

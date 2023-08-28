@@ -18,7 +18,7 @@ export class PrismaRolesRepository extends RolesRepository {
       },
       select: {
         projectId: true,
-        amount: true,
+        membersAmount: true,
         role: true,
       },
     });

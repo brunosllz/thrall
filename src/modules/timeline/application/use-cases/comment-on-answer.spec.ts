@@ -21,30 +21,44 @@ describe('Comment on Answer', () => {
   });
 
   it('should be able to comment on answer', async () => {
-    const answer = makeFakeAnswer();
+    let errorOccurred = false;
+    try {
+      const answer = makeFakeAnswer();
 
-    await inMemoryAnswersRepository.create(answer);
+      await inMemoryAnswersRepository.create(answer);
 
-    const result = await sut.execute({
-      answerId: answer.id.toString(),
-      authorId: answer.authorId.toString(),
-      content: 'content example',
-    });
+      const result = await sut.execute({
+        answerId: answer.id.toString(),
+        authorId: answer.authorId.toString(),
+        content: 'content example',
+      });
 
-    expect(result.isRight()).toBe(true);
-    expect(inMemoryAnswerCommentsRepository.items[0].content).toEqual(
-      'content example',
-    );
+      expect(result.isRight()).toBe(true);
+      expect(inMemoryAnswerCommentsRepository.items[0].content).toEqual(
+        'content example',
+      );
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 
   it('should be not able to comment on answer with non exist answer id', async () => {
-    const result = await sut.execute({
-      answerId: 'non-id',
-      authorId: 'non-id',
-      content: 'content example',
-    });
+    let errorOccurred = false;
+    try {
+      const result = await sut.execute({
+        answerId: 'non-id',
+        authorId: 'non-id',
+        content: 'content example',
+      });
 
-    expect(result.isLeft()).toBe(true);
-    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+      expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
   });
 });

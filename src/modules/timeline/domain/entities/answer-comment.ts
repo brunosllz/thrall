@@ -1,3 +1,5 @@
+import { Guard } from '@common/logic/Guard';
+import { Result } from '@common/logic/result';
 import { Optional } from '@common/logic/types/Optional';
 
 import { AnswerCommentCreatedEvent } from '../events/answer-comment-created';
@@ -13,6 +15,17 @@ export class AnswerComment extends Comment<AnswerCommentProps> {
   }
 
   static create(props: Optional<AnswerCommentProps, 'createdAt'>, id?: string) {
+    const resultGuard = Guard.againstNullOrUndefinedBulk([
+      {
+        argument: props.answerId,
+        argumentName: 'answerId',
+      },
+    ]);
+
+    if (resultGuard.failed) {
+      return Result.fail<AnswerComment>(resultGuard.message);
+    }
+
     const answerComment = new AnswerComment(
       {
         ...props,
@@ -29,6 +42,6 @@ export class AnswerComment extends Comment<AnswerCommentProps> {
       );
     }
 
-    return answerComment;
+    return Result.ok<AnswerComment>(answerComment);
   }
 }

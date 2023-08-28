@@ -1,4 +1,4 @@
-import { TimeIdentifier } from '@modules/timeline/domain/entities/value-objects/requirement';
+import { PeriodIdentifier } from '@modules/timeline/domain/entities/value-objects/requirement';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
@@ -32,12 +32,12 @@ describe('ProjectController (e2e)', () => {
     const createProjectBody: CreateProjectDTO = {
       authorId: user.id,
       content: 'content',
-      requirements: {
+      requirement: {
         content: 'content',
-        timeAmount: 1,
-        timeIdentifier: TimeIdentifier.WEEK,
+        periodAmount: 1,
+        periodIdentifier: PeriodIdentifier.WEEK,
       },
-      roles: [{ amount: 1, name: 'role' }],
+      roles: [{ membersAmount: 1, name: 'role' }],
       technologies: [
         {
           slug: 'technology',

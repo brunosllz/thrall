@@ -1,16 +1,19 @@
 import { AggregateRoot } from '@common/domain/entities/aggregate-root';
+import { Guard } from '@common/logic/Guard';
+import { Result } from '@common/logic/result';
 import { Optional } from '@common/logic/types/Optional';
 
 import { ExpressProjectInterestEvent } from '../events/express-project-interest';
+import { RejectedInviteTeamMemberEvent } from '../events/rejected-invite-team-member';
 import { SendInviteTeamMemberEvent } from '../events/send-invite-team-member';
-import { Member, MemberStatus } from './member';
-import { Interested } from './value-objects/interested';
+import { Interested } from './interested';
+import { Member, MemberStatus, PermissionType } from './member';
 import { Requirement } from './value-objects/requirement';
 import { Slug } from './value-objects/slug';
-import { ProjectInterestedList } from './watched-list/project-interested-list';
-import { ProjectRoleList } from './watched-list/project-role-list';
-import { ProjectTechnologyList } from './watched-list/project-technology-list';
-import { TeamMembersList } from './watched-list/team-members-list';
+import { ProjectInterestedList } from './watched-lists/project-interested-list';
+import { ProjectRoleList } from './watched-lists/project-role-list';
+import { ProjectTechnologyList } from './watched-lists/project-technology-list';
+import { TeamMembersList } from './watched-lists/team-members-list';
 
 export interface ProjectProps {
   authorId: string;
@@ -19,7 +22,7 @@ export interface ProjectProps {
   slug: Slug;
   roles: ProjectRoleList;
   technologies: ProjectTechnologyList;
-  requirements: Requirement;
+  requirement: Requirement;
   interested: ProjectInterestedList;
   teamMembers: TeamMembersList;
   createdAt: Date;
@@ -59,8 +62,8 @@ export class Project extends AggregateRoot<ProjectProps> {
     return this.props.technologies;
   }
 
-  get requirements() {
-    return this.props.requirements;
+  get requirement() {
+    return this.props.requirement;
   }
 
   get interested() {
@@ -81,7 +84,7 @@ export class Project extends AggregateRoot<ProjectProps> {
 
   set title(text: string) {
     this.props.title = text;
-    this.props.slug = Slug.createFromText(text);
+    this.props.slug = Slug.createFromText(text).getValue();
     this.touch();
   }
 
@@ -100,8 +103,8 @@ export class Project extends AggregateRoot<ProjectProps> {
     this.touch();
   }
 
-  set requirements(requirements: Requirement) {
-    this.props.requirements = requirements;
+  set requirement(requirement: Requirement) {
+    this.props.requirement = requirement;
     this.touch();
   }
 
@@ -111,12 +114,28 @@ export class Project extends AggregateRoot<ProjectProps> {
   }
 
   sendInviteTeamMember(recipientId: string, senderId: string) {
-    const invitedMember = Member.create({
+    const alreadyAdded = this.teamMembers
+      .getItems()
+      .find((member) => member.recipientId === recipientId);
+
+    const inviteIsPending = alreadyAdded?.status === MemberStatus.PENDING;
+
+    if (alreadyAdded && inviteIsPending) {
+      return Result.fail<Project>('Invite is pending');
+    }
+
+    const memberOrError = Member.create({
       recipientId,
       status: MemberStatus.PENDING,
     });
 
-    this.teamMembers.add(invitedMember);
+    if (memberOrError.isFailure) {
+      return Result.fail<Project>(memberOrError.error);
+    }
+
+    const newMember = memberOrError.getValue();
+
+    this.teamMembers.add(newMember);
 
     this.addDomainEvent(
       new SendInviteTeamMemberEvent({
@@ -128,9 +147,23 @@ export class Project extends AggregateRoot<ProjectProps> {
   }
 
   addInterested(recipientId: string) {
-    const interested = Interested.create({
+    const alreadyExists = this.interested.getItems().find((interested) => {
+      interested.recipientId === recipientId;
+    });
+
+    if (alreadyExists) {
+      return Result.fail<Project>('It is already interested');
+    }
+
+    const interestedOrError = Interested.create({
       recipientId,
     });
+
+    if (interestedOrError.isFailure) {
+      return Result.fail<Project>(interestedOrError.error);
+    }
+
+    const interested = interestedOrError.getValue();
 
     this.interested.add(interested);
 
@@ -139,6 +172,34 @@ export class Project extends AggregateRoot<ProjectProps> {
         project: this,
         recipientId: recipientId,
       }),
+    );
+  }
+
+  acceptInviteTeamMember(memberId: string) {
+    const teamMembers = this.teamMembers.getItems();
+
+    const member = teamMembers.find(
+      (member) => member.recipientId === memberId,
+    );
+
+    if (member) {
+      member.status = MemberStatus.APPROVED;
+    }
+  }
+
+  rejectInviteTeamMember(memberId: string) {
+    const teamMembers = this.teamMembers.getItems();
+
+    const member = teamMembers.find(
+      (member) => member.recipientId === memberId,
+    );
+
+    if (member) {
+      member.status = MemberStatus.REJECTED;
+    }
+
+    this.addDomainEvent(
+      new RejectedInviteTeamMemberEvent({ memberId, projectId: this.id }),
     );
   }
 
@@ -153,27 +214,49 @@ export class Project extends AggregateRoot<ProjectProps> {
     >,
     id?: string,
   ) {
+    const guardResult = Guard.againstNullOrUndefinedBulk([
+      { argument: props.authorId, argumentName: 'authorId' },
+      { argument: props.content, argumentName: 'content' },
+      { argument: props.title, argumentName: 'title' },
+    ]);
+
+    if (guardResult.failed) {
+      return Result.fail<Project>(guardResult.message);
+    }
+
+    const slugOrError = Slug.createFromText(props.title);
+
+    if (slugOrError.isFailure) {
+      return Result.fail<Project>(slugOrError.error);
+    }
+
+    const slug = slugOrError.getValue();
+
+    const MemberOrError = Member.create({
+      recipientId: props.authorId,
+      permissionType: PermissionType.OWNER,
+      status: MemberStatus.APPROVED,
+    });
+
+    if (MemberOrError.isFailure) {
+      return Result.fail<Project>(MemberOrError.error);
+    }
+
+    const ProjectOwner = MemberOrError.getValue();
+
     const project = new Project(
       {
         ...props,
-        slug: Slug.createFromText(props.title),
+        slug: slug,
         roles: props.roles ?? new ProjectRoleList(),
         technologies: props.technologies ?? new ProjectTechnologyList(),
         interested: props.interested ?? new ProjectInterestedList(),
-        teamMembers:
-          props.teamMembers ??
-          new TeamMembersList([
-            Member.create({
-              recipientId: props.authorId,
-              permissionType: 'owner',
-              status: MemberStatus.APPROVED,
-            }),
-          ]),
+        teamMembers: props.teamMembers ?? new TeamMembersList([ProjectOwner]),
         createdAt: props.createdAt ?? new Date(),
       },
       id,
     );
 
-    return project;
+    return Result.ok<Project>(project);
   }
 }

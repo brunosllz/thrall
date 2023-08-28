@@ -5,8 +5,8 @@ import {
   ProjectProps,
 } from '@modules/timeline/domain/entities/project';
 import {
+  PeriodIdentifier,
   Requirement,
-  TimeIdentifier,
 } from '@modules/timeline/domain/entities/value-objects/requirement';
 import { ProjectMapper } from '@modules/timeline/infra/prisma/mappers/project-mapper';
 import { Injectable } from '@nestjs/common';
@@ -14,23 +14,25 @@ import { Injectable } from '@nestjs/common';
 type Overrides = Partial<ProjectProps>;
 
 export function makeFakeProject(override = {} as Overrides, id?: string) {
+  const requirement = Requirement.create({
+    content: faker.lorem.paragraphs(),
+    periodAmount: faker.number.int({
+      max: 10,
+      min: 2,
+    }),
+    periodIdentifier: PeriodIdentifier.WEEK,
+  }).getValue();
+
   const project = Project.create(
     {
       authorId: faker.string.uuid(),
       content: faker.lorem.paragraphs(),
       title: faker.lorem.text(),
-      requirements: Requirement.create({
-        content: faker.lorem.paragraphs(),
-        timeAmount: faker.number.int({
-          max: 10,
-          min: 0,
-        }),
-        timeIdentifier: TimeIdentifier.WEEK,
-      }),
+      requirement,
       ...override,
     },
     id,
-  );
+  ).getValue();
 
   return project;
 }

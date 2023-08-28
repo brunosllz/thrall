@@ -7,13 +7,13 @@ type Overrides = Partial<RoleProps>;
 export function makeFakeRole(override = {} as Overrides, id?: string) {
   const role = Role.create(
     {
-      amount: faker.number.int(),
-      name: Slug.createFromText(faker.person.jobTitle()),
+      membersAmount: faker.number.int(),
+      name: Slug.createFromText(faker.person.jobTitle()).getValue(),
       projectId: faker.string.uuid(),
       ...override,
     },
     id,
-  );
+  ).getValue();
 
   return role;
 }

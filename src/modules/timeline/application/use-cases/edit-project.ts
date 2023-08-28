@@ -1,9 +1,10 @@
 import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
 import { Either, left, right } from '@common/logic/either';
+import { Result } from '@common/logic/result';
 import { Role } from '@modules/timeline/domain/entities/role';
 import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
-import { ProjectRoleList } from '@modules/timeline/domain/entities/watched-list/project-role-list';
+import { ProjectRoleList } from '@modules/timeline/domain/entities/watched-lists/project-role-list';
 import { Injectable } from '@nestjs/common';
 import { NotFoundError } from 'rxjs';
 
@@ -23,8 +24,8 @@ interface EditProjectRequest {
 }
 
 type EditProjectResponse = Either<
-  ResourceNotFoundError | NotFoundError,
-  Record<string, never>
+  ResourceNotFoundError | NotFoundError | Result<void>,
+  Result<void>
 >;
 
 @Injectable()
@@ -41,41 +42,45 @@ export class EditProjectUseCase {
     roles,
     title,
   }: EditProjectRequest): Promise<EditProjectResponse> {
-    const project = await this.projectsRepository.findById(projectId);
+    try {
+      const project = await this.projectsRepository.findById(projectId);
 
-    if (!project) {
-      return left(new ResourceNotFoundError());
-    }
+      if (!project) {
+        return left(new ResourceNotFoundError());
+      }
 
-    if (authorId !== project.authorId) {
-      return left(new NotAllowedError());
-    }
+      if (authorId !== project.authorId) {
+        return left(new NotAllowedError());
+      }
 
-    const currentRoles = await this.rolesRepository.findManyByProjectId(
-      project.id,
-    );
-
-    const projectRolesList = new ProjectRoleList(currentRoles);
-
-    const createdRoles = roles.map((role) => {
-      return Role.create(
-        {
-          amount: role.amount,
-          name: Slug.createFromText(role.name),
-          projectId: project.id,
-        },
-        role.id,
+      const currentRoles = await this.rolesRepository.findManyByProjectId(
+        project.id,
       );
-    });
 
-    projectRolesList.update(createdRoles);
+      const projectRolesList = new ProjectRoleList(currentRoles);
 
-    project.content = content;
-    project.title = title;
-    project.roles = projectRolesList;
+      const createdRoles = roles.map((role) => {
+        return Role.create(
+          {
+            projectId: project.id,
+            membersAmount: role.amount,
+            name: Slug.createFromText(role.name).getValue(),
+          },
+          role.id,
+        ).getValue();
+      });
 
-    await this.projectsRepository.save(project);
+      projectRolesList.update(createdRoles);
 
-    return right({});
+      project.content = content;
+      project.title = title;
+      project.roles = projectRolesList;
+
+      await this.projectsRepository.save(project);
+
+      return right(Result.ok<void>());
+    } catch (error) {
+      return left(Result.fail<void>(error));
+    }
   }
 }

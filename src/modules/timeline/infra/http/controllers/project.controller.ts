@@ -1,3 +1,4 @@
+import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
 import { IsPublic } from '@common/infra/http/auth/is-public';
 import { CreateProjectUseCase } from '@modules/timeline/application/use-cases/create-project';
 import { Body, Controller, Post } from '@nestjs/common';
@@ -11,16 +12,26 @@ export class ProjectController {
   @Post()
   @IsPublic()
   async createProject(@Body() body: CreateProjectDTO) {
-    const { authorId, content, requirements, roles, technologies, title } =
-      body;
+    const { authorId, content, requirement, roles, technologies, title } = body;
 
-    await this.createProjectUseCase.execute({
+    const result = await this.createProjectUseCase.execute({
       authorId,
       content,
-      requirements,
+      requirement,
       roles,
       technologies,
       title,
     });
+
+    if (result.isLeft()) {
+      const error = result.value;
+
+      if (error instanceof AlreadyExistsError) {
+        return {
+          statusCode: 409,
+          message: error.message,
+        };
+      }
+    }
   }
 }
