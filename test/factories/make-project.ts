@@ -3,12 +3,13 @@ import { faker } from '@faker-js/faker';
 import {
   Project,
   ProjectProps,
-} from '@modules/timeline/domain/entities/project';
+  ProjectStatus,
+} from '@modules/project-management/domain/entities/project';
 import {
   PeriodIdentifier,
   Requirement,
-} from '@modules/timeline/domain/entities/value-objects/requirement';
-import { ProjectMapper } from '@modules/timeline/infra/prisma/mappers/project-mapper';
+} from '@modules/project-management/domain/entities/value-objects/requirement';
+import { ProjectMapper } from '@modules/project-management/infra/prisma/mappers/project-mapper';
 import { Injectable } from '@nestjs/common';
 
 type Overrides = Partial<ProjectProps>;
@@ -26,8 +27,10 @@ export function makeFakeProject(override = {} as Overrides, id?: string) {
   const project = Project.create(
     {
       authorId: faker.string.uuid(),
-      content: faker.lorem.paragraphs(),
-      title: faker.lorem.text(),
+      description: faker.lorem.paragraphs(),
+      name: faker.lorem.text(),
+      imageUrl: faker.image.url(),
+      status: ProjectStatus.RECRUITING,
       requirement,
       ...override,
     },

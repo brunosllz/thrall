@@ -1,5 +1,4 @@
 import { PrismaService } from '@common/infra/prisma/prisma.service';
-import { PaginationParams } from '@common/repositories/pagination-params';
 import { ProjectsRepository } from '@modules/project-management/application/repositories/projects-repository';
 import { Project } from '@modules/project-management/domain/entities/project';
 import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
@@ -48,52 +47,6 @@ export class PrismaProjectsRepository extends ProjectsRepository {
     }
 
     return ProjectMapper.toDomain(project);
-  }
-
-  async findBySlug(slug: string) {
-    const project = await this.prisma.project.findFirst({
-      where: { slug },
-      include: {
-        answers: true,
-        projectRoles: {
-          select: {
-            membersAmount: true,
-            role: true,
-          },
-        },
-        teamMembers: true,
-        technologies: true,
-      },
-    });
-
-    if (!project) {
-      return null;
-    }
-
-    return ProjectMapper.toDomain(project);
-  }
-
-  async findManyRecent({ pageIndex, pageSize }: PaginationParams) {
-    const projects = await this.prisma.project.findMany({
-      include: {
-        answers: true,
-        projectRoles: {
-          select: {
-            membersAmount: true,
-            role: true,
-          },
-        },
-        teamMembers: true,
-        technologies: true,
-      },
-      skip: (pageIndex - 1) * pageSize,
-      take: pageIndex * pageSize,
-      orderBy: {
-        createdAt: 'asc',
-      },
-    });
-
-    return projects.map((project) => ProjectMapper.toDomain(project));
   }
 
   async create(project: Project) {
@@ -195,8 +148,8 @@ export class PrismaProjectsRepository extends ProjectsRepository {
         id: rawProject.id,
       },
       data: {
-        content: rawProject.content,
-        title: rawProject.title,
+        description: rawProject.description,
+        name: rawProject.name,
       },
     });
   }

@@ -1,3 +1,5 @@
+import { faker } from '@faker-js/faker';
+import { ProjectStatus } from '@modules/project-management/domain/entities/project';
 import { PeriodIdentifier } from '@modules/project-management/domain/entities/value-objects/requirement';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -31,7 +33,9 @@ describe('ProjectController (e2e)', () => {
 
     const createProjectBody: CreateProjectDTO = {
       authorId: user.id,
-      content: 'content',
+      description: faker.lorem.paragraph(),
+      imageUrl: faker.image.url(),
+      status: ProjectStatus.RECRUITING,
       requirement: {
         content: 'content',
         periodAmount: 1,
@@ -43,7 +47,7 @@ describe('ProjectController (e2e)', () => {
           slug: 'technology',
         },
       ],
-      title: 'title',
+      name: 'Dev Xperience',
     };
 
     await request(app.getHttpServer())

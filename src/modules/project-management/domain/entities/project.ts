@@ -62,6 +62,14 @@ export class Project extends AggregateRoot<ProjectProps> {
     return this.props.slug;
   }
 
+  get imageUrl() {
+    return this.props.imageUrl;
+  }
+
+  get status() {
+    return this.props.status;
+  }
+
   get roles() {
     return this.props.roles;
   }

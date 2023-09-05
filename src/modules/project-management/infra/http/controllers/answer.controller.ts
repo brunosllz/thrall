@@ -1,4 +1,4 @@
-import { CreateAnswerInProjectUseCase } from '@modules/project-management/application/use-cases/create-answer-in-project';
+import { CreateAnswerInProjectUseCase } from '@modules/project-management/application/use-cases/commands/create-answer-in-project';
 import { Body, Controller, Post } from '@nestjs/common';
 
 import { CreateAnswerDTO } from '../dto/create-answer-dto';

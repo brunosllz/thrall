@@ -1,6 +1,6 @@
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
 import { Result } from '@common/logic/result';
-import { CreateProjectUseCase } from '@modules/project-management/application/use-cases/create-project';
+import { CreateProjectUseCase } from '@modules/project-management/application/use-cases/commands/create-project';
 import { Body, Controller, Post } from '@nestjs/common';
 
 import { CreateProjectDTO } from '../dto/create-project-dto';
@@ -11,15 +11,26 @@ export class ProjectController {
 
   @Post()
   async createProject(@Body() body: CreateProjectDTO) {
-    const { authorId, content, requirement, roles, technologies, title } = body;
-
-    const result = await this.createProjectUseCase.execute({
+    const {
       authorId,
-      content,
+      description,
       requirement,
       roles,
       technologies,
-      title,
+      name,
+      status,
+      imageUrl,
+    } = body;
+
+    const result = await this.createProjectUseCase.execute({
+      authorId,
+      name,
+      requirement,
+      roles,
+      technologies,
+      description,
+      status,
+      imageUrl,
     });
 
     if (result.isLeft()) {

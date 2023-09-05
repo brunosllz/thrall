@@ -1,5 +1,5 @@
-import { InMemoryProjectsRepository } from '@modules/timeline/application/repositories/in-memory/in-memory-projects-repository';
-import { InMemoryRolesRepository } from '@modules/timeline/application/repositories/in-memory/in-memory-roles-repository';
+import { InMemoryProjectsRepository } from '@modules/project-management/application/repositories/in-memory/in-memory-projects-repository';
+import { InMemoryRolesRepository } from '@modules/project-management/application/repositories/in-memory/in-memory-roles-repository';
 
 import { makeFakeProject } from '@test/factories/make-project';
 import { waitFor } from '@test/factories/utils/wait-for';

@@ -42,11 +42,19 @@ model Notification {
   recipientIdToUser User      @relation("NotificationRecipientIdToUser", fields: [recipientId], references: [id])
 }
 
+enum PROJECT_STATUS {
+  draft
+  recruiting
+  closed
+}
+
 model Project {
   id                          String            @id @default(uuid())
   authorId                    String
-  title                       String
-  content                     String
+  name                        String
+  description                 String
+  status                      PROJECT_STATUS
+  imageUrl                    String
   slug                        String
   createdAt                   DateTime          @default(now())
   updatedAt                   DateTime?         @updatedAt

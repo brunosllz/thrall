@@ -1,6 +1,9 @@
 import { faker } from '@faker-js/faker';
-import { Role, RoleProps } from '@modules/timeline/domain/entities/role';
-import { Slug } from '@modules/timeline/domain/entities/value-objects/slug';
+import {
+  Role,
+  RoleProps,
+} from '@modules/project-management/domain/entities/role';
+import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
 
 type Overrides = Partial<RoleProps>;
 

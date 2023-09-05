@@ -1,7 +1,7 @@
 import { DomainEvents } from '@common/domain/events/domain-events';
 import { EventHandler } from '@common/domain/events/event-handler';
-import { ProjectsRepository } from '@modules/timeline/application/repositories/projects-repository';
-import { AnswerCreatedEvent } from '@modules/timeline/domain/events/answer-created';
+import { ProjectsRepository } from '@modules/project-management/application/repositories/projects-repository';
+import { AnswerCreatedEvent } from '@modules/project-management/domain/events/answer-created';
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bull';
@@ -33,7 +33,7 @@ export class OnAnswerCreated implements EventHandler {
         new SendNotificationJob({
           authorId: answer.authorId,
           recipientId: project.authorId,
-          title: `Nova resposta em ${project.title}`,
+          title: `Nova resposta em ${project.name}`,
           content: answer.excerpt,
         }),
       );

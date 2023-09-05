@@ -3,7 +3,10 @@ import {
   MemberStatus,
   PermissionType,
 } from '@modules/project-management/domain/entities/member';
-import { Project } from '@modules/project-management/domain/entities/project';
+import {
+  Project,
+  ProjectStatus,
+} from '@modules/project-management/domain/entities/project';
 import { Role } from '@modules/project-management/domain/entities/role';
 import { Technology } from '@modules/project-management/domain/entities/technology';
 import {
@@ -62,8 +65,10 @@ export class ProjectMapper {
     const project = Project.create(
       {
         authorId: raw.authorId,
-        content: raw.content,
-        title: raw.title,
+        description: raw.description,
+        name: raw.name,
+        imageUrl: raw.imageUrl,
+        status: raw.status as ProjectStatus,
         requirement: Requirement.create({
           content: raw.requirementContent ?? undefined,
           periodAmount: raw.requirementPeriodAmount,
@@ -86,8 +91,10 @@ export class ProjectMapper {
       rawProject: {
         id: project.id,
         authorId: project.authorId,
-        content: project.content,
-        title: project.title,
+        name: project.name,
+        description: project.description,
+        imageUrl: project.imageUrl,
+        status: project.status,
         slug: project.slug.value,
         requirementContent: project.requirement.value.content ?? null,
         requirementPeriodAmount: project.requirement.value.periodAmount,

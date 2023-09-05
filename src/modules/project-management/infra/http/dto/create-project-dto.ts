@@ -1,3 +1,4 @@
+import { ProjectStatus } from '@modules/project-management/domain/entities/project';
 import { PeriodIdentifier } from '@modules/project-management/domain/entities/value-objects/requirement';
 import { Type } from 'class-transformer';
 import {
@@ -50,16 +51,24 @@ export class CreateProjectDTO {
 
   @IsNotEmpty()
   @IsString()
-  title: string;
+  name: string;
 
   @IsNotEmpty()
   @IsString()
-  content: string;
+  description: string;
 
   @ValidateNested()
   @Type(() => Requirements)
   @IsObject()
   requirement: Requirements;
+
+  @IsNotEmpty()
+  @IsString()
+  imageUrl: string;
+
+  @IsNotEmpty()
+  @IsEnum(ProjectStatus)
+  status: ProjectStatus;
 
   @IsNotEmpty()
   @IsArray()
