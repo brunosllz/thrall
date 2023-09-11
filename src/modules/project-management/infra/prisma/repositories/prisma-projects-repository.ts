@@ -5,7 +5,7 @@ import { Slug } from '@modules/project-management/domain/entities/value-objects/
 import { Injectable } from '@nestjs/common';
 import { MEMBER_STATUS } from '@prisma/client';
 
-import { ProjectMapper } from '../mappers/project-mapper';
+import { ProjectMapper } from './mappers/project-mapper';
 
 @Injectable()
 export class PrismaProjectsRepository extends ProjectsRepository {
