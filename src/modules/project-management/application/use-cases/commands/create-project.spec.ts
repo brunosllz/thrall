@@ -1,7 +1,10 @@
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
 import { faker } from '@faker-js/faker';
 import { ProjectStatus } from '@modules/project-management/domain/entities/project';
-import { PeriodIdentifier } from '@modules/project-management/domain/entities/value-objects/requirement';
+import {
+  MeetingType,
+  WEEK_DAYS,
+} from '@modules/project-management/domain/entities/value-objects/meeting';
 import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
 
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
@@ -39,11 +42,12 @@ describe('Create a projects', () => {
             name: 'devops',
           },
         ],
-        requirement: {
-          content: faker.lorem.paragraphs(),
-          periodAmount: 2,
-          periodIdentifier: PeriodIdentifier.WEEK,
+        meeting: {
+          date: WEEK_DAYS.SUNDAY,
+          occurredTime: '15:00',
+          type: MeetingType.WEEKLY,
         },
+        requirements: faker.lorem.paragraphs(),
         technologies: [{ slug: 'react' }, { slug: 'react native' }],
       });
 
@@ -72,9 +76,10 @@ describe('Create a projects', () => {
           slug: Slug.createFromText('react native').getValue(),
         }),
       ]);
-      expect(projectsRepository.items[0].requirement.value).toMatchObject({
-        periodAmount: 2,
-        periodIdentifier: PeriodIdentifier.WEEK,
+      expect(projectsRepository.items[0].meeting.value).toMatchObject({
+        date: WEEK_DAYS.SUNDAY,
+        occurredTime: '15:00',
+        type: MeetingType.WEEKLY,
       });
     } catch (error) {
       errorOccurred = true;
@@ -102,11 +107,12 @@ describe('Create a projects', () => {
             name: 'devops',
           },
         ],
-        requirement: {
-          content: faker.lorem.paragraphs(),
-          periodAmount: 2,
-          periodIdentifier: PeriodIdentifier.WEEK,
+        meeting: {
+          date: WEEK_DAYS.SUNDAY,
+          occurredTime: '15:00',
+          type: MeetingType.WEEKLY,
         },
+        requirements: faker.lorem.paragraphs(),
         technologies: [{ slug: 'react' }, { slug: 'react native' }],
       });
 
@@ -126,11 +132,12 @@ describe('Create a projects', () => {
             name: 'devops',
           },
         ],
-        requirement: {
-          content: faker.lorem.paragraphs(),
-          periodAmount: 2,
-          periodIdentifier: PeriodIdentifier.WEEK,
+        meeting: {
+          date: WEEK_DAYS.SUNDAY,
+          occurredTime: '15:00',
+          type: MeetingType.WEEKLY,
         },
+        requirements: faker.lorem.paragraphs(),
         technologies: [{ slug: 'react' }, { slug: 'react native' }],
       });
 

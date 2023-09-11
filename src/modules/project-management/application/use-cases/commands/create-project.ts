@@ -1,48 +1,18 @@
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
 import { Either, left, right } from '@common/logic/either';
 import { Result } from '@common/logic/result';
-import {
-  Project,
-  ProjectStatus,
-} from '@modules/project-management/domain/entities/project';
+import { Project } from '@modules/project-management/domain/entities/project';
 import { Role } from '@modules/project-management/domain/entities/role';
 import { Technology } from '@modules/project-management/domain/entities/technology';
-import {
-  Requirement,
-  PeriodIdentifier,
-} from '@modules/project-management/domain/entities/value-objects/requirement';
+import { Content } from '@modules/project-management/domain/entities/value-objects/content';
+import { Meeting } from '@modules/project-management/domain/entities/value-objects/meeting';
 import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
 import { ProjectRoleList } from '@modules/project-management/domain/entities/watched-lists/project-role-list';
 import { ProjectTechnologyList } from '@modules/project-management/domain/entities/watched-lists/project-technology-list';
 import { Injectable } from '@nestjs/common';
 
 import { ProjectsRepository } from '../../repositories/projects-repository';
-
-interface RequirementDTO {
-  periodAmount: number;
-  periodIdentifier: PeriodIdentifier;
-  content: string;
-}
-
-interface TechnologyDTO {
-  slug: string;
-}
-
-interface RoleDTO {
-  name: string;
-  membersAmount: number;
-}
-
-interface ProjectDTO {
-  authorId: string;
-  description: string;
-  status: ProjectStatus;
-  imageUrl: string;
-  name: string;
-  roles: Array<RoleDTO>;
-  technologies: Array<TechnologyDTO>;
-  requirement: RequirementDTO;
-}
+import { ProjectDTO } from './dtos/project-dto';
 
 type CreateProjectRequest = ProjectDTO;
 
@@ -63,6 +33,7 @@ export class CreateProjectUseCase {
     status,
     technologies,
     description,
+    requirements,
     ...request
   }: CreateProjectRequest): Promise<CreateProjectResponse> {
     try {
@@ -75,21 +46,22 @@ export class CreateProjectUseCase {
         return left(new AlreadyExistsError('title'));
       }
 
-      const requirementOrError = Requirement.create(request.requirement);
+      const meetingOrError = Meeting.create(request.meeting);
 
-      if (requirementOrError.isFailure) {
-        return left(Result.fail(requirementOrError.error));
+      if (meetingOrError.isFailure) {
+        return left(Result.fail(meetingOrError.error));
       }
 
-      const requirement = requirementOrError.getValue();
+      const meeting = meetingOrError.getValue();
 
       const projectOrError = Project.create({
         authorId,
-        description,
+        description: new Content(description),
         name,
         imageUrl,
         status,
-        requirement,
+        meeting,
+        requirements: new Content(requirements),
       });
 
       if (projectOrError.isFailure) {

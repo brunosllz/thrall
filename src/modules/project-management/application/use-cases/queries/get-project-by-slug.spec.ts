@@ -2,19 +2,22 @@ import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-
 
 import { makeFakeProject } from '@test/factories/make-project';
 
+import { InMemoryProjectsDAO } from '../../dao/in-memory/in-memory-projects-dao';
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
 import { InMemoryRolesRepository } from '../../repositories/in-memory/in-memory-roles-repository';
 import { GetProjectBySlugUseCase } from './get-project-by-slug';
 
-let rolesRepository: InMemoryRolesRepository;
+let projectsDAO: InMemoryProjectsDAO;
 let projectsRepository: InMemoryProjectsRepository;
+let rolesRepository: InMemoryRolesRepository;
 let sut: GetProjectBySlugUseCase;
 
 describe('Get project by slug', () => {
   beforeEach(() => {
     rolesRepository = new InMemoryRolesRepository();
     projectsRepository = new InMemoryProjectsRepository(rolesRepository);
-    sut = new GetProjectBySlugUseCase(projectsRepository);
+    projectsDAO = new InMemoryProjectsDAO(projectsRepository);
+    sut = new GetProjectBySlugUseCase(projectsDAO);
   });
 
   it('should be able to get a project by slug', async () => {

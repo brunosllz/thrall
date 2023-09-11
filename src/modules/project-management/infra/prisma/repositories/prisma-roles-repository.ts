@@ -3,7 +3,7 @@ import { RolesRepository } from '@modules/project-management/application/reposit
 import { Role } from '@modules/project-management/domain/entities/role';
 import { Injectable } from '@nestjs/common';
 
-import { RoleMapper } from '../mappers/role-mapper';
+import { RoleMapper } from './mappers/role-mapper';
 
 @Injectable()
 export class PrismaRolesRepository extends RolesRepository {

@@ -48,24 +48,32 @@ enum PROJECT_STATUS {
   closed
 }
 
+enum MEETING_TYPE {
+  daily
+  weekly
+  mothly
+}
+
 model Project {
-  id                          String            @id @default(uuid())
-  authorId                    String
-  name                        String
-  description                 String
-  status                      PROJECT_STATUS
-  imageUrl                    String
-  slug                        String
-  createdAt                   DateTime          @default(now())
-  updatedAt                   DateTime?         @updatedAt
-  requirementPeriodAmount     Int
-  requirementContent          String?
-  requirementPeriodIdentifier PERIOD_IDENTIFIER
-  answers                     Answer[]
-  users                       User              @relation(fields: [authorId], references: [id])
-  projectRoles                ProjectRole[]
-  teamMembers                 TeamMember[]
-  technologies                Technology[]
+  id                  String         @id @default(uuid())
+  authorId            String
+  name                String
+  description         String
+  status              PROJECT_STATUS
+  imageUrl            String
+  slug                String
+  requirements        String
+  meetingType         MEETING_TYPE
+  meetingDate         String?
+  meetingOccurredTime String
+
+  answers      Answer[]
+  users        User          @relation(fields: [authorId], references: [id])
+  projectRoles ProjectRole[]
+  teamMembers  TeamMember[]
+  technologies Technology[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime?     @updatedAt
 
   @@unique([authorId, slug])
 }
@@ -172,10 +180,4 @@ enum MEMBER_STATUS {
   pending
   rejected
   approved
-}
-
-enum PERIOD_IDENTIFIER {
-  day
-  week
-  month
 }

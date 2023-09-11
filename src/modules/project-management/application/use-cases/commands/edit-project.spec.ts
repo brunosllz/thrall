@@ -54,8 +54,10 @@ describe('Edit a projects', () => {
       });
 
       expect(projectsRepository.items[0]).toMatchObject({
-        title: 'example title',
-        content: 'example content',
+        name: 'example title',
+        description: {
+          value: 'example content',
+        },
       });
       expect(projectsRepository.items[0].roles.currentItems).toHaveLength(2);
       expect(projectsRepository.items[0].roles.currentItems[0]).toMatchObject({

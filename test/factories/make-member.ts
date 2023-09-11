@@ -1,5 +1,8 @@
 import { faker } from '@faker-js/faker';
-import { Member, MemberProps } from '@modules/project-management/domain/entities/member';
+import {
+  Member,
+  MemberProps,
+} from '@modules/project-management/domain/entities/member';
 
 type Overrides = Partial<MemberProps>;
 

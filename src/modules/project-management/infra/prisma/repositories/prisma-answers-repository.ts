@@ -5,7 +5,7 @@ import { AnswersRepository } from '@modules/project-management/application/repos
 import { Answer } from '@modules/project-management/domain/entities/answer';
 import { Injectable } from '@nestjs/common';
 
-import { AnswerMapper } from '../mappers/answer-mapper';
+import { AnswerMapper } from './mappers/answer-mapper';
 
 @Injectable()
 export class PrismaAnswersRepository extends AnswersRepository {

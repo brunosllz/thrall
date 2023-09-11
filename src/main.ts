@@ -16,7 +16,7 @@ async function bootstrap() {
   const { httpAdapter } = app.get(HttpAdapterHost);
 
   app.enableCors({
-    origin: true,
+    origin: '*',
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders:

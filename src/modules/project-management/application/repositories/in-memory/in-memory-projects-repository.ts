@@ -1,5 +1,4 @@
 import { DomainEvents } from '@common/domain/events/domain-events';
-import { PaginationParams } from '@common/repositories/pagination-params';
 import { Project } from '@modules/project-management/domain/entities/project';
 import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
 
@@ -27,26 +26,6 @@ export class InMemoryProjectsRepository extends ProjectsRepository {
 
   async findById(id: string) {
     const project = this.items.find((project) => project.id === id);
-
-    if (!project) {
-      return null;
-    }
-
-    return project;
-  }
-
-  async findManyRecent({ pageIndex, pageSize }: PaginationParams) {
-    const projects = this.items
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .slice((pageIndex - 1) * pageSize, pageIndex * pageSize);
-
-    return projects;
-  }
-
-  async findBySlug(slug: string, authorId: string) {
-    const project = this.items.find(
-      (project) => project.slug.value === slug && project.authorId === authorId,
-    );
 
     if (!project) {
       return null;

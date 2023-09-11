@@ -1,34 +1,27 @@
+import { MeetingDTO } from '@modules/project-management/application/use-cases/commands/dtos/meeting-dto';
+import { ProjectDTO } from '@modules/project-management/application/use-cases/commands/dtos/project-dto';
+import { RoleDTO } from '@modules/project-management/application/use-cases/commands/dtos/role-dto';
+import { TechnologyDTO } from '@modules/project-management/application/use-cases/commands/dtos/technology-dto';
 import { ProjectStatus } from '@modules/project-management/domain/entities/project';
-import { PeriodIdentifier } from '@modules/project-management/domain/entities/value-objects/requirement';
+import {
+  MeetingType,
+  WEEK_DAYS,
+} from '@modules/project-management/domain/entities/value-objects/meeting';
 import { Type } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
   IsNotEmpty,
+  IsNotEmptyObject,
   IsNumber,
-  IsObject,
   IsOptional,
   IsString,
   IsUUID,
+  IsUrl,
   ValidateNested,
 } from 'class-validator';
 
-class Requirements {
-  @IsNotEmpty()
-  @IsString()
-  @IsOptional()
-  content: string;
-
-  @IsNotEmpty()
-  @IsNumber()
-  periodAmount: number;
-
-  @IsNotEmpty()
-  @IsEnum(PeriodIdentifier)
-  periodIdentifier: PeriodIdentifier;
-}
-
-class Roles {
+class Roles implements RoleDTO {
   @IsNotEmpty()
   @IsNumber()
   membersAmount: number;
@@ -38,13 +31,28 @@ class Roles {
   name: string;
 }
 
-class Technologies {
+class Technologies implements TechnologyDTO {
   @IsNotEmpty()
   @IsString()
   slug: string;
 }
 
-export class CreateProjectDTO {
+class Meeting implements MeetingDTO {
+  @IsNotEmpty()
+  @IsString()
+  occurredTime: string;
+
+  @IsNotEmpty()
+  @IsEnum(MeetingType)
+  type: MeetingType;
+
+  @IsOptional()
+  @IsNumber()
+  @IsEnum(WEEK_DAYS)
+  date: string | WEEK_DAYS;
+}
+
+export class CreateProjectDTO implements ProjectDTO {
   @IsUUID()
   @IsNotEmpty()
   authorId: string;
@@ -57,13 +65,13 @@ export class CreateProjectDTO {
   @IsString()
   description: string;
 
-  @ValidateNested()
-  @Type(() => Requirements)
-  @IsObject()
-  requirement: Requirements;
+  @IsNotEmpty()
+  @IsString()
+  requirements: string;
 
   @IsNotEmpty()
   @IsString()
+  @IsUrl()
   imageUrl: string;
 
   @IsNotEmpty()
@@ -72,11 +80,17 @@ export class CreateProjectDTO {
 
   @IsNotEmpty()
   @IsArray()
+  @ValidateNested()
   @Type(() => Roles)
   roles: Array<Roles>;
 
   @IsNotEmpty()
   @IsArray()
+  @ValidateNested()
   @Type(() => Technologies)
   technologies: Array<Technologies>;
+
+  @IsNotEmptyObject()
+  @ValidateNested()
+  meeting: Meeting;
 }

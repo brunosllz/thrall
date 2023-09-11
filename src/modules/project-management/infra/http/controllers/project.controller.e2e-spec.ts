@@ -1,6 +1,9 @@
 import { faker } from '@faker-js/faker';
 import { ProjectStatus } from '@modules/project-management/domain/entities/project';
-import { PeriodIdentifier } from '@modules/project-management/domain/entities/value-objects/requirement';
+import {
+  MeetingType,
+  WEEK_DAYS,
+} from '@modules/project-management/domain/entities/value-objects/meeting';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
@@ -36,11 +39,7 @@ describe('ProjectController (e2e)', () => {
       description: faker.lorem.paragraph(),
       imageUrl: faker.image.url(),
       status: ProjectStatus.RECRUITING,
-      requirement: {
-        content: 'content',
-        periodAmount: 1,
-        periodIdentifier: PeriodIdentifier.WEEK,
-      },
+      requirements: faker.lorem.paragraph(),
       roles: [{ membersAmount: 1, name: 'role' }],
       technologies: [
         {
@@ -48,6 +47,11 @@ describe('ProjectController (e2e)', () => {
         },
       ],
       name: 'Dev Xperience',
+      meeting: {
+        date: WEEK_DAYS.SUNDAY,
+        occurredTime: '10:00',
+        type: MeetingType.WEEKLY,
+      },
     };
 
     await request(app.getHttpServer())

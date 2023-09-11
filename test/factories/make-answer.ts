@@ -4,7 +4,7 @@ import {
   Answer,
   AnswerProps,
 } from '@modules/project-management/domain/entities/answer';
-import { AnswerMapper } from '@modules/project-management/infra/prisma/mappers/answer-mapper';
+import { AnswerMapper } from '@modules/project-management/infra/prisma/repositories/mappers/answer-mapper';
 import { Injectable } from '@nestjs/common';
 
 type Overrides = Partial<AnswerProps>;

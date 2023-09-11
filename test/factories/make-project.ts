@@ -5,33 +5,31 @@ import {
   ProjectProps,
   ProjectStatus,
 } from '@modules/project-management/domain/entities/project';
+import { Content } from '@modules/project-management/domain/entities/value-objects/content';
 import {
-  PeriodIdentifier,
-  Requirement,
-} from '@modules/project-management/domain/entities/value-objects/requirement';
-import { ProjectMapper } from '@modules/project-management/infra/prisma/mappers/project-mapper';
+  Meeting,
+  MeetingType,
+  WEEK_DAYS,
+} from '@modules/project-management/domain/entities/value-objects/meeting';
+import { ProjectMapper } from '@modules/project-management/infra/prisma/repositories/mappers/project-mapper';
 import { Injectable } from '@nestjs/common';
 
 type Overrides = Partial<ProjectProps>;
 
 export function makeFakeProject(override = {} as Overrides, id?: string) {
-  const requirement = Requirement.create({
-    content: faker.lorem.paragraphs(),
-    periodAmount: faker.number.int({
-      max: 10,
-      min: 2,
-    }),
-    periodIdentifier: PeriodIdentifier.WEEK,
-  }).getValue();
-
   const project = Project.create(
     {
       authorId: faker.string.uuid(),
-      description: faker.lorem.paragraphs(),
+      description: new Content(faker.lorem.paragraphs()),
       name: faker.lorem.text(),
       imageUrl: faker.image.url(),
       status: ProjectStatus.RECRUITING,
-      requirement,
+      meeting: Meeting.create({
+        occurredTime: '13:00',
+        type: MeetingType.WEEKLY,
+        date: WEEK_DAYS.SUNDAY,
+      }).getValue(),
+      requirements: new Content(faker.lorem.paragraphs()),
       ...override,
     },
     id,

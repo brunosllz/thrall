@@ -3,6 +3,7 @@ import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-
 import { Either, left, right } from '@common/logic/either';
 import { Result } from '@common/logic/result';
 import { Role } from '@modules/project-management/domain/entities/role';
+import { Content } from '@modules/project-management/domain/entities/value-objects/content';
 import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
 import { ProjectRoleList } from '@modules/project-management/domain/entities/watched-lists/project-role-list';
 import { Injectable } from '@nestjs/common';
@@ -72,7 +73,7 @@ export class EditProjectUseCase {
 
       projectRolesList.update(createdRoles);
 
-      project.description = description;
+      project.description = new Content(description);
       project.name = name;
       project.roles = projectRolesList;
 

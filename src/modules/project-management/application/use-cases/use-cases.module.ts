@@ -3,10 +3,19 @@ import { Module } from '@nestjs/common';
 
 import { CreateAnswerInProjectUseCase } from './commands/create-answer-in-project';
 import { CreateProjectUseCase } from './commands/create-project';
+import { FetchProjectsByUserIdUseCase } from './queries/fetch-projects-by-user-id';
 
 @Module({
   imports: [PrismaDatabaseModule],
-  providers: [CreateProjectUseCase, CreateAnswerInProjectUseCase],
-  exports: [CreateProjectUseCase, CreateAnswerInProjectUseCase],
+  providers: [
+    CreateProjectUseCase,
+    CreateAnswerInProjectUseCase,
+    FetchProjectsByUserIdUseCase,
+  ],
+  exports: [
+    CreateProjectUseCase,
+    CreateAnswerInProjectUseCase,
+    FetchProjectsByUserIdUseCase,
+  ],
 })
 export class UseCasesModule {}

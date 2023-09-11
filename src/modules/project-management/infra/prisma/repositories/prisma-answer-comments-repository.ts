@@ -4,7 +4,7 @@ import { AnswerCommentsRepository } from '@modules/project-management/applicatio
 import { AnswerComment } from '@modules/project-management/domain/entities/answer-comment';
 import { Injectable } from '@nestjs/common';
 
-import { AnswerCommentMapper } from '../mappers/answer-comment-mapper';
+import { AnswerCommentMapper } from './mappers/answer-comment-mapper';
 
 @Injectable()
 export class PrismaAnswerCommentsRepository extends AnswerCommentsRepository {

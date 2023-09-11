@@ -1,18 +1,21 @@
 import { makeFakeProject } from '@test/factories/make-project';
 
+import { InMemoryProjectsDAO } from '../../dao/in-memory/in-memory-projects-dao';
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
 import { InMemoryRolesRepository } from '../../repositories/in-memory/in-memory-roles-repository';
 import { FetchRecentProjectsUseCase } from './fetch-recent-projects';
 
 let rolesRepository: InMemoryRolesRepository;
 let projectsRepository: InMemoryProjectsRepository;
+let projectsDAO: InMemoryProjectsDAO;
 let sut: FetchRecentProjectsUseCase;
 
 describe('Fetch recent projects', () => {
   beforeEach(() => {
     rolesRepository = new InMemoryRolesRepository();
     projectsRepository = new InMemoryProjectsRepository(rolesRepository);
-    sut = new FetchRecentProjectsUseCase(projectsRepository);
+    projectsDAO = new InMemoryProjectsDAO(projectsRepository);
+    sut = new FetchRecentProjectsUseCase(projectsDAO);
   });
 
   it('should be able to fetch recent projects', async () => {

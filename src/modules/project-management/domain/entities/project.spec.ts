@@ -1,13 +1,20 @@
 import { makeFakeProject } from '@test/factories/make-project';
 
+import { Content } from './value-objects/content';
+
 describe('Project', () => {
-  it('should be able to create excerpt from project content', () => {
+  it('should be able to create excerpt from project description', () => {
     const project = makeFakeProject({
-      description: 'a'.repeat(200),
+      description: new Content('a'.repeat(200)),
     });
 
-    expect(project.excerpt.length).toBeGreaterThanOrEqual(150);
-    expect(project.excerpt.length).toBeLessThanOrEqual(153);
+    const descriptionExcerpt = Content.createExcerptFromText(
+      project.description.value,
+      150,
+    );
+
+    expect(descriptionExcerpt.length).toBeGreaterThanOrEqual(150);
+    expect(descriptionExcerpt.length).toBeLessThanOrEqual(153);
   });
 
   it('should be able to create a project with authorId to be default owner', () => {

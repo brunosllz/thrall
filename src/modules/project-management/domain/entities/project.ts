@@ -8,7 +8,8 @@ import { RejectedInviteTeamMemberEvent } from '../events/rejected-invite-team-me
 import { SendInviteTeamMemberEvent } from '../events/send-invite-team-member';
 import { Interested } from './interested';
 import { Member, MemberStatus, PermissionType } from './member';
-import { Requirement } from './value-objects/requirement';
+import { Content } from './value-objects/content';
+import { Meeting } from './value-objects/meeting';
 import { Slug } from './value-objects/slug';
 import { ProjectInterestedList } from './watched-lists/project-interested-list';
 import { ProjectRoleList } from './watched-lists/project-role-list';
@@ -24,13 +25,14 @@ export enum ProjectStatus {
 export interface ProjectProps {
   authorId: string;
   name: string;
-  description: string;
+  description: Content;
   slug: Slug;
   imageUrl: string;
   status: ProjectStatus;
   roles: ProjectRoleList;
   technologies: ProjectTechnologyList;
-  requirement: Requirement;
+  requirements: Content;
+  meeting: Meeting;
   interested: ProjectInterestedList;
   teamMembers: TeamMembersList;
   createdAt: Date;
@@ -48,14 +50,6 @@ export class Project extends AggregateRoot<ProjectProps> {
 
   get description() {
     return this.props.description;
-  }
-
-  get excerpt() {
-    if (this.description.length >= 150) {
-      return this.props.description.substring(0, 147).trimEnd().concat('...');
-    }
-
-    return this.description;
   }
 
   get slug() {
@@ -78,8 +72,12 @@ export class Project extends AggregateRoot<ProjectProps> {
     return this.props.technologies;
   }
 
-  get requirement() {
-    return this.props.requirement;
+  get requirements() {
+    return this.props.requirements;
+  }
+
+  get meeting() {
+    return this.props.meeting;
   }
 
   get interested() {
@@ -104,7 +102,7 @@ export class Project extends AggregateRoot<ProjectProps> {
     this.touch();
   }
 
-  set description(description: string) {
+  set description(description: Content) {
     this.props.description = description;
     this.touch();
   }
@@ -119,8 +117,8 @@ export class Project extends AggregateRoot<ProjectProps> {
     this.touch();
   }
 
-  set requirement(requirement: Requirement) {
-    this.props.requirement = requirement;
+  set requirements(requirements: Content) {
+    this.props.requirements = requirements;
     this.touch();
   }
 
