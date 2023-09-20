@@ -6,7 +6,7 @@ import { PermissionType } from '@modules/project-management/domain/entities/memb
 import { Injectable } from '@nestjs/common';
 
 import { ProjectsRepository } from '../../repositories/projects-repository';
-import { ManageProjectTeamMemberPrivilegeError } from '../errors/manage-project-team-member-privilege-error';
+import { ManageProjectTeamMemberPrivilegeError } from './errors/manage-project-team-member-privilege-error';
 
 interface ManageProjectTeamMemberPrivilegeRequest {
   ownerId: string;

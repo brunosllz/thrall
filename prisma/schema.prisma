@@ -51,7 +51,7 @@ enum PROJECT_STATUS {
 enum MEETING_TYPE {
   daily
   weekly
-  mothly
+  monthly
 }
 
 model Project {

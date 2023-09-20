@@ -6,5 +6,5 @@ import {
 export interface MeetingDTO {
   occurredTime: string;
   type: MeetingType;
-  date: WEEK_DAYS | string;
+  date?: WEEK_DAYS | string;
 }

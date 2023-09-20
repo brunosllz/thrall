@@ -10,7 +10,7 @@ import { makeFakeProject } from '@test/factories/make-project';
 
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
 import { InMemoryRolesRepository } from '../../repositories/in-memory/in-memory-roles-repository';
-import { ManageProjectTeamMemberPrivilegeError } from '../errors/manage-project-team-member-privilege-error';
+import { ManageProjectTeamMemberPrivilegeError } from './errors/manage-project-team-member-privilege-error';
 import { ManageProjectTeamMemberPrivilegeUseCase } from './manage-project-team-member-privilege';
 
 let sut: ManageProjectTeamMemberPrivilegeUseCase;

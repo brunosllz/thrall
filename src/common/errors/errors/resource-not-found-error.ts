@@ -1,7 +1,9 @@
+import { Result } from '@common/logic/result';
+
 import { UseCaseError } from '../use-case-error';
 
-export class ResourceNotFoundError extends UseCaseError {
+export class ResourceNotFoundError extends Result<UseCaseError> {
   constructor() {
-    super('Resource not found');
+    super(false, { message: 'Resource not found' });
   }
 }

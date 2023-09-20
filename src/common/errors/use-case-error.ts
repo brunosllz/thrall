@@ -1,12 +1,11 @@
-interface UseCaseErrorError {
+interface IUseCaseError {
   message: string;
 }
 
-export abstract class UseCaseError extends Error implements UseCaseErrorError {
+export abstract class UseCaseError implements IUseCaseError {
   public readonly message: string;
 
   constructor(message: string) {
-    super(message);
     this.message = message;
   }
 }

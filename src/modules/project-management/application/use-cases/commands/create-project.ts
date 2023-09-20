@@ -43,7 +43,7 @@ export class CreateProjectUseCase {
       });
 
       if (projectAlreadyExists) {
-        return left(new AlreadyExistsError('title'));
+        return left(new AlreadyExistsError(`name "${name}"`));
       }
 
       const meetingOrError = Meeting.create(request.meeting);

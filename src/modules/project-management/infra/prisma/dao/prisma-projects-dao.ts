@@ -26,6 +26,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
           select: {
             slug: true,
           },
+          take: 3,
         },
         _count: {
           select: {

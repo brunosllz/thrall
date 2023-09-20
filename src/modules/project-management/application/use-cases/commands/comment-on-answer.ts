@@ -13,7 +13,7 @@ interface CommentOnAnswerUseCaseRequest {
 }
 
 type CommentOnAnswerUseCaseResponse = Either<
-  ResourceNotFoundError | Result<void>,
+  ResourceNotFoundError | Result<any>,
   Result<void>
 >;
 

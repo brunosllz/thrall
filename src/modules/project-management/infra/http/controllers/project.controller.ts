@@ -5,7 +5,14 @@ import { Result } from '@common/logic/result';
 import { CreateProjectUseCase } from '@modules/project-management/application/use-cases/commands/create-project';
 import { FetchProjectsByUserIdUseCase } from '@modules/project-management/application/use-cases/queries/fetch-projects-by-user-id';
 import { MeetingType } from '@modules/project-management/domain/entities/value-objects/meeting';
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  ConflictException,
+  Controller,
+  Get,
+  Post,
+} from '@nestjs/common';
 
 import { CreateProjectDTO } from '../dto/create-project-dto';
 import { FetchProjectsByUserIdViewModel } from '../view-models/fetch-projects-by-user-id-view-model';
@@ -38,7 +45,7 @@ export class ProjectController {
       roles,
       technologies,
       meeting: {
-        date: meeting.date.toLowerCase(),
+        date: meeting.date ? meeting.date.toLowerCase() : undefined,
         occurredTime: meeting.occurredTime,
         type: meeting.type.toLowerCase() as MeetingType,
       },
@@ -50,21 +57,14 @@ export class ProjectController {
     if (result.isLeft()) {
       const error = result.value;
 
-      if (error instanceof Result) {
-        throw {
-          statusCode: 400,
-          message: error.errorValue(),
-        };
+      switch (error.constructor) {
+        case Result:
+          throw new BadRequestException(error.errorValue());
+        case AlreadyExistsError:
+          throw new ConflictException(error.errorValue());
+        default:
+          throw new BadRequestException();
       }
-
-      if (error instanceof AlreadyExistsError) {
-        throw {
-          statusCode: 409,
-          message: error.message,
-        };
-      }
-
-      throw error;
     }
   }
 
@@ -80,11 +80,10 @@ export class ProjectController {
 
     if (result.isLeft()) {
       const error = result.value;
-
-      throw {
-        statusCode: 400,
-        message: error.errorValue(),
-      };
+      switch (error.constructor) {
+        default:
+          throw new BadRequestException(error.errorValue());
+      }
     }
 
     const projectsValue = result.value.getValue();
