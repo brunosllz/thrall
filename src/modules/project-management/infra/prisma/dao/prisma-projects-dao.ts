@@ -37,6 +37,9 @@ export class PrismaProjectsDAO extends ProjectsDAO {
       },
       skip: (pageIndex - 1) * pageSize,
       take: pageSize * pageIndex,
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
 
     return projects;

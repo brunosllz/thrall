@@ -1,7 +1,13 @@
+import { AuthUser } from '@common/infra/http/auth/auth-user';
+import { CurrentUser } from '@common/infra/http/auth/decorators/current-user';
+import { ZodValidationPipe } from '@common/infra/pipes/zod-validation-pipe';
 import { CreateAnswerInProjectUseCase } from '@modules/project-management/application/use-cases/commands/create-answer-in-project';
 import { Body, Controller, Post } from '@nestjs/common';
 
-import { CreateAnswerDTO } from '../dto/create-answer-dto';
+import {
+  CreateAnswerBodySchema,
+  createAnswerBodySchema,
+} from '../validation-schemas/create-answer-schema';
 
 @Controller('/answers')
 export class AnswerController {
@@ -10,11 +16,16 @@ export class AnswerController {
   ) {}
 
   @Post()
-  async createAnswerInProject(@Body() body: CreateAnswerDTO) {
-    const { authorId, content, projectId } = body;
+  async createAnswerInProject(
+    @CurrentUser() user: AuthUser,
+    @Body(new ZodValidationPipe(createAnswerBodySchema))
+    body: CreateAnswerBodySchema,
+  ) {
+    const { content, projectId } = body;
+    const { userId } = user;
 
     await this.createAnswerInProjectUseCase.execute({
-      authorId,
+      authorId: userId,
       content,
       projectId,
     });

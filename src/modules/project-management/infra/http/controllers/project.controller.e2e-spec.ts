@@ -11,7 +11,7 @@ import request from 'supertest';
 import { UserFactory } from '@test/factories/make-user';
 
 import { PrismaDatabaseModule } from '../../prisma/prisma-database.module';
-import { CreateProjectDTO } from '../dto/create-project-dto';
+import { CreateProjectDTO } from '../validation-schemas/create-project-dto';
 import { HttpModule } from '../http.module';
 
 describe('ProjectController (e2e)', () => {

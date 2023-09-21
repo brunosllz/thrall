@@ -1,6 +1,7 @@
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
 import { AuthUser } from '@common/infra/http/auth/auth-user';
 import { CurrentUser } from '@common/infra/http/auth/decorators/current-user';
+import { ZodValidationPipe } from '@common/infra/pipes/zod-validation-pipe';
 import { Result } from '@common/logic/result';
 import { CreateProjectUseCase } from '@modules/project-management/application/use-cases/commands/create-project';
 import { FetchProjectsByUserIdUseCase } from '@modules/project-management/application/use-cases/queries/fetch-projects-by-user-id';
@@ -14,7 +15,10 @@ import {
   Post,
 } from '@nestjs/common';
 
-import { CreateProjectDTO } from '../dto/create-project-dto';
+import {
+  CreateProjectBodySchema,
+  createProjectBodySchema,
+} from '../validation-schemas/create-project-schema';
 import { FetchProjectsByUserIdViewModel } from '../view-models/fetch-projects-by-user-id-view-model';
 
 @Controller('/projects')
@@ -25,9 +29,14 @@ export class ProjectController {
   ) {}
 
   @Post()
-  async createProject(@Body() body: CreateProjectDTO) {
+  async createProject(
+    @CurrentUser() user: AuthUser,
+    @Body(new ZodValidationPipe(createProjectBodySchema))
+    body: CreateProjectBodySchema,
+  ) {
+    const { userId } = user;
+
     const {
-      authorId,
       description,
       requirements,
       roles,
@@ -36,16 +45,16 @@ export class ProjectController {
       meeting,
       status,
       imageUrl,
-    } = body;
+    } = createProjectBodySchema.parse(body);
 
     const result = await this.createProjectUseCase.execute({
-      authorId,
+      authorId: userId,
       name,
       requirements,
       roles,
       technologies,
       meeting: {
-        date: meeting.date ? meeting.date.toLowerCase() : undefined,
+        date: meeting.date,
         occurredTime: meeting.occurredTime,
         type: meeting.type.toLowerCase() as MeetingType,
       },
@@ -59,11 +68,19 @@ export class ProjectController {
 
       switch (error.constructor) {
         case Result:
-          throw new BadRequestException(error.errorValue());
+          throw new BadRequestException({
+            statusCode: 400,
+            message: error.errorValue().message,
+          });
         case AlreadyExistsError:
-          throw new ConflictException(error.errorValue());
+          throw new ConflictException({
+            statusCode: 409,
+            message: error.errorValue().message,
+          });
         default:
-          throw new BadRequestException();
+          throw new BadRequestException({
+            statusCode: 400,
+          });
       }
     }
   }
@@ -82,7 +99,9 @@ export class ProjectController {
       const error = result.value;
       switch (error.constructor) {
         default:
-          throw new BadRequestException(error.errorValue());
+          throw new BadRequestException({
+            statusCode: 400,
+          });
       }
     }
 

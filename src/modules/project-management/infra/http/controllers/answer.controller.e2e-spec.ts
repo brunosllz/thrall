@@ -7,7 +7,7 @@ import { ProjectFactory } from '@test/factories/make-project';
 import { UserFactory } from '@test/factories/make-user';
 
 import { PrismaDatabaseModule as PrismaDatabaseTImeLineModule } from '../../prisma/prisma-database.module';
-import { CreateAnswerDTO } from '../dto/create-answer-dto';
+import { CreateAnswerDTO } from '../validation-schemas/create-answer-dto';
 import { HttpModule } from '../http.module';
 
 describe('AnswerController (e2e)', () => {
