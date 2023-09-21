@@ -10,7 +10,22 @@ export class PrismaProjectsDAO extends ProjectsDAO {
   }
 
   async findManyRecent(params: PaginationParams): Promise<any[]> {
-    throw new Error('Method not implemented.');
+    const projects = await this.prisma.project.findMany({
+      include: {
+        technologies: {
+          select: {
+            slug: true,
+          },
+        },
+      },
+      skip: (params.pageIndex - 1) * params.pageSize,
+      take: params.pageSize * params.pageIndex,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return projects;
   }
 
   async findManyByUserId(
@@ -46,6 +61,28 @@ export class PrismaProjectsDAO extends ProjectsDAO {
   }
 
   async findBySlug(slug: string, authorId: string): Promise<any> {
-    throw new Error('Method not implemented.');
+    const project = await this.prisma.project.findUnique({
+      where: {
+        authorId_slug: {
+          authorId,
+          slug,
+        },
+      },
+      include: {
+        technologies: {
+          select: {
+            slug: true,
+          },
+        },
+        _count: {
+          select: {
+            teamMembers: true,
+            answers: true,
+          },
+        },
+      },
+    });
+
+    return project;
   }
 }
