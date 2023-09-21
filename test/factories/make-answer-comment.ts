@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import {
   AnswerComment,
   AnswerCommentProps,
-} from '@modules/timeline/domain/entities/answer-comment';
+} from '@modules/project-management/domain/entities/answer-comment';
 
 export function makeFakeAnswerComment(
   override: Partial<AnswerCommentProps> = {},

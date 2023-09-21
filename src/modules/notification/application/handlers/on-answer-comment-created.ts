@@ -1,8 +1,8 @@
 import { DomainEvents } from '@common/domain/events/domain-events';
 import { EventHandler } from '@common/domain/events/event-handler';
 import { UsersRepository } from '@modules/account/application/repositories/users-repository';
-import { AnswersRepository } from '@modules/timeline/application/repositories/answers-repository';
-import { AnswerCommentCreatedEvent } from '@modules/timeline/domain/events/answer-comment-created';
+import { AnswersRepository } from '@modules/project-management/application/repositories/answers-repository';
+import { AnswerCommentCreatedEvent } from '@modules/project-management/domain/events/answer-comment-created';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 

@@ -1,7 +1,9 @@
+import { Result } from '@common/logic/result';
+
 import { UseCaseError } from '../use-case-error';
 
-export class NotAllowedError extends UseCaseError {
+export class NotAllowedError extends Result<UseCaseError> {
   constructor() {
-    super('Not allowed');
+    super(false, { message: 'Not allowed' });
   }
 }

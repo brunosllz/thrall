@@ -1,7 +1,10 @@
 import { PrismaService } from '@common/infra/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
-import { Answer, AnswerProps } from '@modules/timeline/domain/entities/answer';
-import { AnswerMapper } from '@modules/timeline/infra/prisma/mappers/answer-mapper';
+import {
+  Answer,
+  AnswerProps,
+} from '@modules/project-management/domain/entities/answer';
+import { AnswerMapper } from '@modules/project-management/infra/prisma/repositories/mappers/answer-mapper';
 import { Injectable } from '@nestjs/common';
 
 type Overrides = Partial<AnswerProps>;

@@ -1,7 +1,7 @@
 import { DomainEvents } from '@common/domain/events/domain-events';
 import { EventHandler } from '@common/domain/events/event-handler';
-import { ProjectsRepository } from '@modules/timeline/application/repositories/projects-repository';
-import { SendInviteTeamMemberEvent } from '@modules/timeline/domain/events/send-invite-team-member';
+import { ProjectsRepository } from '@modules/project-management/application/repositories/projects-repository';
+import { SendInviteTeamMemberEvent } from '@modules/project-management/domain/events/send-invite-team-member';
 
 import { SendNotificationUseCase } from '../use-cases/send-notification';
 
@@ -30,7 +30,7 @@ export class OnSentInviteTeamMember implements EventHandler {
       await this.sendNotification.execute({
         authorId: props.senderId,
         recipientId: props.recipientId,
-        title: `Novo convite para participar do projeto "${project.title}`,
+        title: `Novo convite para participar do projeto "${project.name}`,
         content: 'Venha fazer parte do time!',
       });
     }

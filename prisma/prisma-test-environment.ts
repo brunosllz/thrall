@@ -9,7 +9,13 @@ import { randomUUID } from 'node:crypto';
 import util from 'node:util';
 import { Client } from 'pg';
 
-import { HOST, NAME, PASSWORD, PORT, USER } from '../src/config/database';
+import {
+  HOST,
+  NAME,
+  PASSWORD,
+  PORT,
+  USER,
+} from '../src/common/infra/config/database';
 
 dotenv.config({ path: '.env.testing' });
 
