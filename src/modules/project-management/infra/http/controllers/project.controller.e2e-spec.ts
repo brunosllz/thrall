@@ -38,6 +38,10 @@ describe('ProjectController (e2e)', () => {
     await app.init();
   });
 
+  afterEach(async () => {
+    await app.close();
+  });
+
   it('/projects (POST) - create a project', async () => {
     const user = await userFactory.makeUser();
     const accessToken = jwt.sign({ uid: user.id });
