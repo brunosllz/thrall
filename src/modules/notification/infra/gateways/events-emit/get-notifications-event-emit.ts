@@ -1,8 +1,6 @@
 import { NotificationType } from '@/modules/notification/domain/entities/notification';
 
 type Notification = {
-  authorId: string;
-  recipientId: string;
   title: string;
   linkTo: string;
   type: NotificationType;

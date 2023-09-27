@@ -2,7 +2,7 @@ import { Process, Processor } from '@nestjs/bull';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Job } from 'bull';
 
-import { NewNotificationApplicationEvent } from '../application-events/new-notification';
+import { NewNotificationCreatedApplicationEvent } from '../application-events/new-notification-created';
 import { SendNotificationUseCase } from '../use-cases/send-notification';
 import { SendNotificationJob } from './jobs/send-notification-job';
 
@@ -31,7 +31,7 @@ export class NotificationsQueue {
 
     this.eventEmitter.emitAsync(
       'notification:answer-created',
-      new NewNotificationApplicationEvent({
+      new NewNotificationCreatedApplicationEvent({
         id: createdNotification.id,
         authorId: notification.authorId,
         recipientId: notification.recipientId,

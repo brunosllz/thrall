@@ -1,6 +1,6 @@
 import { NotificationType } from '../../domain/entities/notification';
 
-interface NewNotificationPayload {
+interface NewNotificationCreatedPayload {
   authorId: string;
   recipientId: string;
   title: string;
@@ -13,6 +13,6 @@ interface NewNotificationPayload {
   avatarFrom: string | null;
 }
 
-export class NewNotificationApplicationEvent {
-  constructor(readonly payload: NewNotificationPayload) {}
+export class NewNotificationCreatedApplicationEvent {
+  constructor(readonly payload: NewNotificationCreatedPayload) {}
 }

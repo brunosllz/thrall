@@ -9,10 +9,11 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-import { NewNotificationApplicationEvent } from '../../application/application-events/new-notification';
+import { NewNotificationCreatedApplicationEvent } from '../../application/application-events/new-notification-created';
 import { NotificationReadApplicationEvent } from '../../application/application-events/notification-read';
 import { CountUnreadNotificationsByUserIdUseCase } from '../../application/use-cases/queries/count-unread-notifications-by-user-id';
 import { FetchNotificationsByUserIdUseCase } from '../../application/use-cases/queries/fetch-notifications-by-user-id';
+import { FetchNotificationsByUserIdViewModel } from '../http/view-models/fetch-notifications-by-user-id-view-model';
 import { CountUnreadNotificationsEventEmit } from './events-emit/count-unread-notifications-event-emit';
 import { GetNotificationsEventEmit } from './events-emit/get-notifications-event-emit';
 import { NewNotificationCreatedEventEmit } from './events-emit/new-notification-created';
@@ -110,7 +111,7 @@ export class NotificationGateway
     }
 
     const notificationsAmount = resultNotificationsAmount.value.getValue();
-    const notifications = resultNotifications.value.getValue();
+    const { data: notifications } = resultNotifications.value.getValue();
 
     // return amount of notifications to user
     this.server.to(client.id).emit(
@@ -124,7 +125,9 @@ export class NotificationGateway
     this.server.to(client.id).emit(
       'notifications',
       new GetNotificationsEventEmit({
-        notifications,
+        notifications: notifications.map((notification) =>
+          FetchNotificationsByUserIdViewModel.toHTTP(notification),
+        ),
       }),
     );
   }
@@ -140,7 +143,7 @@ export class NotificationGateway
   @OnEvent('notification:answer-created', { async: true })
   async handleNewNotificationEmit({
     payload,
-  }: NewNotificationApplicationEvent) {
+  }: NewNotificationCreatedApplicationEvent) {
     const notification = payload;
 
     const connectedClientsFromUser = this.connectedUserClients.filter(

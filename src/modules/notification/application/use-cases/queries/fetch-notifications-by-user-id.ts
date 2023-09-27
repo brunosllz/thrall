@@ -1,5 +1,6 @@
 import { Either, left, right } from '@/common/logic/either';
 import { Result } from '@/common/logic/result';
+import { PaginationQueryResponse } from '@/common/repositories/pagination-params';
 import { Injectable } from '@nestjs/common';
 
 import { NotificationsDAO } from '../../dao/notifications-dao';
@@ -12,7 +13,7 @@ interface FetchNotificationsByUserIdUseCaseRequest {
 
 type FetchNotificationsByUserIdUseCaseResponse = Either<
   Result<void>,
-  Result<any[]>
+  Result<PaginationQueryResponse>
 >;
 
 @Injectable()

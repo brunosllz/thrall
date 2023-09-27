@@ -1,10 +1,13 @@
-import { PaginationParams } from '@common/repositories/pagination-params';
+import {
+  PaginationParams,
+  PaginationQueryResponse,
+} from '@common/repositories/pagination-params';
 
 export abstract class NotificationsDAO {
   abstract findManyByUserId(
     userId: string,
     params: PaginationParams,
-  ): Promise<any[]>;
+  ): Promise<PaginationQueryResponse>;
   abstract countUnreadByUserId(userId: string): Promise<number>;
   abstract findUserByAuthorId(authorId: string): Promise<any>;
 }
