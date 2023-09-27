@@ -1,6 +1,9 @@
-import { Either, right } from '@common/logic/either';
-import { Notification } from '@modules/notification/domain/entities/notification';
-import { Processor, Process } from '@nestjs/bull';
+import { Result } from '@/common/logic/result';
+import { Either, left, right } from '@common/logic/either';
+import {
+  Notification,
+  NotificationType,
+} from '@modules/notification/domain/entities/notification';
 import { Injectable } from '@nestjs/common';
 
 import { NotificationsRepository } from '../repositories/notifications-repository';
@@ -9,34 +12,48 @@ export interface SendNotificationUseCaseRequest {
   authorId: string;
   recipientId: string;
   title: string;
-  content: string;
+  ctaTitle?: string[];
+  linkTo: string;
+  type: NotificationType;
 }
 
 export type SendNotificationUseCaseResponse = Either<
-  null,
-  Record<string, never>
+  Result<any>,
+  Result<Notification>
 >;
-@Processor('notifications')
+
 @Injectable()
 export class SendNotificationUseCase {
   constructor(private notificationsRepository: NotificationsRepository) {}
 
-  @Process('send-notification')
   async execute({
     authorId,
     recipientId,
     title,
-    content,
+    linkTo,
+    type,
+    ctaTitle,
   }: SendNotificationUseCaseRequest): Promise<SendNotificationUseCaseResponse> {
-    const notification = Notification.create({
-      authorId,
-      recipientId,
-      title,
-      content,
-    });
+    try {
+      const notificationOrError = Notification.create({
+        authorId,
+        recipientId,
+        title,
+        linkTo,
+        ctaTitle,
+        type,
+      });
 
-    await this.notificationsRepository.create(notification);
+      if (notificationOrError.isFailure) {
+        return left(Result.fail(notificationOrError.error));
+      }
 
-    return right({});
+      const notification = notificationOrError.getValue();
+      await this.notificationsRepository.create(notification);
+
+      return right(Result.ok(notification));
+    } catch (error) {
+      return left(Result.fail(error));
+    }
   }
 }

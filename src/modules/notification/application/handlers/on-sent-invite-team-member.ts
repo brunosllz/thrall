@@ -27,12 +27,12 @@ export class OnSentInviteTeamMember implements EventHandler {
     const project = await this.projectsRepository.findById(props.project.id);
 
     if (project) {
-      await this.sendNotification.execute({
-        authorId: props.senderId,
-        recipientId: props.recipientId,
-        title: `Novo convite para participar do projeto "${project.name}`,
-        content: 'Venha fazer parte do time!',
-      });
+      // await this.sendNotification.execute({
+      //   authorId: props.senderId,
+      //   recipientId: props.recipientId,
+      //   title: `Novo convite para participar do projeto "${project.name}`,
+      //   content: 'Venha fazer parte do time!',
+      // });
     }
   }
 }

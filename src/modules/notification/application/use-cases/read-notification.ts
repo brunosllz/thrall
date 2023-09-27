@@ -1,3 +1,4 @@
+import { Result } from '@/common/logic/result';
 import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
 import { Either, left, right } from '@common/logic/either';
@@ -12,7 +13,7 @@ interface ReadNotificationUseCaseRequest {
 
 type ReadNotificationUseCaseResponse = Either<
   ResourceNotFoundError | NotAllowedError,
-  Record<string, never>
+  Result<void>
 >;
 
 @Injectable()
@@ -31,6 +32,12 @@ export class ReadNotificationUseCase {
       return left(new ResourceNotFoundError());
     }
 
+    const notificationIsRead = notification.isRead();
+
+    if (notificationIsRead) {
+      return right(Result.ok<void>());
+    }
+
     if (recipientId !== notification.recipientId) {
       return left(new NotAllowedError());
     }
@@ -39,6 +46,6 @@ export class ReadNotificationUseCase {
 
     await this.notificationsRepository.save(notification);
 
-    return right({});
+    return right(Result.ok<void>());
   }
 }

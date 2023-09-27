@@ -1,5 +1,6 @@
 import { Either, left, right } from '@/common/logic/either';
 import { Result } from '@/common/logic/result';
+import { Injectable } from '@nestjs/common';
 
 import { NotificationsDAO } from '../../dao/notifications-dao';
 
@@ -14,8 +15,9 @@ type FetchNotificationsByUserIdUseCaseResponse = Either<
   Result<any[]>
 >;
 
+@Injectable()
 export class FetchNotificationsByUserIdUseCase {
-  constructor(private notificationsDAO: NotificationsDAO) {}
+  constructor(private readonly notificationsDAO: NotificationsDAO) {}
 
   async execute({
     userId,
@@ -33,7 +35,7 @@ export class FetchNotificationsByUserIdUseCase {
 
       return right(Result.ok(notifications));
     } catch (error) {
-      return left(Result.fail<any>(error));
+      return left(Result.fail(error));
     }
   }
 }

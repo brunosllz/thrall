@@ -5,4 +5,6 @@ export abstract class NotificationsDAO {
     userId: string,
     params: PaginationParams,
   ): Promise<any[]>;
+  abstract countUnreadByUserId(userId: string): Promise<number>;
+  abstract findUserByAuthorId(authorId: string): Promise<any>;
 }

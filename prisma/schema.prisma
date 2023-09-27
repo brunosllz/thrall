@@ -30,16 +30,25 @@ model AnswerComment {
   user      User      @relation(fields: [authorId], references: [id])
 }
 
+enum NOTIFICATION_TYPE {
+  message
+  action
+  interaction
+  info
+}
+
 model Notification {
-  id                String    @id
-  content           String
+  id                String            @id
+  ctaTitle          String[]
+  type              NOTIFICATION_TYPE
+  linkTo            String
   authorId          String
   recipientId       String
-  createdAt         DateTime  @default(now())
+  createdAt         DateTime          @default(now())
   readAt            DateTime?
   title             String
-  authorIdToUser    User      @relation("NotificationAuthorIdToUser", fields: [authorId], references: [id])
-  recipientIdToUser User      @relation("NotificationRecipientIdToUser", fields: [recipientId], references: [id])
+  authorIdToUser    User              @relation("NotificationAuthorIdToUser", fields: [authorId], references: [id])
+  recipientIdToUser User              @relation("NotificationRecipientIdToUser", fields: [recipientId], references: [id])
 }
 
 enum PROJECT_STATUS {

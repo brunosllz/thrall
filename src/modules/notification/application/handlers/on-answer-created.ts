@@ -6,13 +6,16 @@ import { InjectQueue } from '@nestjs/bull';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bull';
 
-import { SendNotificationJob } from '../jobs/send-notification-job';
+import { NotificationType } from '../../domain/entities/notification';
+import { SendNotificationJob } from '../queues/jobs/send-notification-job';
+import { GetUserByAuthorIdUseCase } from '../use-cases/queries/get-user-by-author-id';
 
 @Injectable()
 export class OnAnswerCreated implements EventHandler {
   constructor(
     private projectsRepository: ProjectsRepository,
     @InjectQueue('notifications') private notificationQueue: Queue,
+    private readonly getUserByAuthorIdUseCase: GetUserByAuthorIdUseCase,
   ) {
     this.setupSubscriptions();
   }
@@ -28,13 +31,32 @@ export class OnAnswerCreated implements EventHandler {
     const project = await this.projectsRepository.findById(answer.projectId);
 
     if (project) {
+      const IsProjectOwnerCreatedAnswer = project.authorId === answer.authorId;
+
+      if (IsProjectOwnerCreatedAnswer) {
+        return;
+      }
+
+      const authorOrError = await this.getUserByAuthorIdUseCase.execute({
+        authorId: answer.authorId,
+      });
+
+      if (authorOrError.value.isFailure) {
+        //TODO: create log when this failure happens
+        return;
+      }
+
+      const author = authorOrError.value.getValue();
+
       await this.notificationQueue.add(
         'answer-created',
         new SendNotificationJob({
           authorId: answer.authorId,
+          authorAvatar: author.avatarUrl,
           recipientId: project.authorId,
-          title: `Nova resposta em ${project.name}`,
-          content: answer.excerpt,
+          title: `New answer in **\"${project.name}\"** of **${author.name}**`,
+          linkTo: `/projects/${project.authorId}/${project.slug.value}`,
+          type: NotificationType.INTERACTION,
         }),
       );
     }

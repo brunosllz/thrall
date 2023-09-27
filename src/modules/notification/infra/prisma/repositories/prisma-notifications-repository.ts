@@ -1,9 +1,10 @@
+import { DomainEvents } from '@common/domain/events/domain-events';
 import { PrismaService } from '@common/infra/prisma/prisma.service';
 import { NotificationsRepository } from '@modules/notification/application/repositories/notifications-repository';
 import { Notification } from '@modules/notification/domain/entities/notification';
 import { Injectable } from '@nestjs/common';
 
-import { NotificationMapper } from '../mappers/notification-mapper';
+import { NotificationMapper } from './mappers/notification-mapper';
 
 @Injectable()
 export class PrismaNotificationsRepository extends NotificationsRepository {
@@ -42,5 +43,7 @@ export class PrismaNotificationsRepository extends NotificationsRepository {
         readAt: raw.readAt,
       },
     });
+
+    DomainEvents.dispatchEventsForAggregate(notification.id);
   }
 }

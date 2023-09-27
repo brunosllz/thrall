@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 
 import { UseCasesModule } from '../../application/use-cases/use-cases.module';
-import { NotificationController } from './controllers/notifications.controller';
+import { NotificationGateway } from './notification-gateway';
 
 @Module({
   imports: [UseCasesModule],
-  controllers: [NotificationController],
+  providers: [NotificationGateway],
 })
-export class HttpModule {}
+export class GatewaysModule {}
