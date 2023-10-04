@@ -13,7 +13,9 @@ import request from 'supertest';
 
 import { ProjectFactory } from '@test/factories/make-project';
 import { UserFactory } from '@test/factories/make-user';
+import { waitFor } from '@test/factories/utils/wait-for';
 
+import { PrismaDatabaseModule } from '../../prisma/prisma-database.module';
 import { CreateProjectBodySchema } from '../validation-schemas/create-project-schema';
 
 describe('ProjectController (e2e)', () => {
@@ -25,7 +27,7 @@ describe('ProjectController (e2e)', () => {
 
   beforeEach(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [AppModule, PrismaDatabaseModule],
       providers: [UserFactory, ProjectFactory, PrismaService],
     }).compile();
 
@@ -42,7 +44,7 @@ describe('ProjectController (e2e)', () => {
     await app.close();
   });
 
-  it('/projects (POST) - create a project', async () => {
+  test('/projects (POST) - create a project', async () => {
     const user = await userFactory.makeUser();
     const accessToken = jwt.sign({ uid: user.id });
 
@@ -80,7 +82,7 @@ describe('ProjectController (e2e)', () => {
     expect(projectOnDatabase).toBeTruthy();
   });
 
-  it('/projects/me (GET) - get projects from user', async () => {
+  test('/projects/me (GET) - get projects from user', async () => {
     const user = await userFactory.makeUser();
     const accessToken = jwt.sign({ uid: user.id });
 
@@ -100,6 +102,27 @@ describe('ProjectController (e2e)', () => {
         expect.objectContaining({ name: 'Project 01' }),
         expect.objectContaining({ name: 'Project 02' }),
       ]),
+    });
+  });
+
+  test('/projects/:projectId (DELETE) - delete a project', async () => {
+    const user = await userFactory.makeUser();
+    const accessToken = jwt.sign({ uid: user.id });
+
+    const createdProject = await projectFactory.makeProject({
+      authorId: user.id,
+    });
+
+    await request(app.getHttpServer())
+      .delete(`/projects/${createdProject.id}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    const projectsOnDatabase = await prisma.project.findMany();
+
+    waitFor(() => {
+      expect(projectsOnDatabase).toBeTruthy();
+      expect(projectsOnDatabase).toHaveLength(0);
     });
   });
 });

@@ -1,3 +1,6 @@
+import { NotAllowedError } from '@/common/errors/errors/not-allowed-error';
+import { ResourceNotFoundError } from '@/common/errors/errors/resource-not-found-error';
+import { DeleteProjectUseCase } from '@/modules/project-management/application/use-cases/commands/delete-project';
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
 import { AuthUser } from '@common/infra/http/auth/auth-user';
 import { CurrentUser } from '@common/infra/http/auth/decorators/current-user';
@@ -5,14 +8,19 @@ import { ZodValidationPipe } from '@common/infra/pipes/zod-validation-pipe';
 import { Result } from '@common/logic/result';
 import { CreateProjectUseCase } from '@modules/project-management/application/use-cases/commands/create-project';
 import { FetchProjectsByUserIdUseCase } from '@modules/project-management/application/use-cases/queries/fetch-projects-by-user-id';
-import { MeetingType } from '@modules/project-management/domain/entities/value-objects/meeting';
 import {
   BadRequestException,
   Body,
   ConflictException,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  InternalServerErrorException,
+  Logger,
+  Param,
   Post,
+  UnauthorizedException,
 } from '@nestjs/common';
 
 import {
@@ -26,6 +34,7 @@ export class ProjectController {
   constructor(
     private readonly createProjectUseCase: CreateProjectUseCase,
     private readonly fetchProjectsByUserIdUseCase: FetchProjectsByUserIdUseCase,
+    private readonly deleteProjectUseCase: DeleteProjectUseCase,
   ) {}
 
   @Post()
@@ -45,7 +54,7 @@ export class ProjectController {
       meeting,
       status,
       imageUrl,
-    } = createProjectBodySchema.parse(body);
+    } = body;
 
     const result = await this.createProjectUseCase.execute({
       authorId: userId,
@@ -56,7 +65,7 @@ export class ProjectController {
       meeting: {
         date: meeting.date,
         occurredTime: meeting.occurredTime,
-        type: meeting.type.toLowerCase() as MeetingType,
+        type: meeting.type,
       },
       description,
       status,
@@ -78,8 +87,10 @@ export class ProjectController {
             message: error.errorValue().message,
           });
         default:
-          throw new BadRequestException({
-            statusCode: 400,
+          Logger.error(error.errorValue());
+          throw new InternalServerErrorException({
+            statusCode: 500,
+            massage: 'Internal Server Error',
           });
       }
     }
@@ -99,8 +110,10 @@ export class ProjectController {
       const error = result.value;
       switch (error.constructor) {
         default:
-          throw new BadRequestException({
-            statusCode: 400,
+          Logger.error(error.errorValue());
+          throw new InternalServerErrorException({
+            statusCode: 500,
+            massage: 'Internal Server Error',
           });
       }
     }
@@ -114,5 +127,47 @@ export class ProjectController {
     return {
       projects,
     };
+  }
+
+  @Delete('/:projectId')
+  @HttpCode(200)
+  async deleteProject(
+    @Param('projectId') projectId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const { userId } = user;
+
+    const result = await this.deleteProjectUseCase.execute({
+      projectId,
+      authorId: userId,
+    });
+
+    if (result.isLeft()) {
+      const error = result.value;
+
+      switch (error.constructor) {
+        case Result:
+          throw new BadRequestException({
+            statusCode: 400,
+            message: error.errorValue().message,
+          });
+        case ResourceNotFoundError:
+          throw new BadRequestException({
+            statusCode: 400,
+            message: error.errorValue().message,
+          });
+        case NotAllowedError:
+          throw new UnauthorizedException({
+            statusCode: 401,
+            message: error.errorValue().message,
+          });
+        default:
+          Logger.error(error.errorValue());
+          throw new InternalServerErrorException({
+            statusCode: 500,
+            massage: 'Internal Server Error',
+          });
+      }
+    }
   }
 }
