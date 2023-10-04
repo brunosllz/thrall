@@ -20,8 +20,8 @@ describe('Read Notification', () => {
     notificationsRepository.create(notification);
 
     const result = await sut.execute({
-      recipientId: notification.recipientId.toString(),
-      notificationId: notification.id.toString(),
+      recipientId: notification.recipientId,
+      notificationId: notification.id,
     });
 
     expect(result.isRight()).toBe(true);

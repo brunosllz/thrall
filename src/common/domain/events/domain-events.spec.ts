@@ -3,12 +3,12 @@ import { DomainEvent } from '../events/domain-event';
 import { DomainEvents } from './domain-events';
 
 class CustomAggregateCreated implements DomainEvent {
-  public ocurredAt: Date;
+  public occurredAt: Date;
   private aggregate: CustomAggregate // eslint-disable-line
 
   constructor(aggregate: CustomAggregate) {
     this.aggregate = aggregate;
-    this.ocurredAt = new Date();
+    this.occurredAt = new Date();
   }
 
   public getAggregateId() {

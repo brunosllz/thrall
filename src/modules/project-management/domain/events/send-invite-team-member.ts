@@ -10,11 +10,11 @@ interface SendInviteTeamMemberEventProps {
 
 export class SendInviteTeamMemberEvent implements DomainEvent {
   public props: SendInviteTeamMemberEventProps;
-  public ocurredAt: Date;
+  public occurredAt: Date;
 
   constructor(props: SendInviteTeamMemberEventProps) {
     this.props = props;
-    this.ocurredAt = new Date();
+    this.occurredAt = new Date();
   }
 
   getAggregateId() {

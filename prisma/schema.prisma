@@ -15,7 +15,7 @@ model Answer {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime?       @updatedAt
   User          User            @relation(fields: [authorId], references: [id])
-  project       Project         @relation(fields: [projectId], references: [id])
+  project       Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
   answerComment AnswerComment[]
 }
 
@@ -26,20 +26,29 @@ model AnswerComment {
   answerId  String
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
-  answer    Answer    @relation(fields: [answerId], references: [id])
+  answer    Answer    @relation(fields: [answerId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [authorId], references: [id])
 }
 
+enum NOTIFICATION_TYPE {
+  message
+  action
+  interaction
+  info
+}
+
 model Notification {
-  id                String    @id
-  content           String
+  id                String            @id
+  ctaTitle          String[]
+  type              NOTIFICATION_TYPE
+  linkTo            String
   authorId          String
   recipientId       String
-  createdAt         DateTime  @default(now())
+  createdAt         DateTime          @default(now())
   readAt            DateTime?
   title             String
-  authorIdToUser    User      @relation("NotificationAuthorIdToUser", fields: [authorId], references: [id])
-  recipientIdToUser User      @relation("NotificationRecipientIdToUser", fields: [recipientId], references: [id])
+  authorIdToUser    User              @relation("NotificationAuthorIdToUser", fields: [authorId], references: [id])
+  recipientIdToUser User              @relation("NotificationRecipientIdToUser", fields: [recipientId], references: [id])
 }
 
 enum PROJECT_STATUS {
@@ -83,7 +92,7 @@ model ProjectRole {
   projectId     String
   roleId        String
   membersAmount Int
-  project       Project @relation(fields: [projectId], references: [id])
+  project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   role          Role    @relation(fields: [roleId], references: [id])
   users         User[]
 
@@ -104,7 +113,7 @@ model TeamMember {
   projectId      String
   createdAt      DateTime               @default(now())
   updatedAt      DateTime?              @updatedAt
-  project        Project                @relation(fields: [projectId], references: [id])
+  project        Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user           User                   @relation(fields: [recipientId], references: [id])
 }
 

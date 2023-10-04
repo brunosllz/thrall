@@ -1,16 +1,11 @@
-import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 
 import { HandlersModule } from './application/handlers/handlers.module';
 import { QueuesModule } from './application/queues/queues.module';
+import { GatewaysModule } from './infra/gateways/gateways.module';
+import { HttpModule } from './infra/http/http.module';
 
 @Module({
-  imports: [
-    BullModule.registerQueue({
-      name: 'notifications',
-    }),
-    HandlersModule,
-    QueuesModule,
-  ],
+  imports: [GatewaysModule, HandlersModule, QueuesModule, HttpModule],
 })
 export class NotificationModule {}

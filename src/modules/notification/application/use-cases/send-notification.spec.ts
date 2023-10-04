@@ -1,3 +1,4 @@
+import { NotificationType } from '../../domain/entities/notification';
 import { InMemoryNotificationsRepository } from '../repositories/in-memory/in-memory-notifications-repository';
 import { SendNotificationUseCase } from './send-notification';
 
@@ -15,7 +16,9 @@ describe('Send Notification', () => {
       authorId: '1',
       recipientId: '2',
       title: 'new notification',
-      content: 'content example',
+      linkTo: '/notications/example',
+      type: NotificationType.INTERACTION,
+      ctaTitle: ['reject', 'accept'],
     });
 
     expect(result.isRight()).toBe(true);
@@ -23,7 +26,6 @@ describe('Send Notification', () => {
       authorId: '1',
       recipientId: '2',
       title: 'new notification',
-      content: 'content example',
     });
   });
 });

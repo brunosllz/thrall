@@ -8,12 +8,12 @@ interface ExpressProjectInterestEventProps {
 }
 
 export class ExpressProjectInterestEvent implements DomainEvent {
-  public ocurredAt: Date;
+  public occurredAt: Date;
   public props: ExpressProjectInterestEventProps;
 
   constructor(props: ExpressProjectInterestEventProps) {
     this.props = props;
-    this.ocurredAt = new Date();
+    this.occurredAt = new Date();
   }
 
   getAggregateId() {

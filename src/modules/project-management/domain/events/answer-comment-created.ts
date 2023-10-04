@@ -3,12 +3,12 @@ import { DomainEvent } from '@common/domain/events/domain-event';
 import { AnswerComment } from '../entities/answer-comment';
 
 export class AnswerCommentCreatedEvent implements DomainEvent {
-  public ocurredAt: Date;
+  public occurredAt: Date;
   public answerComment: AnswerComment;
 
   constructor(answerComment: AnswerComment) {
     this.answerComment = answerComment;
-    this.ocurredAt = new Date();
+    this.occurredAt = new Date();
   }
 
   getAggregateId() {

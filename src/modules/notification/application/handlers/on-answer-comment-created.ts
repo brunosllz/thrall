@@ -1,3 +1,6 @@
+/** 
+
+
 import { DomainEvents } from '@common/domain/events/domain-events';
 import { EventHandler } from '@common/domain/events/event-handler';
 import { UsersRepository } from '@modules/account/application/repositories/users-repository';
@@ -6,7 +9,7 @@ import { AnswerCommentCreatedEvent } from '@modules/project-management/domain/ev
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 
-import { SendNotificationJob } from '../jobs/send-notification-job';
+import { SendNotificationJob } from '../queues/jobs/send-notification-job';
 
 export class OnAnswerCommentCreated implements EventHandler {
   constructor(
@@ -34,15 +37,16 @@ export class OnAnswerCommentCreated implements EventHandler {
     if (answer) {
       const user = await this.userRepository.findById(answerComment.authorId);
 
-      await this.notificationQueue.add(
-        'answer-comment-created',
-        new SendNotificationJob({
-          authorId: answerComment.authorId,
-          recipientId: answer.authorId,
-          title: `${user?.name} comentou na sua resposta`,
-          content: answerComment.excerpt,
-        }),
-      );
+      // await this.notificationQueue.add(
+      //   'answer-comment-created',
+      //   new SendNotificationJob({
+      //     authorId: answerComment.authorId,
+      //     recipientId: answer.authorId,
+      //     title: `${user?.name} comentou na sua resposta`,
+      //     content: answerComment.excerpt,
+      //   }),
+      // );
     }
   }
 }
+*/
