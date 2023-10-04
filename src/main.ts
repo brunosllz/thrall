@@ -1,10 +1,8 @@
 import { Env } from '@common/infra/config/env';
 import { LoggerService } from '@common/infra/logger/logger.service';
-import { HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { LoggerErrorInterceptor } from 'nestjs-pino';
-import { PrismaClientExceptionFilter } from 'nestjs-prisma';
 
 import { AppModule } from './app.module';
 
@@ -14,7 +12,7 @@ async function bootstrap() {
   });
 
   const loggerService = app.get(LoggerService);
-  const { httpAdapter } = app.get(HttpAdapterHost);
+
   const configService = app.get<ConfigService<Env, true>>(ConfigService);
   const port = configService.get('PORT', { infer: true });
 
@@ -29,11 +27,13 @@ async function bootstrap() {
   app.useLogger(loggerService);
   app.useGlobalInterceptors(new LoggerErrorInterceptor());
 
-  app.useGlobalFilters(
-    new PrismaClientExceptionFilter(httpAdapter, {
-      P2003: HttpStatus.UNPROCESSABLE_ENTITY,
-    }),
-  );
+  /** DISABLE PRISMA EXCEPTION FILTER */
+  // const { httpAdapter } = app.get(HttpAdapterHost);
+  // app.useGlobalFilters(
+  //   new PrismaClientExceptionFilter(httpAdapter, {
+  //     P2003: HttpStatus.UNPROCESSABLE_ENTITY,
+  //   }),
+  // );
 
   await app.listen(port, () => {
     loggerService.log(`Server is running on port ${port}`);
