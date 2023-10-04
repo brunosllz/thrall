@@ -1,3 +1,6 @@
+/** 
+
+
 import { DomainEvents } from '@common/domain/events/domain-events';
 import { EventHandler } from '@common/domain/events/event-handler';
 import { UsersRepository } from '@modules/account/application/repositories/users-repository';
@@ -46,3 +49,4 @@ export class OnAnswerCommentCreated implements EventHandler {
     }
   }
 }
+*/
