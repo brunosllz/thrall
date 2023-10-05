@@ -4,7 +4,7 @@ import { DomainEvents } from '@/common/domain/events/domain-events';
 import { envSchema } from '@/common/infra/config/env';
 import { PrismaClient } from '@prisma/client';
 import { config } from 'dotenv';
-import { Redis } from 'ioredis';
+// import { Redis } from 'ioredis';
 import { execSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 
@@ -15,11 +15,13 @@ const env = envSchema.parse(process.env);
 
 const prisma = new PrismaClient();
 
-const redis = new Redis({
-  host: env.REDIS_HOST,
-  port: env.REDIS_PORT,
-  db: env.REDIS_DB,
-});
+/** DISABLE REDIS CONFIG */
+
+// const redis = new Redis({
+//   host: env.REDIS_HOST,
+//   port: env.REDIS_PORT,
+//   db: env.REDIS_DB,
+// });
 
 function generateUniqueDatabaseURL(schemaId: string) {
   if (!env.DATABASE_URL) {
@@ -42,7 +44,7 @@ beforeAll(async () => {
 
   DomainEvents.shouldRun = false;
 
-  await redis.flushdb();
+  // await redis.flushdb();
 
   execSync('npx prisma migrate deploy');
 });
