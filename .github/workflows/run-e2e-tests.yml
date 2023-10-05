@@ -41,4 +41,3 @@ jobs:
         env:
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
           DATABASE_URL: postgres://postgres:docker@localhost:5432/app
-        
