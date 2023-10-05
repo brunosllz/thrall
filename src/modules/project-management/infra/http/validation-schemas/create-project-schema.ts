@@ -20,9 +20,8 @@ export const createProjectBodySchema = z.object({
   technologies: z.array(z.object({ slug: z.string() })),
   meeting: z.object({
     occurredTime: z.string(),
-    type: z
-      .nativeEnum(MeetingType)
-      .transform((value) => value?.toLocaleLowerCase()),
+    type: z.nativeEnum(MeetingType),
+    // .transform((value) => value?.toLocaleLowerCase()),
     date: z
       .string()
       .or(z.nativeEnum(WEEK_DAYS))

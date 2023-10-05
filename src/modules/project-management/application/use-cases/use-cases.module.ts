@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 
 import { CreateAnswerInProjectUseCase } from './commands/create-answer-in-project';
 import { CreateProjectUseCase } from './commands/create-project';
+import { DeleteProjectUseCase } from './commands/delete-project';
 import { FetchProjectsByUserIdUseCase } from './queries/fetch-projects-by-user-id';
 
 @Module({
@@ -11,11 +12,13 @@ import { FetchProjectsByUserIdUseCase } from './queries/fetch-projects-by-user-i
     CreateProjectUseCase,
     CreateAnswerInProjectUseCase,
     FetchProjectsByUserIdUseCase,
+    DeleteProjectUseCase,
   ],
   exports: [
     CreateProjectUseCase,
     CreateAnswerInProjectUseCase,
     FetchProjectsByUserIdUseCase,
+    DeleteProjectUseCase,
   ],
 })
 export class UseCasesModule {}

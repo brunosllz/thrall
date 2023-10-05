@@ -1,3 +1,4 @@
+import { NotAllowedError } from '@/common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
 import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
 
@@ -23,7 +24,9 @@ describe('Delete a projects', () => {
     let errorOccurred = false;
 
     try {
-      const projects = makeFakeProject();
+      const projects = makeFakeProject({
+        authorId: '1',
+      });
 
       await projectsRepository.create(projects);
 
@@ -40,7 +43,7 @@ describe('Delete a projects', () => {
         }),
       );
 
-      await sut.execute({ id: projects.id });
+      await sut.execute({ projectId: projects.id, authorId: '1' });
 
       expect(projectsRepository.items).toHaveLength(0);
       expect(rolesRepository.items).toHaveLength(0);
@@ -55,13 +58,50 @@ describe('Delete a projects', () => {
     let errorOccurred = false;
 
     try {
-      const result = await sut.execute({ id: 'non-id' });
+      const result = await sut.execute({ projectId: 'non-id', authorId: '1' });
 
       expect(result.isLeft()).toBe(true);
       expect(result.value).toBeInstanceOf(ResourceNotFoundError);
     } catch (error) {
       errorOccurred = true;
     }
+    expect(errorOccurred).toBeFalsy();
+  });
+
+  it('should be not able delete a projects with invalid author id', async () => {
+    let errorOccurred = false;
+
+    try {
+      const projects = makeFakeProject({
+        authorId: '1',
+      });
+
+      await projectsRepository.create(projects);
+
+      rolesRepository.items.push(
+        makeFakeRole({
+          projectId: projects.id,
+          name: Slug.createFromText('devops').getValue(),
+          membersAmount: 1,
+        }),
+        makeFakeRole({
+          projectId: projects.id,
+          name: Slug.createFromText('front end').getValue(),
+          membersAmount: 4,
+        }),
+      );
+
+      const result = await sut.execute({
+        projectId: projects.id,
+        authorId: 'non-id',
+      });
+
+      expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(NotAllowedError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
     expect(errorOccurred).toBeFalsy();
   });
 });
