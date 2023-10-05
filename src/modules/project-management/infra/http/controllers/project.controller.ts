@@ -1,6 +1,7 @@
 import { NotAllowedError } from '@/common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@/common/errors/errors/resource-not-found-error';
 import { DeleteProjectUseCase } from '@/modules/project-management/application/use-cases/commands/delete-project';
+import { ManageInviteProjectTeamMemberUseCase } from '@/modules/project-management/application/use-cases/commands/manage-invite-project-team-member';
 import { SendInviteProjectTeamMemberUseCase } from '@/modules/project-management/application/use-cases/commands/send-invite-project-team-member';
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
 import { AuthUser } from '@common/infra/http/auth/auth-user';
@@ -28,6 +29,12 @@ import {
   createProjectBodySchema,
 } from '../validation-schemas/create-project-schema';
 import {
+  ManageInviteProjectTeamMemberBodySchema,
+  ManageInviteProjectTeamMemberParamsSchema,
+  manageInviteProjectTeamMemberBodySchema,
+  manageInviteProjectTeamMemberParamsSchema,
+} from '../validation-schemas/manage-invite-project-team-member-schema';
+import {
   SendAInviteTeamMemberBodySchema,
   SendAInviteTeamMemberParamsSchema,
   sendAInviteTeamMemberBodySchema,
@@ -42,6 +49,7 @@ export class ProjectController {
     private readonly fetchProjectsByUserIdUseCase: FetchProjectsByUserIdUseCase,
     private readonly deleteProjectUseCase: DeleteProjectUseCase,
     private readonly sendInviteProjectTeamMemberUseCase: SendInviteProjectTeamMemberUseCase,
+    private readonly manageInviteProjectTeamMemberUseCase: ManageInviteProjectTeamMemberUseCase,
   ) {}
 
   @Post()
@@ -185,6 +193,49 @@ export class ProjectController {
       ownerId: userId,
       projectId,
       recipientId,
+    });
+
+    if (result.isLeft()) {
+      const error = result.value;
+
+      switch (error.constructor) {
+        case ResourceNotFoundError:
+          throw new BadRequestException({
+            statusCode: 400,
+            message: error.errorValue().message,
+          });
+        case NotAllowedError:
+          throw new UnauthorizedException({
+            statusCode: 401,
+            message: error.errorValue().message,
+          });
+        default:
+          Logger.error(error.errorValue());
+          throw new InternalServerErrorException({
+            statusCode: 500,
+            massage: 'Internal Server Error',
+          });
+      }
+    }
+  }
+
+  @Post('/:projectId/manage/invite')
+  @HttpCode(204)
+  async manageInviteProjectTeamMember(
+    @CurrentUser() user: AuthUser,
+    @Param(new ZodValidationPipe(manageInviteProjectTeamMemberParamsSchema))
+    params: ManageInviteProjectTeamMemberParamsSchema,
+    @Body(new ZodValidationPipe(manageInviteProjectTeamMemberBodySchema))
+    body: ManageInviteProjectTeamMemberBodySchema,
+  ) {
+    const { userId } = user;
+    const { status } = body;
+    const { projectId } = params;
+
+    const result = await this.manageInviteProjectTeamMemberUseCase.execute({
+      memberId: userId,
+      projectId,
+      status,
     });
 
     if (result.isLeft()) {

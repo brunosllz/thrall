@@ -63,7 +63,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
       },
     });
 
-    await Promise.all(
+    await Promise.all([
       rawRolesItems.map(async (role) => {
         await this.prisma.role.upsert({
           where: {
@@ -89,9 +89,6 @@ export class PrismaProjectsRepository extends ProjectsRepository {
           },
         });
       }),
-    );
-
-    await Promise.all(
       rawTechnologiesItems.map(async (technology) => {
         await this.prisma.technology.upsert({
           where: {
@@ -115,9 +112,6 @@ export class PrismaProjectsRepository extends ProjectsRepository {
           },
         });
       }),
-    );
-
-    await Promise.all(
       rawTeamMembersItems.map(async (teamMember) => {
         await this.prisma.teamMember.create({
           data: {
@@ -127,17 +121,15 @@ export class PrismaProjectsRepository extends ProjectsRepository {
             status: teamMember.status as MEMBER_STATUS,
             createdAt: teamMember.createdAt,
             projectId: createdProject.id,
-            updatedAt: teamMember.updatedAt,
+            updatedAt: teamMember.updatedAt ?? null,
           },
         });
       }),
-    );
+    ]);
   }
 
   async save(project: Project): Promise<void> {
     const { rawProject, rawTeamMembers } = ProjectMapper.toPersistence(project);
-
-    // const { getRemovedItems } = rawRoles;
     const newTeamMembers = rawTeamMembers.getNewItems();
 
     const hasNewTeamMember = newTeamMembers.length > 0;
@@ -160,9 +152,6 @@ export class PrismaProjectsRepository extends ProjectsRepository {
       );
     }
 
-    // const removedRoles = getRemovedItems();
-    // const newRoles = getNewItems();
-
     // TODO: add manage role on edit a project
     await this.prisma.project.update({
       where: {
@@ -171,6 +160,15 @@ export class PrismaProjectsRepository extends ProjectsRepository {
       data: {
         description: rawProject.description,
         name: rawProject.name,
+        teamMembers: {
+          updateMany: rawTeamMembers.getItems().map((teamMember) => ({
+            where: { id: teamMember.id },
+            data: {
+              status: teamMember.status as MEMBER_STATUS,
+              updatedAt: teamMember.updatedAt,
+            },
+          })),
+        },
       },
     });
   }

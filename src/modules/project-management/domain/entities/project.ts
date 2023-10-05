@@ -197,7 +197,8 @@ export class Project extends AggregateRoot<ProjectProps> {
     );
 
     if (member) {
-      member.status = MemberStatus.APPROVED;
+      member.changeStatus(MemberStatus.APPROVED);
+      this.teamMembers.update(teamMembers);
     }
   }
 
@@ -209,7 +210,8 @@ export class Project extends AggregateRoot<ProjectProps> {
     );
 
     if (member) {
-      member.status = MemberStatus.REJECTED;
+      member.changeStatus(MemberStatus.REJECTED);
+      this.teamMembers.update(teamMembers);
     }
 
     this.addDomainEvent(

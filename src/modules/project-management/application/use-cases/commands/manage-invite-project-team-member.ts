@@ -14,7 +14,7 @@ interface ManageInviteProjectTeamMemberRequest {
 }
 
 type ManageInviteProjectTeamMemberResponse = Either<
-  ResourceNotFoundError | NotAllowedError | Result<void>,
+  ResourceNotFoundError | NotAllowedError | Result<any>,
   Result<void>
 >;
 

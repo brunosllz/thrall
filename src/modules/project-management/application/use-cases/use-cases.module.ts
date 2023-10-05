@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common';
 import { CreateAnswerInProjectUseCase } from './commands/create-answer-in-project';
 import { CreateProjectUseCase } from './commands/create-project';
 import { DeleteProjectUseCase } from './commands/delete-project';
+import { ManageInviteProjectTeamMemberUseCase } from './commands/manage-invite-project-team-member';
 import { SendInviteProjectTeamMemberUseCase } from './commands/send-invite-project-team-member';
 import { FetchProjectsByUserIdUseCase } from './queries/fetch-projects-by-user-id';
 
@@ -15,6 +16,7 @@ import { FetchProjectsByUserIdUseCase } from './queries/fetch-projects-by-user-i
     FetchProjectsByUserIdUseCase,
     DeleteProjectUseCase,
     SendInviteProjectTeamMemberUseCase,
+    ManageInviteProjectTeamMemberUseCase,
   ],
   exports: [
     CreateProjectUseCase,
@@ -22,6 +24,7 @@ import { FetchProjectsByUserIdUseCase } from './queries/fetch-projects-by-user-i
     FetchProjectsByUserIdUseCase,
     DeleteProjectUseCase,
     SendInviteProjectTeamMemberUseCase,
+    ManageInviteProjectTeamMemberUseCase,
   ],
 })
 export class UseCasesModule {}

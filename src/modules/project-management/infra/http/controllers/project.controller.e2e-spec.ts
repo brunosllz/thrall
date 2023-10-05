@@ -13,7 +13,6 @@ import request from 'supertest';
 
 import { ProjectFactory } from '@test/factories/make-project';
 import { UserFactory } from '@test/factories/make-user';
-import { waitFor } from '@test/factories/utils/wait-for';
 
 import { PrismaDatabaseModule } from '../../prisma/prisma-database.module';
 import { CreateProjectBodySchema } from '../validation-schemas/create-project-schema';
@@ -121,10 +120,8 @@ describe('ProjectController (e2e)', () => {
 
     const projectsOnDatabase = await prisma.project.findMany();
 
-    waitFor(() => {
-      expect(projectsOnDatabase).toBeTruthy();
-      expect(projectsOnDatabase).toHaveLength(0);
-    });
+    expect(projectsOnDatabase).toBeTruthy();
+    expect(projectsOnDatabase).toHaveLength(0);
   });
 
   test('/:projectId/invite (POST) - send a invite team member', async () => {
@@ -145,31 +142,85 @@ describe('ProjectController (e2e)', () => {
       .send({ recipientId: user2.id })
       .expect(204);
 
-    const [projectsOnDatabase, teamMembersOnDatabase] = await Promise.all([
-      prisma.project.findUnique({
-        where: {
-          id: createdProject.id,
-        },
-      }),
-      prisma.teamMember.findMany({
-        where: {
-          projectId: createdProject.id,
-        },
-      }),
+    const teamMembersOnDatabase = await prisma.teamMember.findMany({
+      where: {
+        projectId: createdProject.id,
+      },
+    });
+
+    expect(teamMembersOnDatabase).toHaveLength(2);
+    expect(teamMembersOnDatabase).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          recipientId: user1.id,
+          status: 'approved',
+        }),
+        expect.objectContaining({ recipientId: user2.id, status: 'pending' }),
+      ]),
+    );
+  });
+
+  test('/:projectId/manage/invite (POST) - manage invite of a team member', async () => {
+    const [user1, user2, user3] = await Promise.all([
+      userFactory.makeUser(),
+      userFactory.makeUser(),
+      userFactory.makeUser(),
     ]);
 
-    waitFor(() => {
-      expect(projectsOnDatabase).toBeTruthy();
-      expect(teamMembersOnDatabase).toHaveLength(2);
-      expect(teamMembersOnDatabase).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            recipientId: user1.id,
-            status: 'approved',
-          }),
-          expect.objectContaining({ recipientId: user2.id, status: 'pending' }),
-        ]),
-      );
+    const createdProject = await projectFactory.makeProject({
+      authorId: user1.id,
     });
+
+    const accessTokenUser1 = jwt.sign({ uid: user1.id });
+    const accessTokenUser2 = jwt.sign({ uid: user2.id });
+    const accessTokenUser3 = jwt.sign({ uid: user3.id });
+
+    await request(app.getHttpServer())
+      .post(`/projects/${createdProject.id}/invite`)
+      .set('Authorization', `Bearer ${accessTokenUser1}`)
+      .send({ recipientId: user2.id })
+      .expect(204);
+
+    await request(app.getHttpServer())
+      .post(`/projects/${createdProject.id}/invite`)
+      .set('Authorization', `Bearer ${accessTokenUser1}`)
+      .send({ recipientId: user3.id })
+      .expect(204);
+
+    await request(app.getHttpServer())
+      .post(`/projects/${createdProject.id}/manage/invite`)
+      .set('Authorization', `Bearer ${accessTokenUser2}`)
+      .send({ status: 'approved' })
+      .expect(204);
+
+    await request(app.getHttpServer())
+      .post(`/projects/${createdProject.id}/manage/invite`)
+      .set('Authorization', `Bearer ${accessTokenUser3}`)
+      .send({ status: 'rejected' })
+      .expect(204);
+
+    const teamMembersOnDatabase = await prisma.teamMember.findMany({
+      where: {
+        projectId: createdProject.id,
+      },
+    });
+
+    expect(teamMembersOnDatabase).toHaveLength(3);
+    expect(teamMembersOnDatabase).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          recipientId: user1.id,
+          status: 'approved',
+        }),
+        expect.objectContaining({
+          recipientId: user2.id,
+          status: 'approved',
+        }),
+        expect.objectContaining({
+          recipientId: user3.id,
+          status: 'rejected',
+        }),
+      ]),
+    );
   });
 });
