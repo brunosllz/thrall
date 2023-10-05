@@ -1,3 +1,5 @@
+import { MEMBER_STATUS } from '.prisma/client';
+
 import { PrismaService } from '@common/infra/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import {
@@ -50,6 +52,24 @@ export class ProjectFactory {
     await this.prisma.project.create({
       data: rawProject,
     });
+
+    const teamMembers = project.teamMembers.getItems();
+
+    await Promise.all(
+      teamMembers.map(async (teamMember) => {
+        await this.prisma.teamMember.create({
+          data: {
+            id: teamMember.id,
+            recipientId: teamMember.recipientId,
+            permissionType: teamMember.permissionType,
+            status: teamMember.status as MEMBER_STATUS,
+            createdAt: teamMember.createdAt,
+            projectId: project.id,
+            updatedAt: teamMember.updatedAt,
+          },
+        });
+      }),
+    );
 
     return project;
   }

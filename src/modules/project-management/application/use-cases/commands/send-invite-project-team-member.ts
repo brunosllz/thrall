@@ -14,7 +14,7 @@ interface SendInviteProjectTeamMemberRequest {
 }
 
 type SendInviteProjectTeamMemberResponse = Either<
-  ResourceNotFoundError | NotAllowedError | Result<void>,
+  ResourceNotFoundError | NotAllowedError | Result<any>,
   Result<void>
 >;
 

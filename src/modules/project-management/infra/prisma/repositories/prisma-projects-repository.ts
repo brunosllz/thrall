@@ -135,9 +135,30 @@ export class PrismaProjectsRepository extends ProjectsRepository {
   }
 
   async save(project: Project): Promise<void> {
-    const { rawProject } = ProjectMapper.toPersistence(project);
+    const { rawProject, rawTeamMembers } = ProjectMapper.toPersistence(project);
 
     // const { getRemovedItems } = rawRoles;
+    const newTeamMembers = rawTeamMembers.getNewItems();
+
+    const hasNewTeamMember = newTeamMembers.length > 0;
+
+    if (hasNewTeamMember) {
+      await Promise.all(
+        newTeamMembers.map(async (teamMember) => {
+          await this.prisma.teamMember.create({
+            data: {
+              id: teamMember.id,
+              recipientId: teamMember.recipientId,
+              permissionType: teamMember.permissionType,
+              status: teamMember.status as MEMBER_STATUS,
+              createdAt: teamMember.createdAt,
+              projectId: rawProject.id,
+              updatedAt: teamMember.updatedAt,
+            },
+          });
+        }),
+      );
+    }
 
     // const removedRoles = getRemovedItems();
     // const newRoles = getNewItems();

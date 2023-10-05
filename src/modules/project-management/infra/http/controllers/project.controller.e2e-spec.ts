@@ -94,7 +94,8 @@ describe('ProjectController (e2e)', () => {
     const response = await request(app.getHttpServer())
       .get('/projects/me')
       .set('Authorization', `Bearer ${accessToken}`)
-      .send();
+      .send()
+      .expect(200);
 
     expect(response.statusCode).toEqual(200);
     expect(response.body).toEqual({
@@ -123,6 +124,52 @@ describe('ProjectController (e2e)', () => {
     waitFor(() => {
       expect(projectsOnDatabase).toBeTruthy();
       expect(projectsOnDatabase).toHaveLength(0);
+    });
+  });
+
+  test('/:projectId/invite (POST) - send a invite team member', async () => {
+    const [user1, user2] = await Promise.all([
+      userFactory.makeUser(),
+      userFactory.makeUser(),
+    ]);
+
+    const createdProject = await projectFactory.makeProject({
+      authorId: user1.id,
+    });
+
+    const accessToken = jwt.sign({ uid: user1.id });
+
+    await request(app.getHttpServer())
+      .post(`/projects/${createdProject.id}/invite`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ recipientId: user2.id })
+      .expect(204);
+
+    const [projectsOnDatabase, teamMembersOnDatabase] = await Promise.all([
+      prisma.project.findUnique({
+        where: {
+          id: createdProject.id,
+        },
+      }),
+      prisma.teamMember.findMany({
+        where: {
+          projectId: createdProject.id,
+        },
+      }),
+    ]);
+
+    waitFor(() => {
+      expect(projectsOnDatabase).toBeTruthy();
+      expect(teamMembersOnDatabase).toHaveLength(2);
+      expect(teamMembersOnDatabase).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            recipientId: user1.id,
+            status: 'approved',
+          }),
+          expect.objectContaining({ recipientId: user2.id, status: 'pending' }),
+        ]),
+      );
     });
   });
 });

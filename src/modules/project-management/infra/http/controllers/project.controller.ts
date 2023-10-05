@@ -1,11 +1,11 @@
 import { NotAllowedError } from '@/common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@/common/errors/errors/resource-not-found-error';
 import { DeleteProjectUseCase } from '@/modules/project-management/application/use-cases/commands/delete-project';
+import { SendInviteProjectTeamMemberUseCase } from '@/modules/project-management/application/use-cases/commands/send-invite-project-team-member';
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
 import { AuthUser } from '@common/infra/http/auth/auth-user';
 import { CurrentUser } from '@common/infra/http/auth/decorators/current-user';
 import { ZodValidationPipe } from '@common/infra/pipes/zod-validation-pipe';
-import { Result } from '@common/logic/result';
 import { CreateProjectUseCase } from '@modules/project-management/application/use-cases/commands/create-project';
 import { FetchProjectsByUserIdUseCase } from '@modules/project-management/application/use-cases/queries/fetch-projects-by-user-id';
 import {
@@ -27,6 +27,12 @@ import {
   CreateProjectBodySchema,
   createProjectBodySchema,
 } from '../validation-schemas/create-project-schema';
+import {
+  SendAInviteTeamMemberBodySchema,
+  SendAInviteTeamMemberParamsSchema,
+  sendAInviteTeamMemberBodySchema,
+  sendAInviteTeamMemberParamsSchema,
+} from '../validation-schemas/send-invite-team-member-schema';
 import { FetchProjectsByUserIdViewModel } from '../view-models/fetch-projects-by-user-id-view-model';
 
 @Controller('/projects')
@@ -35,6 +41,7 @@ export class ProjectController {
     private readonly createProjectUseCase: CreateProjectUseCase,
     private readonly fetchProjectsByUserIdUseCase: FetchProjectsByUserIdUseCase,
     private readonly deleteProjectUseCase: DeleteProjectUseCase,
+    private readonly sendInviteProjectTeamMemberUseCase: SendInviteProjectTeamMemberUseCase,
   ) {}
 
   @Post()
@@ -76,11 +83,6 @@ export class ProjectController {
       const error = result.value;
 
       switch (error.constructor) {
-        case Result:
-          throw new BadRequestException({
-            statusCode: 400,
-            message: error.errorValue().message,
-          });
         case AlreadyExistsError:
           throw new ConflictException({
             statusCode: 409,
@@ -146,11 +148,49 @@ export class ProjectController {
       const error = result.value;
 
       switch (error.constructor) {
-        case Result:
+        case ResourceNotFoundError:
           throw new BadRequestException({
             statusCode: 400,
             message: error.errorValue().message,
           });
+        case NotAllowedError:
+          throw new UnauthorizedException({
+            statusCode: 401,
+            message: error.errorValue().message,
+          });
+        default:
+          Logger.error(error.errorValue());
+          throw new InternalServerErrorException({
+            statusCode: 500,
+            massage: 'Internal Server Error',
+          });
+      }
+    }
+  }
+
+  @Post('/:projectId/invite')
+  @HttpCode(204)
+  async sendAInviteTeamMember(
+    @CurrentUser() user: AuthUser,
+    @Param(new ZodValidationPipe(sendAInviteTeamMemberParamsSchema))
+    params: SendAInviteTeamMemberParamsSchema,
+    @Body(new ZodValidationPipe(sendAInviteTeamMemberBodySchema))
+    body: SendAInviteTeamMemberBodySchema,
+  ) {
+    const { userId } = user;
+    const { recipientId } = body;
+    const { projectId } = params;
+
+    const result = await this.sendInviteProjectTeamMemberUseCase.execute({
+      ownerId: userId,
+      projectId,
+      recipientId,
+    });
+
+    if (result.isLeft()) {
+      const error = result.value;
+
+      switch (error.constructor) {
         case ResourceNotFoundError:
           throw new BadRequestException({
             statusCode: 400,
