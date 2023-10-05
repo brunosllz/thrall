@@ -1,3 +1,4 @@
+import { DomainEvents } from '@/common/domain/events/domain-events';
 import { PrismaService } from '@common/infra/prisma/prisma.service';
 import { ProjectsRepository } from '@modules/project-management/application/repositories/projects-repository';
 import { Project } from '@modules/project-management/domain/entities/project';
@@ -171,6 +172,8 @@ export class PrismaProjectsRepository extends ProjectsRepository {
         },
       },
     });
+
+    DomainEvents.dispatchEventsForAggregate(project.id);
   }
 
   async delete(project: Project) {
