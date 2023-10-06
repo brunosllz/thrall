@@ -165,6 +165,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
           updateMany: rawTeamMembers.getItems().map((teamMember) => ({
             where: { id: teamMember.id },
             data: {
+              permissionType: teamMember.permissionType,
               status: teamMember.status as MEMBER_STATUS,
               updatedAt: teamMember.updatedAt,
             },

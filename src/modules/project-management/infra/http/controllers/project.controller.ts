@@ -1,7 +1,9 @@
 import { NotAllowedError } from '@/common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@/common/errors/errors/resource-not-found-error';
 import { DeleteProjectUseCase } from '@/modules/project-management/application/use-cases/commands/delete-project';
+import { ManageProjectTeamMemberPrivilegeError } from '@/modules/project-management/application/use-cases/commands/errors/manage-project-team-member-privilege-error';
 import { ManageInviteProjectTeamMemberUseCase } from '@/modules/project-management/application/use-cases/commands/manage-invite-project-team-member';
+import { ManageProjectTeamMemberPrivilegeUseCase } from '@/modules/project-management/application/use-cases/commands/manage-project-team-member-privilege';
 import { SendInviteProjectTeamMemberUseCase } from '@/modules/project-management/application/use-cases/commands/send-invite-project-team-member';
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
 import { AuthUser } from '@common/infra/http/auth/auth-user';
@@ -20,6 +22,7 @@ import {
   InternalServerErrorException,
   Logger,
   Param,
+  Patch,
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -34,6 +37,12 @@ import {
   manageInviteProjectTeamMemberBodySchema,
   manageInviteProjectTeamMemberParamsSchema,
 } from '../validation-schemas/manage-invite-project-team-member-schema';
+import {
+  ManageProjectTeamMemberPrivilegeParamsSchema,
+  ManageProjectTeamMemberPrivilegeBodySchema,
+  manageProjectTeamMemberPrivilegeBodySchema,
+  manageProjectTeamMemberPrivilegeParamsSchema,
+} from '../validation-schemas/manage-project-team-member-privilege-schema';
 import {
   SendAInviteTeamMemberBodySchema,
   SendAInviteTeamMemberParamsSchema,
@@ -50,6 +59,7 @@ export class ProjectController {
     private readonly deleteProjectUseCase: DeleteProjectUseCase,
     private readonly sendInviteProjectTeamMemberUseCase: SendInviteProjectTeamMemberUseCase,
     private readonly manageInviteProjectTeamMemberUseCase: ManageInviteProjectTeamMemberUseCase,
+    private readonly manageProjectTeamMemberPrivilegeUseCase: ManageProjectTeamMemberPrivilegeUseCase,
   ) {}
 
   @Post()
@@ -248,6 +258,55 @@ export class ProjectController {
             message: error.errorValue().message,
           });
         case NotAllowedError:
+          throw new UnauthorizedException({
+            statusCode: 401,
+            message: error.errorValue().message,
+          });
+        default:
+          Logger.error(error.errorValue());
+          throw new InternalServerErrorException({
+            statusCode: 500,
+            massage: 'Internal Server Error',
+          });
+      }
+    }
+  }
+
+  @Patch('/:projectId/manage/member/:memberId/privilege')
+  @HttpCode(204)
+  async ManageProjectTeamMemberPrivilege(
+    @Param(new ZodValidationPipe(manageProjectTeamMemberPrivilegeParamsSchema))
+    params: ManageProjectTeamMemberPrivilegeParamsSchema,
+    @Body(new ZodValidationPipe(manageProjectTeamMemberPrivilegeBodySchema))
+    body: ManageProjectTeamMemberPrivilegeBodySchema,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const { userId } = user;
+    const { permissionType } = body;
+    const { projectId, memberId } = params;
+
+    const result = await this.manageProjectTeamMemberPrivilegeUseCase.execute({
+      memberId,
+      ownerId: userId,
+      projectId,
+      permissionType,
+    });
+
+    if (result.isLeft()) {
+      const error = result.value;
+
+      switch (error.constructor) {
+        case ResourceNotFoundError:
+          throw new BadRequestException({
+            statusCode: 400,
+            message: error.errorValue().message,
+          });
+        case NotAllowedError:
+          throw new UnauthorizedException({
+            statusCode: 401,
+            message: error.errorValue().message,
+          });
+        case ManageProjectTeamMemberPrivilegeError.InvalidDeleteItSelf:
           throw new UnauthorizedException({
             statusCode: 401,
             message: error.errorValue().message,

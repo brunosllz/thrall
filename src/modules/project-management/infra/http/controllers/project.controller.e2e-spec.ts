@@ -1,5 +1,11 @@
 import { AppModule } from '@/app.module';
 import { PrismaService } from '@/common/infra/prisma/prisma.service';
+import {
+  Member,
+  MemberStatus,
+  PermissionType,
+} from '@/modules/project-management/domain/entities/member';
+import { TeamMembersList } from '@/modules/project-management/domain/entities/watched-lists/team-members-list';
 import { faker } from '@faker-js/faker';
 import { ProjectStatus } from '@modules/project-management/domain/entities/project';
 import {
@@ -219,6 +225,61 @@ describe('ProjectController (e2e)', () => {
         expect.objectContaining({
           recipientId: user3.id,
           status: 'rejected',
+        }),
+      ]),
+    );
+  });
+
+  test('/:projectId/manage/member/:memberId/privilege (PATCH) - manage privilege of a team member', async () => {
+    const [user1, user2] = await Promise.all([
+      userFactory.makeUser(),
+      userFactory.makeUser(),
+    ]);
+
+    const createdProject = await projectFactory.makeProject({
+      authorId: user1.id,
+      teamMembers: new TeamMembersList([
+        Member.create({
+          permissionType: PermissionType.OWNER,
+          recipientId: user1.id,
+          status: MemberStatus.APPROVED,
+        }).getValue(),
+        Member.create({
+          permissionType: PermissionType.MEMBER,
+          recipientId: user2.id,
+          status: MemberStatus.APPROVED,
+        }).getValue(),
+      ]),
+    });
+
+    const accessToken = jwt.sign({ uid: user1.id });
+
+    await request(app.getHttpServer())
+      .patch(
+        `/projects/${createdProject.id}/manage/member/${user2.id}/privilege`,
+      )
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ permissionType: 'owner' })
+      .expect(204);
+
+    const teamMembersOnDatabase = await prisma.teamMember.findMany({
+      where: {
+        projectId: createdProject.id,
+      },
+    });
+
+    expect(teamMembersOnDatabase).toHaveLength(2);
+    expect(teamMembersOnDatabase).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          recipientId: user1.id,
+          status: 'approved',
+          permissionType: 'owner',
+        }),
+        expect.objectContaining({
+          recipientId: user2.id,
+          status: 'approved',
+          permissionType: 'owner',
         }),
       ]),
     );

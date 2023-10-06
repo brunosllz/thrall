@@ -19,7 +19,7 @@ type ManageProjectTeamMemberPrivilegeResponse = Either<
   | ResourceNotFoundError
   | NotAllowedError
   | ManageProjectTeamMemberPrivilegeError.InvalidDeleteItSelf
-  | Result<void>,
+  | Result<any>,
   Result<void>
 >;
 
