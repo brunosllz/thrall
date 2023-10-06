@@ -1,3 +1,4 @@
+import { Result } from '@/common/logic/result';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
 import { faker } from '@faker-js/faker';
 
@@ -18,7 +19,7 @@ describe('Add interested in project', () => {
     sut = new AddInterestedInProject(projectsRepository);
   });
 
-  it('should be able to express interest in project', async () => {
+  it('should be able to add interested in project', async () => {
     let errorOccurred = false;
 
     try {
@@ -48,7 +49,7 @@ describe('Add interested in project', () => {
     expect(errorOccurred).toBeFalsy();
   });
 
-  it('should be not able to express interest with non exist project id', async () => {
+  it('should be not able to add interested with non exist project id', async () => {
     let errorOccurred = false;
 
     try {
@@ -65,6 +66,36 @@ describe('Add interested in project', () => {
 
       expect(result.isLeft).toBeTruthy();
       expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
+  });
+
+  it('should be not able to add interested if already exist previously', async () => {
+    let errorOccurred = false;
+
+    try {
+      const project = makeFakeProject();
+
+      await projectsRepository.create(project);
+
+      const userId = faker.string.uuid();
+
+      await sut.execute({
+        projectId: project.id,
+        userId: userId,
+      });
+
+      const result = await sut.execute({
+        projectId: project.id,
+        userId: userId,
+      });
+
+      expect(result.isLeft).toBeTruthy();
+      expect(result.value).toBeInstanceOf(Result);
+      expect(result.value.error).toEqual('It is already interested');
     } catch (error) {
       errorOccurred = true;
     }

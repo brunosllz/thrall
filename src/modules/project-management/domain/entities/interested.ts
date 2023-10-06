@@ -17,7 +17,7 @@ export class Interested extends Entity<interestedProps> {
     return this.props.occurredAt;
   }
 
-  static create(props: Optional<interestedProps, 'occurredAt'>) {
+  static create(props: Optional<interestedProps, 'occurredAt'>, id?: string) {
     const resultGuard = Guard.againstNullOrUndefinedBulk([
       { argument: props.recipientId, argumentName: 'recipientId' },
     ]);
@@ -26,10 +26,13 @@ export class Interested extends Entity<interestedProps> {
       return Result.fail<Interested>(resultGuard.message);
     }
 
-    const interestedProps = new Interested({
-      recipientId: props.recipientId,
-      occurredAt: props.occurredAt ?? new Date(),
-    });
+    const interestedProps = new Interested(
+      {
+        recipientId: props.recipientId,
+        occurredAt: props.occurredAt ?? new Date(),
+      },
+      id,
+    );
 
     return Result.ok<Interested>(interestedProps);
   }

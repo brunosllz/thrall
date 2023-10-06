@@ -1,5 +1,7 @@
 import { NotAllowedError } from '@/common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@/common/errors/errors/resource-not-found-error';
+import { Result } from '@/common/logic/result';
+import { AddInterestedInProject } from '@/modules/project-management/application/use-cases/commands/add-interested-in-project';
 import { DeleteProjectUseCase } from '@/modules/project-management/application/use-cases/commands/delete-project';
 import { ManageProjectTeamMemberPrivilegeError } from '@/modules/project-management/application/use-cases/commands/errors/manage-project-team-member-privilege-error';
 import { ManageInviteProjectTeamMemberUseCase } from '@/modules/project-management/application/use-cases/commands/manage-invite-project-team-member';
@@ -27,6 +29,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
+import {
+  AddInterestInProjectParamsSchema,
+  addInterestInProjectParamsSchema,
+} from '../validation-schemas/add-interest-in-project-schema';
 import {
   CreateProjectBodySchema,
   createProjectBodySchema,
@@ -60,6 +66,7 @@ export class ProjectController {
     private readonly sendInviteProjectTeamMemberUseCase: SendInviteProjectTeamMemberUseCase,
     private readonly manageInviteProjectTeamMemberUseCase: ManageInviteProjectTeamMemberUseCase,
     private readonly manageProjectTeamMemberPrivilegeUseCase: ManageProjectTeamMemberPrivilegeUseCase,
+    private readonly addInterestedInProject: AddInterestedInProject,
   ) {}
 
   @Post()
@@ -274,7 +281,7 @@ export class ProjectController {
 
   @Patch('/:projectId/manage/member/:memberId/privilege')
   @HttpCode(204)
-  async ManageProjectTeamMemberPrivilege(
+  async manageProjectTeamMemberPrivilege(
     @Param(new ZodValidationPipe(manageProjectTeamMemberPrivilegeParamsSchema))
     params: ManageProjectTeamMemberPrivilegeParamsSchema,
     @Body(new ZodValidationPipe(manageProjectTeamMemberPrivilegeBodySchema))
@@ -309,6 +316,45 @@ export class ProjectController {
         case ManageProjectTeamMemberPrivilegeError.InvalidDeleteItSelf:
           throw new UnauthorizedException({
             statusCode: 401,
+            message: error.errorValue().message,
+          });
+        default:
+          Logger.error(error.errorValue());
+          throw new InternalServerErrorException({
+            statusCode: 500,
+            massage: 'Internal Server Error',
+          });
+      }
+    }
+  }
+
+  @Post('/interest/in/:projectId')
+  @HttpCode(204)
+  async addInterestInProject(
+    @CurrentUser() user: AuthUser,
+    @Param(new ZodValidationPipe(addInterestInProjectParamsSchema))
+    params: AddInterestInProjectParamsSchema,
+  ) {
+    const { userId } = user;
+    const { projectId } = params;
+
+    const result = await this.addInterestedInProject.execute({
+      projectId,
+      userId,
+    });
+
+    if (result.isLeft()) {
+      const error = result.value;
+
+      switch (error.constructor) {
+        case Result:
+          throw new ConflictException({
+            statusCode: 409,
+            message: error.errorValue(),
+          });
+        case ResourceNotFoundError:
+          throw new BadRequestException({
+            statusCode: 400,
             message: error.errorValue().message,
           });
         default:

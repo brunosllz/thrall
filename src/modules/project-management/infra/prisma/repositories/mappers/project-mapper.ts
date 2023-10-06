@@ -1,3 +1,5 @@
+import { Interested } from '@/modules/project-management/domain/entities/interested';
+import { ProjectInterestedList } from '@/modules/project-management/domain/entities/watched-lists/project-interested-list';
 import {
   Member,
   MemberStatus,
@@ -24,6 +26,7 @@ import {
   Role as RawRole,
   Technology as RawTechnology,
   TeamMember as RawTeamMember,
+  InterestedInProject as RawInterestedInProject,
   MEETING_TYPE,
 } from '@prisma/client';
 
@@ -32,6 +35,7 @@ type ToDomainRawProps = RawProject & {
   technologies: RawTechnology[];
   answers: RawAnswer[];
   teamMembers: RawTeamMember[];
+  interestedInProject: RawInterestedInProject[];
 };
 
 export class ProjectMapper {
@@ -64,6 +68,16 @@ export class ProjectMapper {
       ).getValue();
     });
 
+    const interested = raw.interestedInProject.map((interested) => {
+      return Interested.create(
+        {
+          recipientId: interested.userId,
+          occurredAt: interested.occurredAt,
+        },
+        interested.id,
+      ).getValue();
+    });
+
     const project = Project.create(
       {
         authorId: raw.authorId,
@@ -80,6 +94,7 @@ export class ProjectMapper {
         roles: new ProjectRoleList(roles),
         technologies: new ProjectTechnologyList(technologies),
         teamMembers: new TeamMembersList(teamMembers),
+        interested: new ProjectInterestedList(interested),
         createdAt: raw.createdAt,
         updatedAt: raw.updatedAt ?? undefined,
       },
@@ -109,6 +124,7 @@ export class ProjectMapper {
       rawTeamMembers: project.teamMembers,
       rawRoles: project.roles,
       rawTechnologies: project.technologies,
+      rawInterested: project.interested,
     };
   }
 }

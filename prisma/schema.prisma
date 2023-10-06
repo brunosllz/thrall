@@ -63,6 +63,16 @@ enum MEETING_TYPE {
   monthly
 }
 
+model InterestedInProject {
+  id         String   @id @default(uuid())
+  userId     String
+  projectId  String
+  occurredAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+}
+
 model Project {
   id                  String         @id @default(uuid())
   authorId            String
@@ -76,13 +86,14 @@ model Project {
   meetingDate         String?
   meetingOccurredTime String
 
-  answers      Answer[]
-  users        User          @relation(fields: [authorId], references: [id])
-  projectRoles ProjectRole[]
-  teamMembers  TeamMember[]
-  technologies Technology[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime?     @updatedAt
+  answers             Answer[]
+  users               User                  @relation(fields: [authorId], references: [id])
+  projectRoles        ProjectRole[]
+  teamMembers         TeamMember[]
+  technologies        Technology[]
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime?             @updatedAt
+  interestedInProject InterestedInProject[]
 
   @@unique([authorId, slug])
 }
@@ -125,9 +136,9 @@ model Technology {
 }
 
 model User {
-  id                        String          @id @default(uuid())
+  id                        String                @id @default(uuid())
   name                      String
-  email                     String          @unique
+  email                     String                @unique
   bio                       String?
   occupation                String?
   avatarUrl                 String
@@ -136,19 +147,20 @@ model User {
   country                   String?
   linkedinLink              String?
   githubLink                String?
-  createdAt                 DateTime        @default(now())
-  updatedAt                 DateTime?       @updatedAt
-  userName                  String?         @unique
+  createdAt                 DateTime              @default(now())
+  updatedAt                 DateTime?             @updatedAt
+  userName                  String?               @unique
   Answer                    Answer[]
   AnswerComment             AnswerComment[]
-  authorIdToNotifcation     Notification[]  @relation("NotificationAuthorIdToUser")
-  recipientIdToNotification Notification[]  @relation("NotificationRecipientIdToUser")
+  authorIdToNotifcation     Notification[]        @relation("NotificationAuthorIdToUser")
+  recipientIdToNotification Notification[]        @relation("NotificationRecipientIdToUser")
   projects                  Project[]
   teamMember                TeamMember[]
   projectRole               ProjectRole[]
   technologies              Technology[]
   account                   Account[]
   session                   Session[]
+  InterestedInProject       InterestedInProject[]
 }
 
 model Account {

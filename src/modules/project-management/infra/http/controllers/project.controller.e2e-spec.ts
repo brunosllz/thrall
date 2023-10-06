@@ -284,4 +284,41 @@ describe('ProjectController (e2e)', () => {
       ]),
     );
   });
+
+  test('/interest/in/:projectId (POST) - add interest in a project', async () => {
+    const [user1, user2] = await Promise.all([
+      userFactory.makeUser(),
+      userFactory.makeUser(),
+    ]);
+
+    const createdProject = await projectFactory.makeProject({
+      authorId: user1.id,
+    });
+
+    const accessTokenUser2 = jwt.sign({ uid: user2.id });
+
+    await request(app.getHttpServer())
+      .post(`/projects/interest/in/${createdProject.id}`)
+      .set('Authorization', `Bearer ${accessTokenUser2}`)
+      .expect(204);
+
+    const ProjectOnDatabase = await prisma.project.findUnique({
+      where: {
+        id: createdProject.id,
+      },
+      include: {
+        interestedInProject: true,
+      },
+    });
+
+    expect(ProjectOnDatabase?.interestedInProject).toHaveLength(1);
+    expect(ProjectOnDatabase?.interestedInProject).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          userId: user2.id,
+          projectId: createdProject.id,
+        }),
+      ]),
+    );
+  });
 });

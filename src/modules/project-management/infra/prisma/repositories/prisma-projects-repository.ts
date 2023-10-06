@@ -40,6 +40,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
         },
         teamMembers: true,
         technologies: true,
+        interestedInProject: true,
       },
     });
 
@@ -130,10 +131,26 @@ export class PrismaProjectsRepository extends ProjectsRepository {
   }
 
   async save(project: Project): Promise<void> {
-    const { rawProject, rawTeamMembers } = ProjectMapper.toPersistence(project);
+    const { rawProject, rawTeamMembers, rawInterested } =
+      ProjectMapper.toPersistence(project);
     const newTeamMembers = rawTeamMembers.getNewItems();
+    const newInterested = rawInterested.getNewItems();
 
     const hasNewTeamMember = newTeamMembers.length > 0;
+    const hasNewInterested = newInterested.length > 0;
+
+    if (hasNewInterested) {
+      await Promise.all(
+        newInterested.map(async (interested) => {
+          await this.prisma.interestedInProject.create({
+            data: {
+              userId: interested.recipientId,
+              projectId: rawProject.id,
+            },
+          });
+        }),
+      );
+    }
 
     if (hasNewTeamMember) {
       await Promise.all(

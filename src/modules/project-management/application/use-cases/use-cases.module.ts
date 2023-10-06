@@ -1,6 +1,7 @@
 import { PrismaDatabaseModule } from '@modules/project-management/infra/prisma/prisma-database.module';
 import { Module } from '@nestjs/common';
 
+import { AddInterestedInProject } from './commands/add-interested-in-project';
 import { CreateAnswerInProjectUseCase } from './commands/create-answer-in-project';
 import { CreateProjectUseCase } from './commands/create-project';
 import { DeleteProjectUseCase } from './commands/delete-project';
@@ -19,6 +20,7 @@ import { FetchProjectsByUserIdUseCase } from './queries/fetch-projects-by-user-i
     SendInviteProjectTeamMemberUseCase,
     ManageInviteProjectTeamMemberUseCase,
     ManageProjectTeamMemberPrivilegeUseCase,
+    AddInterestedInProject,
   ],
   exports: [
     CreateProjectUseCase,
@@ -28,6 +30,7 @@ import { FetchProjectsByUserIdUseCase } from './queries/fetch-projects-by-user-i
     SendInviteProjectTeamMemberUseCase,
     ManageInviteProjectTeamMemberUseCase,
     ManageProjectTeamMemberPrivilegeUseCase,
+    AddInterestedInProject,
   ],
 })
 export class UseCasesModule {}

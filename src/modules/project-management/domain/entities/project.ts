@@ -161,9 +161,9 @@ export class Project extends AggregateRoot<ProjectProps> {
   }
 
   addInterested(recipientId: string) {
-    const alreadyExists = this.interested.getItems().find((interested) => {
-      interested.recipientId === recipientId;
-    });
+    const alreadyExists = this.interested
+      .getItems()
+      .find((interested) => interested.recipientId === recipientId);
 
     if (alreadyExists) {
       return Result.fail<Project>('It is already interested');
