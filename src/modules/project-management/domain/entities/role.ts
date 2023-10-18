@@ -1,9 +1,8 @@
+import { Slug } from '@/common/domain/entities/value-objects/slug';
 import { Entity } from '@common/domain/entities/entity';
 import { Guard } from '@common/logic/Guard';
 import { Result } from '@common/logic/result';
 import { Optional } from '@common/logic/types/Optional';
-
-import { Slug } from './value-objects/slug';
 
 export interface RoleProps {
   name: Slug;

@@ -1,8 +1,8 @@
+import { Slug } from '@/common/domain/entities/value-objects/slug';
 import { DomainEvents } from '@/common/domain/events/domain-events';
 import { PrismaService } from '@common/infra/prisma/prisma.service';
 import { ProjectsRepository } from '@modules/project-management/application/repositories/projects-repository';
 import { Project } from '@modules/project-management/domain/entities/project';
-import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
 import { Injectable } from '@nestjs/common';
 import { MEMBER_STATUS } from '@prisma/client';
 

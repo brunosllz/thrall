@@ -1,5 +1,5 @@
 import { Role } from '@modules/project-management/domain/entities/role';
-import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
+import { Slug } from '@/common/domain/entities/value-objects/slug';
 import { Role as RawRole } from '@prisma/client';
 
 type ToDomainRawProps = {

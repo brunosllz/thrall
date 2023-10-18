@@ -16,7 +16,7 @@ import {
   Meeting,
   MeetingType,
 } from '@modules/project-management/domain/entities/value-objects/meeting';
-import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
+import { Slug } from '@/common/domain/entities/value-objects/slug';
 import { ProjectRoleList } from '@modules/project-management/domain/entities/watched-lists/project-role-list';
 import { ProjectTechnologyList } from '@modules/project-management/domain/entities/watched-lists/project-technology-list';
 import { TeamMembersList } from '@modules/project-management/domain/entities/watched-lists/team-members-list';

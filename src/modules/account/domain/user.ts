@@ -1,24 +1,34 @@
+import { Slug } from '@/common/domain/entities/value-objects/slug';
+import { Guard } from '@/common/logic/Guard';
+import { Result } from '@/common/logic/result';
 import { Entity } from '@common/domain/entities/entity';
 import { Optional } from '@common/logic/types/Optional';
 
 import { Email } from './value-objects/email';
+import { UserTechnologyList } from './watched-lists/user-technology-list';
 
 export interface UserProps {
   name: string;
-  userName: string;
   email: Email;
-  bio: string;
-  occupation: string;
+  title: string;
+  aboutMe: string;
   avatarUrl: string;
+  slugProfile: Slug;
   address: {
     city: string;
     state: string;
     country: string;
   };
   socialMedia: {
-    linkedinLink: string;
+    linkedInLink: string;
     githubLink: string;
   };
+  mainStack: {
+    role: string;
+    seniority: string;
+  };
+  overallRate: number;
+  technologies: UserTechnologyList;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -28,24 +38,24 @@ export class User extends Entity<UserProps> {
     return this.props.name;
   }
 
-  get userName() {
-    return this.props.userName;
-  }
-
   get email() {
     return this.props.email;
   }
 
-  get bio() {
-    return this.props.bio;
+  get title() {
+    return this.props.title;
   }
 
-  get occupation() {
-    return this.props.occupation;
+  get aboutMe() {
+    return this.props.aboutMe;
   }
 
   get avatarUrl() {
     return this.props.avatarUrl;
+  }
+
+  get slugProfile() {
+    return this.props.slugProfile;
   }
 
   get address() {
@@ -56,6 +66,14 @@ export class User extends Entity<UserProps> {
     return this.props.socialMedia;
   }
 
+  get mainStack() {
+    return this.props.mainStack;
+  }
+
+  get overallRate() {
+    return this.props.overallRate;
+  }
+
   get createdAt() {
     return this.props.createdAt;
   }
@@ -64,27 +82,28 @@ export class User extends Entity<UserProps> {
     return this.props.updatedAt;
   }
 
-  set bio(bio: string) {
-    this.props.bio = bio;
-  }
+  static create(
+    props: Optional<UserProps, 'createdAt' | 'technologies'>,
+    id?: string,
+  ) {
+    const guardResult = Guard.againstNullOrUndefinedBulk([
+      { argument: props.name, argumentName: 'name' },
+      { argument: props.email, argumentName: 'email' },
+    ]);
 
-  set occupation(occupation: string) {
-    this.props.occupation = occupation;
-  }
+    if (guardResult.failed) {
+      return Result.fail<User>(guardResult.message);
+    }
 
-  set avatarUrl(avatarUrl: string) {
-    this.props.avatarUrl = avatarUrl;
-  }
+    const user = new User(
+      {
+        ...props,
+        technologies: props.technologies ?? new UserTechnologyList(),
+        createdAt: props.createdAt ?? new Date(),
+      },
+      id,
+    );
 
-  set address(address: UserProps['address']) {
-    this.props.address = address;
-  }
-
-  set socialMedia(socialMedia: UserProps['socialMedia']) {
-    this.props.socialMedia = socialMedia;
-  }
-
-  static create(props: Optional<UserProps, 'createdAt'>, id?: string) {
-    return new User({ ...props, createdAt: props.createdAt ?? new Date() }, id);
+    return Result.ok<User>(user);
   }
 }

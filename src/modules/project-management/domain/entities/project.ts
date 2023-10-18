@@ -1,3 +1,4 @@
+import { Slug } from '@/common/domain/entities/value-objects/slug';
 import { AggregateRoot } from '@common/domain/entities/aggregate-root';
 import { Guard } from '@common/logic/Guard';
 import { Result } from '@common/logic/result';
@@ -10,7 +11,6 @@ import { Interested } from './interested';
 import { Member, MemberStatus, PermissionType } from './member';
 import { Content } from './value-objects/content';
 import { Meeting } from './value-objects/meeting';
-import { Slug } from './value-objects/slug';
 import { ProjectInterestedList } from './watched-lists/project-interested-list';
 import { ProjectRoleList } from './watched-lists/project-role-list';
 import { ProjectTechnologyList } from './watched-lists/project-technology-list';

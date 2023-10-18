@@ -1,3 +1,6 @@
+import { Slug } from '@/common/domain/entities/value-objects/slug';
+import { Technology } from '@/modules/account/domain/technology';
+import { UserTechnologyList } from '@/modules/account/domain/watched-lists/user-technology-list';
 import { PrismaService } from '@common/infra/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import { User, UserProps } from '@modules/account/domain/user';
@@ -11,24 +14,33 @@ export function makeFakeUser(override = {} as Overrides, id?: string) {
   const user = User.create(
     {
       name: faker.person.fullName(),
-      userName: faker.internet.userName(),
+      aboutMe: faker.lorem.paragraph(),
+      mainStack: {
+        role: faker.person.jobTitle(),
+        seniority: faker.person.jobArea(),
+      },
       address: {
         city: faker.location.city(),
         country: faker.location.country(),
         state: faker.location.state(),
       },
       avatarUrl: faker.image.avatar(),
-      bio: faker.lorem.paragraph(),
       email: Email.create(faker.internet.email()).value as Email,
-      occupation: faker.person.jobTitle(),
+      title: faker.person.jobTitle(),
+      overallRate: 5,
+      slugProfile: Slug.createFromText('bruno luiz').getValue(),
+      technologies: new UserTechnologyList([
+        Technology.create('react').getValue(),
+        Technology.create('node').getValue(),
+      ]),
       socialMedia: {
         githubLink: faker.internet.url(),
-        linkedinLink: faker.internet.url(),
+        linkedInLink: faker.internet.url(),
       },
       ...override,
     },
     id,
-  );
+  ).getValue();
 
   return user;
 }

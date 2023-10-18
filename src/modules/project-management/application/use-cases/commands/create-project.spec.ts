@@ -1,3 +1,4 @@
+import { Slug } from '@/common/domain/entities/value-objects/slug';
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
 import { faker } from '@faker-js/faker';
 import { ProjectStatus } from '@modules/project-management/domain/entities/project';
@@ -5,7 +6,6 @@ import {
   MeetingType,
   WEEK_DAYS,
 } from '@modules/project-management/domain/entities/value-objects/meeting';
-import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
 
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
 import { InMemoryRolesRepository } from '../../repositories/in-memory/in-memory-roles-repository';

@@ -1,6 +1,6 @@
+import { Slug } from '@/common/domain/entities/value-objects/slug';
 import { DomainEvents } from '@common/domain/events/domain-events';
 import { Project } from '@modules/project-management/domain/entities/project';
-import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
 
 import { ProjectsRepository } from '../projects-repository';
 import { RolesRepository } from '../roles-repository';

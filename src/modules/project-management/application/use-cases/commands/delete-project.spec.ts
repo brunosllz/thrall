@@ -1,6 +1,6 @@
 import { NotAllowedError } from '@/common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
-import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
+import { Slug } from '@/common/domain/entities/value-objects/slug';
 
 import { makeFakeProject } from '@test/factories/make-project';
 import { makeFakeRole } from '@test/factories/make-role';

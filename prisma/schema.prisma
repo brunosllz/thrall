@@ -136,20 +136,25 @@ model Technology {
 }
 
 model User {
-  id                        String                @id @default(uuid())
-  name                      String
-  email                     String                @unique
-  bio                       String?
-  occupation                String?
-  avatarUrl                 String
-  city                      String?
-  state                     String?
-  country                   String?
-  linkedinLink              String?
-  githubLink                String?
-  createdAt                 DateTime              @default(now())
-  updatedAt                 DateTime?             @updatedAt
-  userName                  String?               @unique
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  aboutMe      String?
+  title        String?
+  avatarUrl    String
+  city         String?
+  state        String?
+  country      String?
+  linkedinLink String?
+  githubLink   String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
+  profileUrl   String?   @unique
+  slugProfile  String    @unique
+  role         String?
+  seniority    String?
+  overallRate  Decimal   @default(0.0) @db.Decimal(5, 2)
+
   Answer                    Answer[]
   AnswerComment             AnswerComment[]
   authorIdToNotifcation     Notification[]        @relation("NotificationAuthorIdToUser")

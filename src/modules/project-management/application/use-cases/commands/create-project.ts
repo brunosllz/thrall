@@ -1,3 +1,4 @@
+import { Slug } from '@/common/domain/entities/value-objects/slug';
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
 import { Either, left, right } from '@common/logic/either';
 import { Result } from '@common/logic/result';
@@ -6,7 +7,6 @@ import { Role } from '@modules/project-management/domain/entities/role';
 import { Technology } from '@modules/project-management/domain/entities/technology';
 import { Content } from '@modules/project-management/domain/entities/value-objects/content';
 import { Meeting } from '@modules/project-management/domain/entities/value-objects/meeting';
-import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
 import { ProjectRoleList } from '@modules/project-management/domain/entities/watched-lists/project-role-list';
 import { ProjectTechnologyList } from '@modules/project-management/domain/entities/watched-lists/project-technology-list';
 import { Injectable } from '@nestjs/common';
