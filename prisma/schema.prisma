@@ -132,7 +132,12 @@ model Technology {
   id       String    @id @default(uuid())
   slug     String    @unique
   projects Project[]
-  users    User[]
+}
+
+model skill {
+  id   String @id @default(uuid())
+  slug String @unique
+  User User[]
 }
 
 model User {
@@ -147,6 +152,7 @@ model User {
   country      String?
   linkedinLink String?
   githubLink   String?
+  onboard      DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime? @updatedAt
   profileUrl   String?   @unique
@@ -162,7 +168,7 @@ model User {
   projects                  Project[]
   teamMember                TeamMember[]
   projectRole               ProjectRole[]
-  technologies              Technology[]
+  skills                    skill[]
   account                   Account[]
   session                   Session[]
   InterestedInProject       InterestedInProject[]

@@ -1,17 +1,18 @@
 import { PrismaService } from '@common/infra/prisma/prisma.service';
-import { UsersRepository } from '@modules/account/application/repositories/users-repository';
-import { PrismaProjectsRepository } from '@modules/project-management/infra/prisma/repositories/prisma-projects-repository';
 import { Module } from '@nestjs/common';
+
+import { UsersDAO } from '../../application/dao/users-dao';
+import { PrismaUsersDAO } from './dao/prisma-users-dao';
 
 @Module({
   imports: [],
   providers: [
     PrismaService,
     {
-      provide: UsersRepository,
-      useClass: PrismaProjectsRepository,
+      provide: UsersDAO,
+      useClass: PrismaUsersDAO,
     },
   ],
-  exports: [PrismaService, UsersRepository],
+  exports: [PrismaService, UsersDAO],
 })
 export class PrismaDatabaseModule {}

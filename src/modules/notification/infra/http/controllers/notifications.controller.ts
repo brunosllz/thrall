@@ -21,7 +21,7 @@ import {
 import { FetchNotificationsByUserIdViewModel } from '../view-models/fetch-notifications-by-user-id-view-model';
 
 @Controller('/notifications')
-export class NotificationController {
+export class NotificationsController {
   constructor(
     private readonly fetchNotificationsByUserIdUseCase: FetchNotificationsByUserIdUseCase,
     private readonly readNotificationUseCase: ReadNotificationUseCase,

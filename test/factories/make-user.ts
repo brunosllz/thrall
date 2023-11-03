@@ -5,7 +5,7 @@ import { PrismaService } from '@common/infra/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import { User, UserProps } from '@modules/account/domain/user';
 import { Email } from '@modules/account/domain/value-objects/email';
-import { UserMapper } from '@modules/account/infra/prisma/mappers/user-mapper';
+import { UserMapper } from '@/modules/account/infra/prisma/repositories/mappers/user-mapper';
 import { Injectable } from '@nestjs/common';
 
 type Overrides = Partial<UserProps>;

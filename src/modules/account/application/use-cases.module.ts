@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 
 import { PrismaDatabaseModule } from '../infra/prisma/prisma-database.module';
-import { EditProfileUseCase } from './use-cases/edit-profile';
+import { GetUserUseCase } from './use-cases/queries/get-user';
 
 @Module({
   imports: [PrismaDatabaseModule],
-  providers: [EditProfileUseCase],
-  exports: [EditProfileUseCase],
+  providers: [GetUserUseCase],
+  exports: [GetUserUseCase],
 })
 export class UseCasesModule {}
