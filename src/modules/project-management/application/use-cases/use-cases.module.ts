@@ -9,6 +9,7 @@ import { ManageInviteProjectTeamMemberUseCase } from './commands/manage-invite-p
 import { ManageProjectTeamMemberPrivilegeUseCase } from './commands/manage-project-team-member-privilege';
 import { SendInviteProjectTeamMemberUseCase } from './commands/send-invite-project-team-member';
 import { FetchProjectsByUserIdUseCase } from './queries/fetch-projects-by-user-id';
+import { FetchProjectsWithShortDetailsUseCase } from './queries/fetch-projects-with-short-details';
 
 @Module({
   imports: [PrismaDatabaseModule],
@@ -21,6 +22,7 @@ import { FetchProjectsByUserIdUseCase } from './queries/fetch-projects-by-user-i
     ManageInviteProjectTeamMemberUseCase,
     ManageProjectTeamMemberPrivilegeUseCase,
     AddInterestedInProject,
+    FetchProjectsWithShortDetailsUseCase,
   ],
   exports: [
     CreateProjectUseCase,
@@ -31,6 +33,7 @@ import { FetchProjectsByUserIdUseCase } from './queries/fetch-projects-by-user-i
     ManageInviteProjectTeamMemberUseCase,
     ManageProjectTeamMemberPrivilegeUseCase,
     AddInterestedInProject,
+    FetchProjectsWithShortDetailsUseCase,
   ],
 })
 export class UseCasesModule {}

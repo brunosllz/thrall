@@ -1,35 +1,50 @@
+import { PaginationQueryResponse } from '@/common/repositories/pagination-params';
 import { Either, left, right } from '@common/logic/either';
 import { Result } from '@common/logic/result';
-import { Project } from '@modules/project-management/domain/entities/project';
+import { Injectable } from '@nestjs/common';
 
 import { ProjectsDAO } from '../../dao/projects-dao';
 
 interface FetchRecentProjectsUseCaseRequest {
+  roles: string[];
+  technologies: string[];
+  date: string;
   pageIndex: number;
   pageSize: number;
 }
 
 type FetchRecentProjectsUseCaseResponse = Either<
   Result<void>,
-  Result<Project[]>
+  Result<PaginationQueryResponse>
 >;
 
-export class FetchRecentProjectsUseCase {
+@Injectable()
+export class FetchProjectsWithShortDetailsUseCase {
   constructor(private projectsDAO: ProjectsDAO) {}
 
   async execute({
+    date,
+    roles,
+    technologies,
     pageSize,
     pageIndex,
   }: FetchRecentProjectsUseCaseRequest): Promise<FetchRecentProjectsUseCaseResponse> {
     try {
-      const projects = await this.projectsDAO.findManyRecent({
-        pageIndex,
-        pageSize,
-      });
+      const projects = await this.projectsDAO.findManyWithShortDetails(
+        {
+          date,
+          roles,
+          technologies,
+        },
+        {
+          pageIndex,
+          pageSize,
+        },
+      );
 
       return right(Result.ok(projects));
     } catch (error) {
-      return left(Result.fail<void>(error));
+      return left(error);
     }
   }
 }

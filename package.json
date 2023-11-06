@@ -46,6 +46,7 @@
     "@nestjs/websockets": "10.2.6",
     "@prisma/client": "5.3.1",
     "bull": "4.11.3",
+    "dayjs": "1.11.10",
     "dotenv": "^16.3.1",
     "nestjs-pino": "3.4.0",
     "nestjs-prisma": "0.22.0",

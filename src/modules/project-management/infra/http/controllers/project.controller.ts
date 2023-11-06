@@ -7,6 +7,7 @@ import { ManageProjectTeamMemberPrivilegeError } from '@/modules/project-managem
 import { ManageInviteProjectTeamMemberUseCase } from '@/modules/project-management/application/use-cases/commands/manage-invite-project-team-member';
 import { ManageProjectTeamMemberPrivilegeUseCase } from '@/modules/project-management/application/use-cases/commands/manage-project-team-member-privilege';
 import { SendInviteProjectTeamMemberUseCase } from '@/modules/project-management/application/use-cases/commands/send-invite-project-team-member';
+import { FetchProjectsWithShortDetailsUseCase } from '@/modules/project-management/application/use-cases/queries/fetch-projects-with-short-details';
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
 import { AuthUser } from '@common/infra/http/auth/auth-user';
 import { CurrentUser } from '@common/infra/http/auth/decorators/current-user';
@@ -26,6 +27,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UnauthorizedException,
 } from '@nestjs/common';
 
@@ -37,6 +39,10 @@ import {
   CreateProjectBodySchema,
   createProjectBodySchema,
 } from '../validation-schemas/create-project-schema';
+import {
+  FetchProjectsWithShortDetailsQuerySchema,
+  fetchProjectsWithShortDetailsQuerySchema,
+} from '../validation-schemas/fetch-projects-with-short-details-schema';
 import {
   ManageInviteProjectTeamMemberBodySchema,
   ManageInviteProjectTeamMemberParamsSchema,
@@ -56,6 +62,7 @@ import {
   sendAInviteTeamMemberParamsSchema,
 } from '../validation-schemas/send-invite-team-member-schema';
 import { FetchProjectsByUserIdViewModel } from '../view-models/fetch-projects-by-user-id-view-model';
+import { FetchProjectsWithShortDetailsViewModel } from '../view-models/fetch-projects-with-short-details-view-model';
 
 @Controller('/projects')
 export class ProjectController {
@@ -67,6 +74,7 @@ export class ProjectController {
     private readonly manageInviteProjectTeamMemberUseCase: ManageInviteProjectTeamMemberUseCase,
     private readonly manageProjectTeamMemberPrivilegeUseCase: ManageProjectTeamMemberPrivilegeUseCase,
     private readonly addInterestedInProject: AddInterestedInProject,
+    private readonly fetchProjectsWithShortDetailsUseCase: FetchProjectsWithShortDetailsUseCase,
   ) {}
 
   @Post()
@@ -123,6 +131,13 @@ export class ProjectController {
     }
   }
 
+  @Get('/from/:id/details')
+  async getProjectDetails() {
+    return {
+      hello: 'world',
+    };
+  }
+
   @Get('/me')
   async fetchProjectsByUserId(@CurrentUser() user: AuthUser) {
     const { userId } = user;
@@ -153,6 +168,48 @@ export class ProjectController {
 
     return {
       projects,
+    };
+  }
+
+  @Get('/short/details')
+  async fetchProjectsWithShortDetails(
+    @Query(new ZodValidationPipe(fetchProjectsWithShortDetailsQuerySchema))
+    params: FetchProjectsWithShortDetailsQuerySchema,
+  ) {
+    const { date, role, tech, pageIndex } = params;
+
+    const result = await this.fetchProjectsWithShortDetailsUseCase.execute({
+      date: date ?? 'now',
+      pageIndex: pageIndex ?? 1,
+      pageSize: 10,
+      roles: role ? role.split(/\s*,\s*/) : [],
+      technologies: tech ? tech.split(/\s*,\s*/) : [],
+    });
+
+    if (result.isLeft()) {
+      const error = result.value;
+
+      switch (error.constructor) {
+        default:
+          Logger.error(error);
+
+          throw new InternalServerErrorException({
+            statusCode: 500,
+            massage: 'Internal Server Error',
+          });
+      }
+    }
+
+    const { data, lastPage, page, perPage, total } = result.value.getValue();
+
+    return {
+      data: data.map((item) =>
+        FetchProjectsWithShortDetailsViewModel.toHTTP(item),
+      ),
+      lastPage,
+      page,
+      perPage,
+      total,
     };
   }
 

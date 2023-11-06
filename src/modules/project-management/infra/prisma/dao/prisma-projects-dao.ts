@@ -1,7 +1,15 @@
 import { PrismaService } from '@common/infra/prisma/prisma.service';
-import { PaginationParams } from '@common/repositories/pagination-params';
-import { ProjectsDAO } from '@modules/project-management/application/dao/projects-dao';
+import {
+  PaginationParams,
+  PaginationQueryResponse,
+} from '@common/repositories/pagination-params';
+import {
+  ProjectQueryParams,
+  ProjectsDAO,
+} from '@modules/project-management/application/dao/projects-dao';
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class PrismaProjectsDAO extends ProjectsDAO {
@@ -9,23 +17,115 @@ export class PrismaProjectsDAO extends ProjectsDAO {
     super();
   }
 
-  async findManyRecent(params: PaginationParams): Promise<any[]> {
-    const projects = await this.prisma.project.findMany({
-      include: {
-        technologies: {
-          select: {
-            slug: true,
+  async findManyWithShortDetails(
+    { date, roles, technologies }: ProjectQueryParams,
+    { pageIndex, pageSize }: PaginationParams,
+  ): Promise<PaginationQueryResponse> {
+    const dateParams: Prisma.DateTimeFilter<'Project'> | undefined =
+      date === 'day'
+        ? {
+            gte: dayjs().startOf('day').toDate(),
+          }
+        : date === 'week'
+        ? {
+            gte: dayjs().subtract(1, 'week').toDate(),
+          }
+        : date === 'month'
+        ? {
+            gte: dayjs().subtract(1, 'month').toDate(),
+          }
+        : undefined;
+
+    const technologiesParams: Prisma.TechnologyListRelationFilter | undefined =
+      technologies.length > 0
+        ? {
+            some: {
+              slug: {
+                in: technologies,
+              },
+            },
+          }
+        : undefined;
+
+    const rolesParams: Prisma.ProjectRoleListRelationFilter | undefined =
+      roles.length > 0
+        ? {
+            some: {
+              role: {
+                name: {
+                  in: roles,
+                },
+              },
+            },
+          }
+        : undefined;
+
+    const [projects, totalProjects] = await this.prisma.$transaction([
+      this.prisma.project.findMany({
+        where: {
+          AND: [
+            {
+              technologies: technologiesParams,
+            },
+            {
+              projectRoles: rolesParams,
+            },
+            {
+              createdAt: dateParams,
+            },
+            {
+              status: 'recruiting',
+            },
+          ],
+        },
+        select: {
+          id: true,
+          imageUrl: true,
+          name: true,
+          description: true,
+          createdAt: true,
+          users: {
+            select: {
+              name: true,
+              role: true,
+            },
+          },
+          technologies: {
+            select: {
+              slug: true,
+            },
           },
         },
-      },
-      skip: (params.pageIndex - 1) * params.pageSize,
-      take: params.pageSize * params.pageIndex,
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+        skip: (pageIndex - 1) * pageSize,
+        take: pageSize * pageIndex,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      this.prisma.project.count({
+        where: {
+          AND: [
+            {
+              technologies: technologiesParams,
+            },
+            {
+              projectRoles: rolesParams,
+            },
+            {
+              createdAt: dateParams,
+            },
+          ],
+        },
+      }),
+    ]);
 
-    return projects;
+    return {
+      data: projects,
+      perPage: pageSize,
+      page: pageIndex,
+      lastPage: Math.ceil(totalProjects / pageSize),
+      total: totalProjects,
+    };
   }
 
   async findManyByUserId(
