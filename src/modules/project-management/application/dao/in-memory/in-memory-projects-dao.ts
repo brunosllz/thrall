@@ -1,46 +1,77 @@
-// import { PaginationParams } from '@common/repositories/pagination-params';
+import { PaginationParams } from '@common/repositories/pagination-params';
 
-// import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
-// import { ProjectQueryParams, ProjectsDAO } from '../projects-dao';
+import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
+import { ProjectQueryParams, ProjectsDAO } from '../projects-dao';
 
-// export class InMemoryProjectsDAO extends ProjectsDAO {
-//   findManyWithShortDetails(
-//     queryParams: ProjectQueryParams,
-//     paginationParams: PaginationParams,
-//   ): Promise<any[]> {
-//     throw new Error('Method not implemented.');
-//   }
-//   constructor(readonly inMemoryProjectsRepository: InMemoryProjectsRepository) {
-//     super();
-//   }
+export class InMemoryProjectsDAO extends ProjectsDAO {
+  constructor(readonly inMemoryProjectsRepository: InMemoryProjectsRepository) {
+    super();
+  }
 
-//   async findManyRecent({
-//     pageIndex,
-//     pageSize,
-//   }: PaginationParams): Promise<any[]> {
-//     const projects = this.inMemoryProjectsRepository.items
-//       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-//       .slice((pageIndex - 1) * pageSize, pageIndex * pageSize);
+  async findDetailsById(projectId: string): Promise<any> {
+    const project = this.inMemoryProjectsRepository.items.find(
+      (project) => project.id === projectId,
+    );
 
-//     return projects;
-//   }
+    return project;
+  }
 
-//   async findManyByUserId(
-//     userId: string,
-//     { pageIndex, pageSize }: PaginationParams,
-//   ) {
-//     const projects = this.inMemoryProjectsRepository.items
-//       .filter((project) => project.authorId === userId)
-//       .slice((pageIndex - 1) * pageSize, pageIndex * pageSize);
+  async findManyWithShortDetails(
+    _queryParams: ProjectQueryParams,
+    { pageIndex, pageSize }: PaginationParams,
+  ) {
+    const projects = this.inMemoryProjectsRepository.items.map((project) => ({
+      id: project.id,
+      name: project.name,
+      slug: project.slug.value,
+      authorId: project.authorId,
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+    }));
 
-//     return projects;
-//   }
+    const total = this.inMemoryProjectsRepository.items.length;
+    const perPage = pageSize;
+    const page = pageIndex;
+    const lastPage = Math.ceil(total / pageSize);
 
-//   async findBySlug(slug: string, authorId: string) {
-//     const project = this.inMemoryProjectsRepository.items.find(
-//       (project) => project.slug.value === slug && project.authorId === authorId,
-//     );
+    const data = projects.slice(
+      (pageIndex - 1) * pageSize,
+      pageIndex * pageSize,
+    );
 
-//     return project;
-//   }
-// }
+    return { total, perPage, page, lastPage, data };
+  }
+
+  async findManyRecent({ pageIndex, pageSize }: PaginationParams) {
+    const projects = this.inMemoryProjectsRepository.items
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice((pageIndex - 1) * pageSize, pageIndex * pageSize);
+
+    const total = this.inMemoryProjectsRepository.items.length;
+    const perPage = pageSize;
+    const page = pageIndex;
+    const lastPage = Math.ceil(total / pageSize);
+    const data = projects;
+
+    return { total, perPage, page, lastPage, data };
+  }
+
+  async findManyByUserId(
+    userId: string,
+    { pageIndex, pageSize }: PaginationParams,
+  ) {
+    const projects = this.inMemoryProjectsRepository.items
+      .filter((project) => project.authorId === userId)
+      .slice((pageIndex - 1) * pageSize, pageIndex * pageSize);
+
+    return projects;
+  }
+
+  async findBySlug(slug: string, authorId: string) {
+    const project = this.inMemoryProjectsRepository.items.find(
+      (project) => project.slug.value === slug && project.authorId === authorId,
+    );
+
+    return project;
+  }
+}

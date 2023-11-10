@@ -5,17 +5,14 @@ import { faker } from '@faker-js/faker';
 import { makeFakeProject } from '@test/factories/make-project';
 
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
-import { InMemoryRolesRepository } from '../../repositories/in-memory/in-memory-roles-repository';
 import { AddInterestedInProject } from './add-interested-in-project';
 
 let sut: AddInterestedInProject;
 let projectsRepository: InMemoryProjectsRepository;
-let rolesRepository: InMemoryRolesRepository;
 
 describe('Add interested in project', () => {
   beforeEach(() => {
-    rolesRepository = new InMemoryRolesRepository();
-    projectsRepository = new InMemoryProjectsRepository(rolesRepository);
+    projectsRepository = new InMemoryProjectsRepository();
     sut = new AddInterestedInProject(projectsRepository);
   });
 

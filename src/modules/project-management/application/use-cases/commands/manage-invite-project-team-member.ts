@@ -14,7 +14,7 @@ interface ManageInviteProjectTeamMemberRequest {
 }
 
 type ManageInviteProjectTeamMemberResponse = Either<
-  ResourceNotFoundError | NotAllowedError | Result<any>,
+  ResourceNotFoundError | NotAllowedError | Result<void>,
   Result<void>
 >;
 
@@ -63,7 +63,7 @@ export class ManageInviteProjectTeamMemberUseCase {
 
       return right(Result.ok<void>());
     } catch (error) {
-      return left(Result.fail<void>(error));
+      return left(error);
     }
   }
 }

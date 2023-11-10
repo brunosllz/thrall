@@ -17,8 +17,61 @@ export class PrismaProjectsDAO extends ProjectsDAO {
     super();
   }
 
+  async findDetailsById(projectId: string) {
+    const project = this.prisma.project.findUnique({
+      where: {
+        id: projectId,
+      },
+      select: {
+        id: true,
+        imageUrl: true,
+        bannerUrl: true,
+        name: true,
+        description: true,
+        availableDays: true,
+        availableTimeUnit: true,
+        availableTimeValue: true,
+        authorId: true,
+        projectRoles: {
+          select: {
+            id: true,
+            membersAmount: true,
+            description: true,
+            role: {
+              select: {
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            membersAmount: 'desc',
+          },
+        },
+        user: {
+          select: {
+            name: true,
+            role: true,
+          },
+        },
+        skills: {
+          select: {
+            slug: true,
+          },
+        },
+        interestedInProject: {
+          select: {
+            userId: true,
+          },
+        },
+        createdAt: true,
+      },
+    });
+
+    return project;
+  }
+
   async findManyWithShortDetails(
-    { date, roles, technologies }: ProjectQueryParams,
+    { date, roles, skills }: ProjectQueryParams,
     { pageIndex, pageSize }: PaginationParams,
   ): Promise<PaginationQueryResponse> {
     const dateParams: Prisma.DateTimeFilter<'Project'> | undefined =
@@ -36,12 +89,12 @@ export class PrismaProjectsDAO extends ProjectsDAO {
           }
         : undefined;
 
-    const technologiesParams: Prisma.TechnologyListRelationFilter | undefined =
-      technologies.length > 0
+    const skillsParams: Prisma.SkillListRelationFilter | undefined =
+      skills.length > 0
         ? {
             some: {
               slug: {
-                in: technologies,
+                in: skills,
               },
             },
           }
@@ -65,7 +118,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
         where: {
           AND: [
             {
-              technologies: technologiesParams,
+              skills: skillsParams,
             },
             {
               projectRoles: rolesParams,
@@ -84,20 +137,20 @@ export class PrismaProjectsDAO extends ProjectsDAO {
           name: true,
           description: true,
           createdAt: true,
-          users: {
+          user: {
             select: {
               name: true,
               role: true,
             },
           },
-          technologies: {
+          skills: {
             select: {
               slug: true,
             },
           },
         },
         skip: (pageIndex - 1) * pageSize,
-        take: pageSize * pageIndex,
+        take: pageSize,
         orderBy: {
           createdAt: 'desc',
         },
@@ -106,7 +159,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
         where: {
           AND: [
             {
-              technologies: technologiesParams,
+              skills: skillsParams,
             },
             {
               projectRoles: rolesParams,
@@ -137,7 +190,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
         authorId: userId,
       },
       include: {
-        technologies: {
+        skills: {
           select: {
             slug: true,
           },
@@ -151,7 +204,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
         },
       },
       skip: (pageIndex - 1) * pageSize,
-      take: pageSize * pageIndex,
+      take: pageSize,
       orderBy: {
         createdAt: 'desc',
       },
@@ -169,7 +222,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
         },
       },
       include: {
-        technologies: {
+        skills: {
           select: {
             slug: true,
           },

@@ -9,12 +9,10 @@ export class FetchProjectsWithShortDetailsViewModel {
       name: projectShortDetails.name,
       description: projectShortDetails.description,
       author: {
-        name: projectShortDetails.users.name,
-        role: projectShortDetails.users.role,
+        name: projectShortDetails.user.name,
+        role: projectShortDetails.user.role,
       },
-      technologies: projectShortDetails.technologies.map(
-        (technology: any) => technology.slug,
-      ),
+      skills: projectShortDetails.skills.map((skill: any) => skill.slug),
       createdAt: projectShortDetails.createdAt,
     };
   }

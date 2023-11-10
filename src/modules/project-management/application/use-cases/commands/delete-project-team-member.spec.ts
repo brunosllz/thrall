@@ -9,17 +9,14 @@ import { makeFakeMember } from '@test/factories/make-member';
 import { makeFakeProject } from '@test/factories/make-project';
 
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
-import { InMemoryRolesRepository } from '../../repositories/in-memory/in-memory-roles-repository';
 import { DeleteProjectTeamMemberUseCase } from './delete-project-team-member';
 
 let sut: DeleteProjectTeamMemberUseCase;
 let projectsRepository: InMemoryProjectsRepository;
-let rolesRepository: InMemoryRolesRepository;
 
 describe('Delete project team member', () => {
   beforeEach(() => {
-    rolesRepository = new InMemoryRolesRepository();
-    projectsRepository = new InMemoryProjectsRepository(rolesRepository);
+    projectsRepository = new InMemoryProjectsRepository();
     sut = new DeleteProjectTeamMemberUseCase(projectsRepository);
   });
 

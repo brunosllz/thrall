@@ -1,5 +1,6 @@
 import { MEMBER_STATUS } from '.prisma/client';
 
+import { UnitTimeType } from '@/modules/project-management/domain/entities/value-objects/available-to-participate';
 import { PrismaService } from '@common/infra/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import {
@@ -8,11 +9,6 @@ import {
   ProjectStatus,
 } from '@modules/project-management/domain/entities/project';
 import { Content } from '@modules/project-management/domain/entities/value-objects/content';
-import {
-  Meeting,
-  MeetingType,
-  WEEK_DAYS,
-} from '@modules/project-management/domain/entities/value-objects/meeting';
 import { ProjectMapper } from '@modules/project-management/infra/prisma/repositories/mappers/project-mapper';
 import { Injectable } from '@nestjs/common';
 
@@ -26,12 +22,16 @@ export function makeFakeProject(override = {} as Overrides, id?: string) {
       name: faker.lorem.text(),
       imageUrl: faker.image.url(),
       status: ProjectStatus.RECRUITING,
-      meeting: Meeting.create({
-        occurredTime: '13:00',
-        type: MeetingType.WEEKLY,
-        date: WEEK_DAYS.SUNDAY,
-      }).getValue(),
-      requirements: new Content(faker.lorem.paragraphs()),
+      availableToParticipate: {
+        value: {
+          availableDays: [1, 3, 5],
+          availableTime: {
+            unit: UnitTimeType.HOUR,
+            value: 2,
+          },
+        },
+      },
+      bannerUrl: faker.image.url(),
       ...override,
     },
     id,

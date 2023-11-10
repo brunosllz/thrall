@@ -1,17 +1,23 @@
+import { UnitTimeType } from '@/modules/project-management/domain/entities/value-objects/available-to-participate';
 import { ProjectStatus } from '@modules/project-management/domain/entities/project';
 
-import { MeetingDTO } from './meeting-dto';
 import { RoleDTO } from './role-dto';
-import { TechnologyDTO } from './technology-dto';
+import { SkillDTO } from './skill-dto';
 
 export interface ProjectDTO {
   authorId: string;
   description: string;
   status: ProjectStatus;
   imageUrl: string;
+  bannerUrl?: string;
   name: string;
-  meeting: MeetingDTO;
   roles: Array<RoleDTO>;
-  technologies: Array<TechnologyDTO>;
-  requirements: string;
+  generalSkills: Array<SkillDTO>;
+  availableToParticipate: {
+    availableDays: number[];
+    availableTime: {
+      value: number;
+      unit: UnitTimeType;
+    };
+  };
 }

@@ -1,8 +1,5 @@
+import { UnitTimeType } from '@/modules/project-management/domain/entities/value-objects/available-to-participate';
 import { ProjectStatus } from '@modules/project-management/domain/entities/project';
-import {
-  MeetingType,
-  WEEK_DAYS,
-} from '@modules/project-management/domain/entities/value-objects/meeting';
 import { z } from 'zod';
 
 export const createProjectBodySchema = z.object({
@@ -15,19 +12,17 @@ export const createProjectBodySchema = z.object({
     z.object({
       membersAmount: z.number(),
       name: z.string(),
+      description: z.string(),
     }),
   ),
-  technologies: z.array(z.object({ slug: z.string() })),
-  meeting: z.object({
-    occurredTime: z.string(),
-    type: z.nativeEnum(MeetingType),
-    // .transform((value) => value?.toLocaleLowerCase()),
-    date: z
-      .string()
-      .or(z.nativeEnum(WEEK_DAYS))
-      .optional()
-      .transform((value) => value?.toLocaleLowerCase()),
+  availableToParticipate: z.object({
+    availableDays: z.array(z.number()),
+    availableTime: z.object({
+      value: z.number(),
+      unit: z.nativeEnum(UnitTimeType),
+    }),
   }),
+  generalSkills: z.array(z.object({ slug: z.string() })),
 });
 
 export type CreateProjectBodySchema = z.infer<typeof createProjectBodySchema>;

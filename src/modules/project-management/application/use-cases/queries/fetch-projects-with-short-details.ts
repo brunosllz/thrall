@@ -7,7 +7,7 @@ import { ProjectsDAO } from '../../dao/projects-dao';
 
 interface FetchRecentProjectsUseCaseRequest {
   roles: string[];
-  technologies: string[];
+  skills: string[];
   date: string;
   pageIndex: number;
   pageSize: number;
@@ -25,7 +25,7 @@ export class FetchProjectsWithShortDetailsUseCase {
   async execute({
     date,
     roles,
-    technologies,
+    skills,
     pageSize,
     pageIndex,
   }: FetchRecentProjectsUseCaseRequest): Promise<FetchRecentProjectsUseCaseResponse> {
@@ -34,7 +34,7 @@ export class FetchProjectsWithShortDetailsUseCase {
         {
           date,
           roles,
-          technologies,
+          skills,
         },
         {
           pageIndex,

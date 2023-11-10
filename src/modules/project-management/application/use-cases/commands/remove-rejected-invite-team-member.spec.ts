@@ -5,17 +5,14 @@ import { makeFakeMember } from '@test/factories/make-member';
 import { makeFakeProject } from '@test/factories/make-project';
 
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
-import { InMemoryRolesRepository } from '../../repositories/in-memory/in-memory-roles-repository';
 import { RemoveRejectedInviteTeamMemberUseCase } from './remove-rejected-invite-team-member';
 
 let sut: RemoveRejectedInviteTeamMemberUseCase;
 let projectsRepository: InMemoryProjectsRepository;
-let rolesRepository: InMemoryRolesRepository;
 
 describe('Remove rejected invite team member', () => {
   beforeEach(() => {
-    rolesRepository = new InMemoryRolesRepository();
-    projectsRepository = new InMemoryProjectsRepository(rolesRepository);
+    projectsRepository = new InMemoryProjectsRepository();
     sut = new RemoveRejectedInviteTeamMemberUseCase(projectsRepository);
   });
 

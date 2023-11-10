@@ -1,5 +1,4 @@
 import { InMemoryProjectsRepository } from '@modules/project-management/application/repositories/in-memory/in-memory-projects-repository';
-import { InMemoryRolesRepository } from '@modules/project-management/application/repositories/in-memory/in-memory-roles-repository';
 import { SpyInstance } from 'vitest';
 
 import { makeFakeMember } from '@test/factories/make-member';
@@ -13,7 +12,6 @@ import { OnRejectedInviteTeamMember } from './on-rejected-invite-team-member';
 
 let projectsRepository: InMemoryProjectsRepository;
 
-let rolesRepository: InMemoryRolesRepository;
 let removeRejectedInviteTeamMemberUseCase: RemoveRejectedInviteTeamMemberUseCase;
 let manageInviteProjectTeamMemberUseCase: ManageInviteProjectTeamMemberUseCase;
 
@@ -21,8 +19,7 @@ let removeRejectedInviteTeamMemberExecuteSpy: SpyInstance;
 
 describe('On rejected invite team member', () => {
   beforeEach(() => {
-    rolesRepository = new InMemoryRolesRepository();
-    projectsRepository = new InMemoryProjectsRepository(rolesRepository);
+    projectsRepository = new InMemoryProjectsRepository();
 
     removeRejectedInviteTeamMemberUseCase =
       new RemoveRejectedInviteTeamMemberUseCase(projectsRepository);

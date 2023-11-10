@@ -9,5 +9,4 @@ export abstract class NotificationsDAO {
     params: PaginationParams,
   ): Promise<PaginationQueryResponse>;
   abstract countUnreadByUserId(userId: string): Promise<number>;
-  abstract findUserByAuthorId(authorId: string): Promise<any>;
 }

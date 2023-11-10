@@ -9,18 +9,15 @@ import { makeFakeMember } from '@test/factories/make-member';
 import { makeFakeProject } from '@test/factories/make-project';
 
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
-import { InMemoryRolesRepository } from '../../repositories/in-memory/in-memory-roles-repository';
 import { ManageProjectTeamMemberPrivilegeError } from './errors/manage-project-team-member-privilege-error';
 import { ManageProjectTeamMemberPrivilegeUseCase } from './manage-project-team-member-privilege';
 
 let sut: ManageProjectTeamMemberPrivilegeUseCase;
 let projectsRepository: InMemoryProjectsRepository;
-let rolesRepository: InMemoryRolesRepository;
 
 describe('Manage project team member privilege', () => {
   beforeEach(() => {
-    rolesRepository = new InMemoryRolesRepository();
-    projectsRepository = new InMemoryProjectsRepository(rolesRepository);
+    projectsRepository = new InMemoryProjectsRepository();
     sut = new ManageProjectTeamMemberPrivilegeUseCase(projectsRepository);
   });
 

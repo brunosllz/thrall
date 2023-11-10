@@ -3,12 +3,12 @@ import { Entity } from '@common/domain/entities/entity';
 import { Guard } from '@common/logic/Guard';
 import { Result } from '@common/logic/result';
 
-interface TechnologyProps {
+interface SkillProps {
   slug: Slug;
   createdAt: Date;
 }
 
-export class Technology extends Entity<TechnologyProps> {
+export class Skill extends Entity<SkillProps> {
   get slug() {
     return this.props.slug;
   }
@@ -21,16 +21,16 @@ export class Technology extends Entity<TechnologyProps> {
     const guardResult = Guard.againstNullOrUndefined(slug, 'slug');
 
     if (guardResult.failed) {
-      return Result.fail<Technology>(guardResult.message);
+      return Result.fail<Skill>(guardResult.message);
     }
 
     const newSlug = Slug.createFromText(slug);
 
     if (newSlug.isFailure) {
-      return Result.fail<Technology>(newSlug.error);
+      return Result.fail<Skill>(newSlug.error);
     }
 
-    const technology = new Technology(
+    const skill = new Skill(
       {
         slug: newSlug.getValue(),
         createdAt: new Date(),
@@ -38,6 +38,6 @@ export class Technology extends Entity<TechnologyProps> {
       id,
     );
 
-    return Result.ok<Technology>(technology);
+    return Result.ok<Skill>(skill);
   }
 }

@@ -3,14 +3,8 @@ import { DomainEvents } from '@common/domain/events/domain-events';
 import { Project } from '@modules/project-management/domain/entities/project';
 
 import { ProjectsRepository } from '../projects-repository';
-import { RolesRepository } from '../roles-repository';
-
 export class InMemoryProjectsRepository extends ProjectsRepository {
   items: Project[] = [];
-
-  constructor(private readonly rolesRepository: RolesRepository) {
-    super();
-  }
 
   async exists({ authorId, slug }: { authorId: string; slug: Slug }) {
     const hasItem = this.items.find((project) => {
@@ -52,7 +46,5 @@ export class InMemoryProjectsRepository extends ProjectsRepository {
     const itemIndex = this.items.findIndex((item) => item.id === project.id);
 
     this.items.splice(itemIndex, 1);
-
-    this.rolesRepository.deleteManyByProjectId(project.id);
   }
 }

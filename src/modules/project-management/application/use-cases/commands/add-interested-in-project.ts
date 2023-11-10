@@ -11,7 +11,7 @@ interface AddInterestedInProjectRequest {
 }
 
 type AddInterestedInProjectResponse = Either<
-  ResourceNotFoundError | Result<any> | any,
+  ResourceNotFoundError | Result<any> | Result<void>,
   Result<void>
 >;
 

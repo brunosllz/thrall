@@ -1,24 +1,18 @@
 import { Slug } from '@/common/domain/entities/value-objects/slug';
+import { UnitTimeType } from '@/modules/project-management/domain/entities/value-objects/available-to-participate';
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
 import { faker } from '@faker-js/faker';
 import { ProjectStatus } from '@modules/project-management/domain/entities/project';
-import {
-  MeetingType,
-  WEEK_DAYS,
-} from '@modules/project-management/domain/entities/value-objects/meeting';
 
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
-import { InMemoryRolesRepository } from '../../repositories/in-memory/in-memory-roles-repository';
 import { CreateProjectUseCase } from './create-project';
 
 let sut: CreateProjectUseCase;
 let projectsRepository: InMemoryProjectsRepository;
-let rolesRepository: InMemoryRolesRepository;
 
 describe('Create a projects', () => {
   beforeEach(() => {
-    rolesRepository = new InMemoryRolesRepository();
-    projectsRepository = new InMemoryProjectsRepository(rolesRepository);
+    projectsRepository = new InMemoryProjectsRepository();
     sut = new CreateProjectUseCase(projectsRepository);
   });
 
@@ -36,19 +30,22 @@ describe('Create a projects', () => {
           {
             membersAmount: 2,
             name: 'front end',
+            description: faker.lorem.paragraphs(),
           },
           {
             membersAmount: 1,
             name: 'devops',
+            description: faker.lorem.paragraphs(),
           },
         ],
-        meeting: {
-          date: WEEK_DAYS.SUNDAY,
-          occurredTime: '15:00',
-          type: MeetingType.WEEKLY,
+        availableToParticipate: {
+          availableDays: [1, 3, 5],
+          availableTime: {
+            unit: UnitTimeType.HOUR,
+            value: 2,
+          },
         },
-        requirements: faker.lorem.paragraphs(),
-        technologies: [{ slug: 'react' }, { slug: 'react native' }],
+        generalSkills: [{ slug: 'react' }, { slug: 'react native' }],
       });
 
       expect(result.isRight()).toBeTruthy();
@@ -65,10 +62,10 @@ describe('Create a projects', () => {
           name: Slug.createFromText('devops').getValue(),
         }),
       ]);
-      expect(projectsRepository.items[0].technologies.getItems()).toHaveLength(
+      expect(projectsRepository.items[0].generalSkills.getItems()).toHaveLength(
         2,
       );
-      expect(projectsRepository.items[0].technologies.getItems()).toEqual([
+      expect(projectsRepository.items[0].generalSkills.getItems()).toEqual([
         expect.objectContaining({
           slug: Slug.createFromText('react').getValue(),
         }),
@@ -76,11 +73,6 @@ describe('Create a projects', () => {
           slug: Slug.createFromText('react native').getValue(),
         }),
       ]);
-      expect(projectsRepository.items[0].meeting.value).toMatchObject({
-        date: WEEK_DAYS.SUNDAY,
-        occurredTime: '15:00',
-        type: MeetingType.WEEKLY,
-      });
     } catch (error) {
       errorOccurred = true;
     }
@@ -101,19 +93,22 @@ describe('Create a projects', () => {
           {
             membersAmount: 2,
             name: 'front end',
+            description: faker.lorem.paragraphs(),
           },
           {
             membersAmount: 1,
             name: 'devops',
+            description: faker.lorem.paragraphs(),
           },
         ],
-        meeting: {
-          date: WEEK_DAYS.SUNDAY,
-          occurredTime: '15:00',
-          type: MeetingType.WEEKLY,
+        availableToParticipate: {
+          availableDays: [1, 3, 5],
+          availableTime: {
+            unit: UnitTimeType.HOUR,
+            value: 2,
+          },
         },
-        requirements: faker.lorem.paragraphs(),
-        technologies: [{ slug: 'react' }, { slug: 'react native' }],
+        generalSkills: [{ slug: 'react' }, { slug: 'react native' }],
       });
 
       const result = await sut.execute({
@@ -126,19 +121,22 @@ describe('Create a projects', () => {
           {
             membersAmount: 2,
             name: 'front end',
+            description: faker.lorem.paragraphs(),
           },
           {
             membersAmount: 1,
             name: 'devops',
+            description: faker.lorem.paragraphs(),
           },
         ],
-        meeting: {
-          date: WEEK_DAYS.SUNDAY,
-          occurredTime: '15:00',
-          type: MeetingType.WEEKLY,
+        availableToParticipate: {
+          availableDays: [1, 3, 5],
+          availableTime: {
+            unit: UnitTimeType.HOUR,
+            value: 2,
+          },
         },
-        requirements: faker.lorem.paragraphs(),
-        technologies: [{ slug: 'react' }, { slug: 'react native' }],
+        generalSkills: [{ slug: 'react' }, { slug: 'react native' }],
       });
 
       expect(result.isLeft()).toBeTruthy();

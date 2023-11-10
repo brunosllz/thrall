@@ -8,6 +8,7 @@ import { ManageInviteProjectTeamMemberUseCase } from '@/modules/project-manageme
 import { ManageProjectTeamMemberPrivilegeUseCase } from '@/modules/project-management/application/use-cases/commands/manage-project-team-member-privilege';
 import { SendInviteProjectTeamMemberUseCase } from '@/modules/project-management/application/use-cases/commands/send-invite-project-team-member';
 import { FetchProjectsWithShortDetailsUseCase } from '@/modules/project-management/application/use-cases/queries/fetch-projects-with-short-details';
+import { GetProjectByIdUseCase } from '@/modules/project-management/application/use-cases/queries/get-project-by-id';
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
 import { AuthUser } from '@common/infra/http/auth/auth-user';
 import { CurrentUser } from '@common/infra/http/auth/decorators/current-user';
@@ -63,6 +64,7 @@ import {
 } from '../validation-schemas/send-invite-team-member-schema';
 import { FetchProjectsByUserIdViewModel } from '../view-models/fetch-projects-by-user-id-view-model';
 import { FetchProjectsWithShortDetailsViewModel } from '../view-models/fetch-projects-with-short-details-view-model';
+import { GetProjectsDetailsViewModel } from '../view-models/get-project-details-view-model';
 
 @Controller('/projects')
 export class ProjectController {
@@ -75,6 +77,7 @@ export class ProjectController {
     private readonly manageProjectTeamMemberPrivilegeUseCase: ManageProjectTeamMemberPrivilegeUseCase,
     private readonly addInterestedInProject: AddInterestedInProject,
     private readonly fetchProjectsWithShortDetailsUseCase: FetchProjectsWithShortDetailsUseCase,
+    private readonly getProjectByIdUseCase: GetProjectByIdUseCase,
   ) {}
 
   @Post()
@@ -87,11 +90,10 @@ export class ProjectController {
 
     const {
       description,
-      requirements,
       roles,
-      technologies,
+      availableToParticipate,
+      generalSkills,
       name,
-      meeting,
       status,
       imageUrl,
     } = body;
@@ -99,14 +101,9 @@ export class ProjectController {
     const result = await this.createProjectUseCase.execute({
       authorId: userId,
       name,
-      requirements,
       roles,
-      technologies,
-      meeting: {
-        date: meeting.date,
-        occurredTime: meeting.occurredTime,
-        type: meeting.type,
-      },
+      generalSkills,
+      availableToParticipate,
       description,
       status,
       imageUrl,
@@ -132,10 +129,31 @@ export class ProjectController {
   }
 
   @Get('/from/:id/details')
-  async getProjectDetails() {
-    return {
-      hello: 'world',
-    };
+  async getProjectDetails(@Param('id') id: string) {
+    const result = await this.getProjectByIdUseCase.execute({ projectId: id });
+
+    if (result.isLeft()) {
+      const error = result.value;
+
+      switch (error.constructor) {
+        case ResourceNotFoundError:
+          throw new BadRequestException({
+            statusCode: 400,
+            message: error.errorValue(),
+          });
+        default:
+          Logger.error(error);
+
+          throw new InternalServerErrorException({
+            statusCode: 500,
+            massage: 'Internal Server Error',
+          });
+      }
+    }
+
+    const project = result.value.getValue();
+
+    return GetProjectsDetailsViewModel.toHTTP(project);
   }
 
   @Get('/me')
@@ -176,14 +194,14 @@ export class ProjectController {
     @Query(new ZodValidationPipe(fetchProjectsWithShortDetailsQuerySchema))
     params: FetchProjectsWithShortDetailsQuerySchema,
   ) {
-    const { date, role, tech, pageIndex } = params;
+    const { date, role, skill, page: pageIndex } = params;
 
     const result = await this.fetchProjectsWithShortDetailsUseCase.execute({
-      date: date ?? 'now',
+      date: date ?? 'recent',
       pageIndex: pageIndex ?? 1,
       pageSize: 10,
       roles: role ? role.split(/\s*,\s*/) : [],
-      technologies: tech ? tech.split(/\s*,\s*/) : [],
+      skills: skill ? skill.split(/\s*,\s*/) : [],
     });
 
     if (result.isLeft()) {
@@ -233,12 +251,12 @@ export class ProjectController {
         case ResourceNotFoundError:
           throw new BadRequestException({
             statusCode: 400,
-            message: error.errorValue().message,
+            message: error.errorValue(),
           });
         case NotAllowedError:
           throw new UnauthorizedException({
             statusCode: 401,
-            message: error.errorValue().message,
+            message: error.errorValue(),
           });
         default:
           Logger.error(error.errorValue());
@@ -319,12 +337,12 @@ export class ProjectController {
         case ResourceNotFoundError:
           throw new BadRequestException({
             statusCode: 400,
-            message: error.errorValue().message,
+            message: error.errorValue(),
           });
         case NotAllowedError:
           throw new UnauthorizedException({
             statusCode: 401,
-            message: error.errorValue().message,
+            message: error.errorValue(),
           });
         default:
           Logger.error(error.errorValue());
@@ -363,20 +381,21 @@ export class ProjectController {
         case ResourceNotFoundError:
           throw new BadRequestException({
             statusCode: 400,
-            message: error.errorValue().message,
+            message: error.errorValue(),
           });
         case NotAllowedError:
           throw new UnauthorizedException({
             statusCode: 401,
-            message: error.errorValue().message,
+            message: error.errorValue(),
           });
         case ManageProjectTeamMemberPrivilegeError.InvalidDeleteItSelf:
           throw new UnauthorizedException({
             statusCode: 401,
-            message: error.errorValue().message,
+            message: error.errorValue(),
           });
         default:
           Logger.error(error.errorValue());
+
           throw new InternalServerErrorException({
             statusCode: 500,
             massage: 'Internal Server Error',
@@ -416,6 +435,7 @@ export class ProjectController {
           });
         default:
           Logger.error(error.errorValue());
+
           throw new InternalServerErrorException({
             statusCode: 500,
             massage: 'Internal Server Error',

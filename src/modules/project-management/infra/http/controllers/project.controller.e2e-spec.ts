@@ -5,13 +5,10 @@ import {
   MemberStatus,
   PermissionType,
 } from '@/modules/project-management/domain/entities/member';
+import { UnitTimeType } from '@/modules/project-management/domain/entities/value-objects/available-to-participate';
 import { TeamMembersList } from '@/modules/project-management/domain/entities/watched-lists/team-members-list';
 import { faker } from '@faker-js/faker';
 import { ProjectStatus } from '@modules/project-management/domain/entities/project';
-import {
-  MeetingType,
-  WEEK_DAYS,
-} from '@modules/project-management/domain/entities/value-objects/meeting';
 import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -58,17 +55,26 @@ describe('ProjectController (e2e)', () => {
       imageUrl: faker.image.url(),
       status: ProjectStatus.RECRUITING,
       requirements: faker.lorem.paragraph(),
-      roles: [{ membersAmount: 1, name: 'role' }],
-      technologies: [
+      roles: [
+        {
+          membersAmount: 1,
+          name: 'role',
+          description:
+            'Lorem markdownum **pressit**. Materia cacumen et in confundimur voco et manus redeuntem diurnos: quondam excipiunt, simulacra nocturnos redimitus Fames circumsonat quoque. Litora ferebat sidera ferventisque comitem, caesosque tollens: discedens parce numina ipsum, habitandae **villae**, sulco deterrere. Nurusque imperat Et ferunt stirpis nunc ferentes, ut deorum puppe caietam digredimur.',
+        },
+      ],
+      generalSkills: [
         {
           slug: 'technology',
         },
       ],
       name: 'Dev Xperience',
-      meeting: {
-        date: WEEK_DAYS.SUNDAY,
-        occurredTime: '10:00',
-        type: MeetingType.WEEKLY,
+      availableToParticipate: {
+        availableDays: [1, 3, 5],
+        availableTime: {
+          unit: UnitTimeType.HOUR,
+          value: 2,
+        },
       },
     };
 

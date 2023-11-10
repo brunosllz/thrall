@@ -12,7 +12,7 @@ interface DeleteProjectRequest {
 }
 
 type DeleteProjectResponse = Either<
-  ResourceNotFoundError | Result<any> | NotAllowedError,
+  ResourceNotFoundError | NotAllowedError | Result<void>,
   Result<void>
 >;
 
@@ -41,7 +41,7 @@ export class DeleteProjectUseCase {
 
       return right(Result.ok());
     } catch (error) {
-      return left(Result.fail<void>(error));
+      return left(error);
     }
   }
 }

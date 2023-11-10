@@ -5,11 +5,12 @@ import {
 
 export type ProjectQueryParams = {
   roles: string[];
-  technologies: string[];
+  skills: string[];
   date: string;
 };
 
 export abstract class ProjectsDAO {
+  abstract findDetailsById(projectId: string): Promise<any>;
   abstract findManyByUserId(
     userId: string,
     params: PaginationParams,

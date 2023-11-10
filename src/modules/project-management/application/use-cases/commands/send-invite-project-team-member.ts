@@ -14,7 +14,7 @@ interface SendInviteProjectTeamMemberRequest {
 }
 
 type SendInviteProjectTeamMemberResponse = Either<
-  ResourceNotFoundError | NotAllowedError | Result<any>,
+  ResourceNotFoundError | NotAllowedError | Result<any> | Result<void>,
   Result<void>
 >;
 
@@ -51,13 +51,20 @@ export class SendInviteProjectTeamMemberUseCase {
         return left(new NotAllowedError());
       }
 
-      project.sendInviteTeamMember(recipientId, ownerId);
+      const sendInviteOrError = project.sendInviteTeamMember(
+        recipientId,
+        ownerId,
+      );
+
+      if (sendInviteOrError?.isFailure) {
+        return left(Result.fail(sendInviteOrError.error));
+      }
 
       await this.projectsRepository.save(project);
 
       return right(Result.ok());
     } catch (error) {
-      return left(Result.fail<void>(error));
+      return left(error);
     }
   }
 }

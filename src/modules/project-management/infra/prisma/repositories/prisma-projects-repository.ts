@@ -35,11 +35,17 @@ export class PrismaProjectsRepository extends ProjectsRepository {
         projectRoles: {
           select: {
             membersAmount: true,
-            role: true,
+            description: true,
+            role: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         teamMembers: true,
-        technologies: true,
+        skills: true,
         interestedInProject: true,
       },
     });
@@ -52,11 +58,11 @@ export class PrismaProjectsRepository extends ProjectsRepository {
   }
 
   async create(project: Project) {
-    const { rawProject, rawRoles, rawTechnologies, rawTeamMembers } =
+    const { rawProject, rawRoles, rawSkills, rawTeamMembers } =
       ProjectMapper.toPersistence(project);
 
     const rawRolesItems = rawRoles.getItems();
-    const rawTechnologiesItems = rawTechnologies.getItems();
+    const rawSkillsItems = rawSkills.getItems();
     const rawTeamMembersItems = rawTeamMembers.getItems();
 
     const createdProject = await this.prisma.project.create({
@@ -76,6 +82,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
               create: {
                 projectId: createdProject.id,
                 membersAmount: role.membersAmount,
+                description: role.description.value,
               },
             },
           },
@@ -86,15 +93,16 @@ export class PrismaProjectsRepository extends ProjectsRepository {
               create: {
                 projectId: createdProject.id,
                 membersAmount: role.membersAmount,
+                description: role.description.value,
               },
             },
           },
         });
       }),
-      rawTechnologiesItems.map(async (technology) => {
-        await this.prisma.technology.upsert({
+      rawSkillsItems.map(async (skill) => {
+        await this.prisma.skill.upsert({
           where: {
-            slug: technology.slug.value,
+            slug: skill.slug.value,
           },
           update: {
             projects: {
@@ -104,8 +112,8 @@ export class PrismaProjectsRepository extends ProjectsRepository {
             },
           },
           create: {
-            id: technology.id,
-            slug: technology.slug.value,
+            id: skill.id,
+            slug: skill.slug.value,
             projects: {
               connect: {
                 id: createdProject.id,

@@ -1,11 +1,11 @@
 import { Slug } from '@/common/domain/entities/value-objects/slug';
-import { Technology } from '@/modules/account/domain/technology';
-import { UserTechnologyList } from '@/modules/account/domain/watched-lists/user-technology-list';
+import { UserSkillList } from '@/modules/account/domain/watched-lists/user-skill-list';
+import { UserMapper } from '@/modules/account/infra/prisma/repositories/mappers/user-mapper';
+import { Skill } from '@/modules/project-management/domain/entities/skill';
 import { PrismaService } from '@common/infra/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import { User, UserProps } from '@modules/account/domain/user';
 import { Email } from '@modules/account/domain/value-objects/email';
-import { UserMapper } from '@/modules/account/infra/prisma/repositories/mappers/user-mapper';
 import { Injectable } from '@nestjs/common';
 
 type Overrides = Partial<UserProps>;
@@ -27,11 +27,11 @@ export function makeFakeUser(override = {} as Overrides, id?: string) {
       avatarUrl: faker.image.avatar(),
       email: Email.create(faker.internet.email()).value as Email,
       title: faker.person.jobTitle(),
-      overallRate: 5,
-      slugProfile: Slug.createFromText('bruno luiz').getValue(),
-      technologies: new UserTechnologyList([
-        Technology.create('react').getValue(),
-        Technology.create('node').getValue(),
+      overallRate: 0,
+      slugProfile: Slug.createFromText(faker.person.firstName()).getValue(),
+      skills: new UserSkillList([
+        Skill.create('react').getValue(),
+        Skill.create('node').getValue(),
       ]),
       socialMedia: {
         githubLink: faker.internet.url(),

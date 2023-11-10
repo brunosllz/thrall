@@ -1,16 +1,14 @@
+import { Slug } from '@/common/domain/entities/value-objects/slug';
 import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
 import { Either, left, right } from '@common/logic/either';
 import { Result } from '@common/logic/result';
 import { Role } from '@modules/project-management/domain/entities/role';
 import { Content } from '@modules/project-management/domain/entities/value-objects/content';
-import { Slug } from '@/common/domain/entities/value-objects/slug';
-import { ProjectRoleList } from '@modules/project-management/domain/entities/watched-lists/project-role-list';
 import { Injectable } from '@nestjs/common';
 import { NotFoundError } from 'rxjs';
 
 import { ProjectsRepository } from '../../repositories/projects-repository';
-import { RolesRepository } from '../../repositories/roles-repository';
 
 interface EditProjectRequest {
   projectId: string;
@@ -20,6 +18,7 @@ interface EditProjectRequest {
   roles: Array<{
     id?: string;
     name: string;
+    description: string;
     amount: number;
   }>;
 }
@@ -31,10 +30,7 @@ type EditProjectResponse = Either<
 
 @Injectable()
 export class EditProjectUseCase {
-  constructor(
-    private readonly projectsRepository: ProjectsRepository,
-    private readonly rolesRepository: RolesRepository,
-  ) {}
+  constructor(private readonly projectsRepository: ProjectsRepository) {}
 
   async execute({
     projectId,
@@ -54,11 +50,7 @@ export class EditProjectUseCase {
         return left(new NotAllowedError());
       }
 
-      const currentRoles = await this.rolesRepository.findManyByProjectId(
-        project.id,
-      );
-
-      const projectRolesList = new ProjectRoleList(currentRoles);
+      const projectRolesList = project.roles;
 
       const createdRoles = roles.map((role) => {
         return Role.create(
@@ -66,6 +58,7 @@ export class EditProjectUseCase {
             projectId: project.id,
             membersAmount: role.amount,
             name: Slug.createFromText(role.name).getValue(),
+            description: new Content(role.description),
           },
           role.id,
         ).getValue();

@@ -5,7 +5,7 @@ import { Entity } from '@common/domain/entities/entity';
 import { Optional } from '@common/logic/types/Optional';
 
 import { Email } from './value-objects/email';
-import { UserTechnologyList } from './watched-lists/user-technology-list';
+import { UserSkillList } from './watched-lists/user-skill-list';
 
 export interface UserProps {
   name: string;
@@ -28,7 +28,7 @@ export interface UserProps {
     seniority: string;
   };
   overallRate: number;
-  technologies: UserTechnologyList;
+  skills: UserSkillList;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -83,7 +83,7 @@ export class User extends Entity<UserProps> {
   }
 
   static create(
-    props: Optional<UserProps, 'createdAt' | 'technologies'>,
+    props: Optional<UserProps, 'createdAt' | 'skills'>,
     id?: string,
   ) {
     const guardResult = Guard.againstNullOrUndefinedBulk([
@@ -98,7 +98,7 @@ export class User extends Entity<UserProps> {
     const user = new User(
       {
         ...props,
-        technologies: props.technologies ?? new UserTechnologyList(),
+        skills: props.skills ?? new UserSkillList(),
         createdAt: props.createdAt ?? new Date(),
       },
       id,

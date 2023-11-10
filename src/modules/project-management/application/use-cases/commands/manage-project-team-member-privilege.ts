@@ -19,7 +19,7 @@ type ManageProjectTeamMemberPrivilegeResponse = Either<
   | ResourceNotFoundError
   | NotAllowedError
   | ManageProjectTeamMemberPrivilegeError.InvalidDeleteItSelf
-  | Result<any>,
+  | Result<void>,
   Result<void>
 >;
 
@@ -80,7 +80,7 @@ export class ManageProjectTeamMemberPrivilegeUseCase {
 
       return right(Result.ok());
     } catch (error) {
-      return left(Result.fail<void>(error));
+      return left(error);
     }
   }
 }
