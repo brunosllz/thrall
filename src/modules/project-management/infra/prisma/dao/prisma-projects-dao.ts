@@ -4,7 +4,8 @@ import {
   PaginationQueryResponse,
 } from '@common/repositories/pagination-params';
 import {
-  ProjectQueryParams,
+  FindManyWithShortDetailsQueryParams,
+  FindManyGeneralSkillsToTheProjectsQueryParams,
   ProjectsDAO,
 } from '@modules/project-management/application/dao/projects-dao';
 import { Injectable } from '@nestjs/common';
@@ -71,7 +72,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
   }
 
   async findManyWithShortDetails(
-    { date, roles, skills }: ProjectQueryParams,
+    { date, roles, skills }: FindManyWithShortDetailsQueryParams,
     { pageIndex, pageSize }: PaginationParams,
   ): Promise<PaginationQueryResponse> {
     const dateParams: Prisma.DateTimeFilter<'Project'> | undefined =
@@ -147,6 +148,8 @@ export class PrismaProjectsDAO extends ProjectsDAO {
             select: {
               slug: true,
             },
+            skip: Math.floor(Math.random() * 6),
+            take: 3,
           },
         },
         skip: (pageIndex - 1) * pageSize,
@@ -179,6 +182,35 @@ export class PrismaProjectsDAO extends ProjectsDAO {
       lastPage: Math.ceil(totalProjects / pageSize),
       total: totalProjects,
     };
+  }
+
+  async findManyGeneralSkillsToTheProjects({
+    search,
+  }: FindManyGeneralSkillsToTheProjectsQueryParams) {
+    if (search) {
+      const skills = await this.prisma.skill.findMany({
+        where: {
+          slug: {
+            contains: search,
+          },
+        },
+        select: {
+          id: true,
+          slug: true,
+        },
+      });
+
+      return skills;
+    }
+
+    const skills = await this.prisma.skill.findMany({
+      select: {
+        id: true,
+        slug: true,
+      },
+    });
+
+    return skills;
   }
 
   async findManyByUserId(

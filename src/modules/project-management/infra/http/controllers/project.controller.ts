@@ -7,6 +7,7 @@ import { ManageProjectTeamMemberPrivilegeError } from '@/modules/project-managem
 import { ManageInviteProjectTeamMemberUseCase } from '@/modules/project-management/application/use-cases/commands/manage-invite-project-team-member';
 import { ManageProjectTeamMemberPrivilegeUseCase } from '@/modules/project-management/application/use-cases/commands/manage-project-team-member-privilege';
 import { SendInviteProjectTeamMemberUseCase } from '@/modules/project-management/application/use-cases/commands/send-invite-project-team-member';
+import { FetchGeneralSkillsFromProjectsUseCase } from '@/modules/project-management/application/use-cases/queries/fetch-general-skills-from-projects';
 import { FetchProjectsWithShortDetailsUseCase } from '@/modules/project-management/application/use-cases/queries/fetch-projects-with-short-details';
 import { GetProjectByIdUseCase } from '@/modules/project-management/application/use-cases/queries/get-project-by-id';
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
@@ -45,6 +46,10 @@ import {
   fetchProjectsWithShortDetailsQuerySchema,
 } from '../validation-schemas/fetch-projects-with-short-details-schema';
 import {
+  GetAllGeneralSkillsLinkedToTheProjectsQuerySchema,
+  getAllGeneralSkillsLinkedToTheProjectsQuerySchema,
+} from '../validation-schemas/get-all-general-skills-linked-to-the-projects-schema';
+import {
   ManageInviteProjectTeamMemberBodySchema,
   ManageInviteProjectTeamMemberParamsSchema,
   manageInviteProjectTeamMemberBodySchema,
@@ -64,6 +69,7 @@ import {
 } from '../validation-schemas/send-invite-team-member-schema';
 import { FetchProjectsByUserIdViewModel } from '../view-models/fetch-projects-by-user-id-view-model';
 import { FetchProjectsWithShortDetailsViewModel } from '../view-models/fetch-projects-with-short-details-view-model';
+import { GetAllGeneralSkillsLinkedToTheProjectsViewModel } from '../view-models/get-all-general-skills-linked-to-the-projects-view-model';
 import { GetProjectsDetailsViewModel } from '../view-models/get-project-details-view-model';
 
 @Controller('/projects')
@@ -78,6 +84,7 @@ export class ProjectController {
     private readonly addInterestedInProject: AddInterestedInProject,
     private readonly fetchProjectsWithShortDetailsUseCase: FetchProjectsWithShortDetailsUseCase,
     private readonly getProjectByIdUseCase: GetProjectByIdUseCase,
+    private readonly fetchGeneralSkillsFromProjectsUseCase: FetchGeneralSkillsFromProjectsUseCase,
   ) {}
 
   @Post()
@@ -126,6 +133,40 @@ export class ProjectController {
           });
       }
     }
+  }
+
+  @Get('/general-skills')
+  async getAllGeneralSkillsLinkedToTheProjects(
+    @Query(
+      new ZodValidationPipe(getAllGeneralSkillsLinkedToTheProjectsQuerySchema),
+    )
+    params: GetAllGeneralSkillsLinkedToTheProjectsQuerySchema,
+  ) {
+    const { search } = params;
+
+    const result = await this.fetchGeneralSkillsFromProjectsUseCase.execute({
+      search,
+    });
+
+    if (result.isLeft()) {
+      const error = result.value;
+
+      switch (error.constructor) {
+        default:
+          Logger.error(error);
+
+          throw new InternalServerErrorException({
+            statusCode: 500,
+            massage: 'Internal Server Error',
+          });
+      }
+    }
+
+    const generalSkills = result.value.getValue();
+
+    return generalSkills.map((generalSkill) =>
+      GetAllGeneralSkillsLinkedToTheProjectsViewModel.toHTTP(generalSkill),
+    );
   }
 
   @Get('/from/:id/details')

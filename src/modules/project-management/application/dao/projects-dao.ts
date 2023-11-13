@@ -3,10 +3,14 @@ import {
   PaginationQueryResponse,
 } from '@common/repositories/pagination-params';
 
-export type ProjectQueryParams = {
+export type FindManyWithShortDetailsQueryParams = {
   roles: string[];
   skills: string[];
   date: string;
+};
+
+export type FindManyGeneralSkillsToTheProjectsQueryParams = {
+  search?: string;
 };
 
 export abstract class ProjectsDAO {
@@ -17,7 +21,10 @@ export abstract class ProjectsDAO {
   ): Promise<any[]>;
   abstract findBySlug(slug: string, authorId: string): Promise<any>;
   abstract findManyWithShortDetails(
-    queryParams: ProjectQueryParams,
+    queryParams: FindManyWithShortDetailsQueryParams,
     paginationParams: PaginationParams,
   ): Promise<PaginationQueryResponse>;
+  abstract findManyGeneralSkillsToTheProjects(
+    queryParams: FindManyGeneralSkillsToTheProjectsQueryParams,
+  ): Promise<any[]>;
 }
