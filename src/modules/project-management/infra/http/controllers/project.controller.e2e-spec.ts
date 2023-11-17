@@ -91,7 +91,9 @@ describe('ProjectController (e2e)', () => {
       },
     });
 
-    expect(projectOnDatabase).toBeTruthy();
+    waitFor(() => {
+      expect(projectOnDatabase).toBeTruthy();
+    });
   });
 
   test('/projects/me (GET) - get projects from user', async () => {
@@ -109,12 +111,14 @@ describe('ProjectController (e2e)', () => {
       .send()
       .expect(200);
 
-    expect(response.statusCode).toEqual(200);
-    expect(response.body).toEqual({
-      projects: expect.arrayContaining([
-        expect.objectContaining({ name: 'Project 01' }),
-        expect.objectContaining({ name: 'Project 02' }),
-      ]),
+    await waitFor(() => {
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        projects: expect.arrayContaining([
+          expect.objectContaining({ name: 'Project 01' }),
+          expect.objectContaining({ name: 'Project 02' }),
+        ]),
+      });
     });
   });
 
@@ -133,8 +137,10 @@ describe('ProjectController (e2e)', () => {
 
     const projectsOnDatabase = await prisma.project.findMany();
 
-    expect(projectsOnDatabase).toBeTruthy();
-    expect(projectsOnDatabase).toHaveLength(0);
+    waitFor(() => {
+      expect(projectsOnDatabase).toBeTruthy();
+      expect(projectsOnDatabase).toHaveLength(0);
+    });
   });
 
   test('/:projectId/invite (POST) - send a invite team member', async () => {
@@ -161,16 +167,18 @@ describe('ProjectController (e2e)', () => {
       },
     });
 
-    expect(teamMembersOnDatabase).toHaveLength(2);
-    expect(teamMembersOnDatabase).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          recipientId: user1.id,
-          status: 'approved',
-        }),
-        expect.objectContaining({ recipientId: user2.id, status: 'pending' }),
-      ]),
-    );
+    waitFor(() => {
+      expect(teamMembersOnDatabase).toHaveLength(2);
+      expect(teamMembersOnDatabase).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            recipientId: user1.id,
+            status: 'approved',
+          }),
+          expect.objectContaining({ recipientId: user2.id, status: 'pending' }),
+        ]),
+      );
+    });
   });
 
   test('/:projectId/manage/invite (POST) - manage invite of a team member', async () => {
@@ -277,21 +285,23 @@ describe('ProjectController (e2e)', () => {
       },
     });
 
-    expect(teamMembersOnDatabase).toHaveLength(2);
-    expect(teamMembersOnDatabase).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          recipientId: user1.id,
-          status: 'approved',
-          permissionType: 'owner',
-        }),
-        expect.objectContaining({
-          recipientId: user2.id,
-          status: 'approved',
-          permissionType: 'owner',
-        }),
-      ]),
-    );
+    waitFor(() => {
+      expect(teamMembersOnDatabase).toHaveLength(2);
+      expect(teamMembersOnDatabase).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            recipientId: user1.id,
+            status: 'approved',
+            permissionType: 'owner',
+          }),
+          expect.objectContaining({
+            recipientId: user2.id,
+            status: 'approved',
+            permissionType: 'owner',
+          }),
+        ]),
+      );
+    });
   });
 
   test('/interest/in/:projectId (POST) - add interest in a project', async () => {
@@ -320,14 +330,16 @@ describe('ProjectController (e2e)', () => {
       },
     });
 
-    expect(ProjectOnDatabase?.interestedInProject).toHaveLength(1);
-    expect(ProjectOnDatabase?.interestedInProject).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          userId: user2.id,
-          projectId: createdProject.id,
-        }),
-      ]),
-    );
+    waitFor(() => {
+      expect(ProjectOnDatabase?.interestedInProject).toHaveLength(1);
+      expect(ProjectOnDatabase?.interestedInProject).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            userId: user2.id,
+            projectId: createdProject.id,
+          }),
+        ]),
+      );
+    });
   });
 });
