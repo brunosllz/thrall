@@ -80,7 +80,7 @@ export class ManageProjectTeamMemberPrivilegeUseCase {
 
       return right(Result.ok());
     } catch (error) {
-      return left(Result.fail<void>(error));
+      return left(error);
     }
   }
 }

@@ -6,17 +6,15 @@ import { makeFakeMember } from '@test/factories/make-member';
 import { makeFakeProject } from '@test/factories/make-project';
 
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
-import { InMemoryRolesRepository } from '../../repositories/in-memory/in-memory-roles-repository';
 import { ManageInviteProjectTeamMemberUseCase } from './manage-invite-project-team-member';
 
 let projectsRepository: InMemoryProjectsRepository;
-let rolesRepository: InMemoryRolesRepository;
+
 let sut: ManageInviteProjectTeamMemberUseCase;
 
 describe('Manage invite project team member', () => {
   beforeEach(() => {
-    rolesRepository = new InMemoryRolesRepository();
-    projectsRepository = new InMemoryProjectsRepository(rolesRepository);
+    projectsRepository = new InMemoryProjectsRepository();
     sut = new ManageInviteProjectTeamMemberUseCase(projectsRepository);
   });
 

@@ -3,14 +3,12 @@ import { ProjectsDAO } from '@modules/project-management/application/dao/project
 import { AnswerCommentsRepository } from '@modules/project-management/application/repositories/answer-comments-repository';
 import { AnswersRepository } from '@modules/project-management/application/repositories/answers-repository';
 import { ProjectsRepository } from '@modules/project-management/application/repositories/projects-repository';
-import { RolesRepository } from '@modules/project-management/application/repositories/roles-repository';
 import { Module } from '@nestjs/common';
 
 import { PrismaProjectsDAO } from './dao/prisma-projects-dao';
 import { PrismaAnswerCommentsRepository } from './repositories/prisma-answer-comments-repository';
 import { PrismaAnswersRepository } from './repositories/prisma-answers-repository';
 import { PrismaProjectsRepository } from './repositories/prisma-projects-repository';
-import { PrismaRolesRepository } from './repositories/prisma-roles-repository';
 
 @Module({
   imports: [],
@@ -19,10 +17,6 @@ import { PrismaRolesRepository } from './repositories/prisma-roles-repository';
     {
       provide: ProjectsRepository,
       useClass: PrismaProjectsRepository,
-    },
-    {
-      provide: RolesRepository,
-      useClass: PrismaRolesRepository,
     },
     {
       provide: AnswersRepository,
@@ -40,7 +34,6 @@ import { PrismaRolesRepository } from './repositories/prisma-roles-repository';
   exports: [
     PrismaService,
     ProjectsRepository,
-    RolesRepository,
     AnswersRepository,
     AnswerCommentsRepository,
     ProjectsDAO,

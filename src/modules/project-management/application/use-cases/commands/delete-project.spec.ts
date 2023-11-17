@@ -1,22 +1,20 @@
+import { Slug } from '@/common/domain/entities/value-objects/slug';
 import { NotAllowedError } from '@/common/errors/errors/not-allowed-error';
+import { ProjectRoleList } from '@/modules/project-management/domain/entities/watched-lists/project-role-list';
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
-import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
 
 import { makeFakeProject } from '@test/factories/make-project';
 import { makeFakeRole } from '@test/factories/make-role';
 
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
-import { InMemoryRolesRepository } from '../../repositories/in-memory/in-memory-roles-repository';
 import { DeleteProjectUseCase } from './delete-project';
 
 let sut: DeleteProjectUseCase;
 let projectsRepository: InMemoryProjectsRepository;
-let rolesRepository: InMemoryRolesRepository;
 
 describe('Delete a projects', () => {
   beforeEach(() => {
-    rolesRepository = new InMemoryRolesRepository();
-    projectsRepository = new InMemoryProjectsRepository(rolesRepository);
+    projectsRepository = new InMemoryProjectsRepository();
     sut = new DeleteProjectUseCase(projectsRepository);
   });
 
@@ -24,29 +22,30 @@ describe('Delete a projects', () => {
     let errorOccurred = false;
 
     try {
-      const projects = makeFakeProject({
-        authorId: '1',
-      });
+      const projects = makeFakeProject(
+        {
+          authorId: '1',
+          roles: new ProjectRoleList([
+            makeFakeRole({
+              projectId: '1',
+              name: Slug.createFromText('devops').getValue(),
+              membersAmount: 1,
+            }),
+            makeFakeRole({
+              projectId: '1',
+              name: Slug.createFromText('front end').getValue(),
+              membersAmount: 4,
+            }),
+          ]),
+        },
+        '1',
+      );
 
       await projectsRepository.create(projects);
-
-      rolesRepository.items.push(
-        makeFakeRole({
-          projectId: projects.id,
-          name: Slug.createFromText('devops').getValue(),
-          membersAmount: 1,
-        }),
-        makeFakeRole({
-          projectId: projects.id,
-          name: Slug.createFromText('front end').getValue(),
-          membersAmount: 4,
-        }),
-      );
 
       await sut.execute({ projectId: projects.id, authorId: '1' });
 
       expect(projectsRepository.items).toHaveLength(0);
-      expect(rolesRepository.items).toHaveLength(0);
     } catch (error) {
       errorOccurred = true;
     }
@@ -72,24 +71,26 @@ describe('Delete a projects', () => {
     let errorOccurred = false;
 
     try {
-      const projects = makeFakeProject({
-        authorId: '1',
-      });
+      const projects = makeFakeProject(
+        {
+          authorId: '1',
+          roles: new ProjectRoleList([
+            makeFakeRole({
+              projectId: '1',
+              name: Slug.createFromText('devops').getValue(),
+              membersAmount: 1,
+            }),
+            makeFakeRole({
+              projectId: '1',
+              name: Slug.createFromText('front end').getValue(),
+              membersAmount: 4,
+            }),
+          ]),
+        },
+        '1',
+      );
 
       await projectsRepository.create(projects);
-
-      rolesRepository.items.push(
-        makeFakeRole({
-          projectId: projects.id,
-          name: Slug.createFromText('devops').getValue(),
-          membersAmount: 1,
-        }),
-        makeFakeRole({
-          projectId: projects.id,
-          name: Slug.createFromText('front end').getValue(),
-          membersAmount: 4,
-        }),
-      );
 
       const result = await sut.execute({
         projectId: projects.id,

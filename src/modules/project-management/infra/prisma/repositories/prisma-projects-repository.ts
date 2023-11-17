@@ -1,7 +1,8 @@
+import { Slug } from '@/common/domain/entities/value-objects/slug';
+import { DomainEvents } from '@/common/domain/events/domain-events';
 import { PrismaService } from '@common/infra/prisma/prisma.service';
 import { ProjectsRepository } from '@modules/project-management/application/repositories/projects-repository';
 import { Project } from '@modules/project-management/domain/entities/project';
-import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
 import { Injectable } from '@nestjs/common';
 import { MEMBER_STATUS } from '@prisma/client';
 
@@ -34,11 +35,18 @@ export class PrismaProjectsRepository extends ProjectsRepository {
         projectRoles: {
           select: {
             membersAmount: true,
-            role: true,
+            description: true,
+            role: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         teamMembers: true,
-        technologies: true,
+        skills: true,
+        interestedInProject: true,
       },
     });
 
@@ -50,11 +58,11 @@ export class PrismaProjectsRepository extends ProjectsRepository {
   }
 
   async create(project: Project) {
-    const { rawProject, rawRoles, rawTechnologies, rawTeamMembers } =
+    const { rawProject, rawRoles, rawSkills, rawTeamMembers } =
       ProjectMapper.toPersistence(project);
 
     const rawRolesItems = rawRoles.getItems();
-    const rawTechnologiesItems = rawTechnologies.getItems();
+    const rawSkillsItems = rawSkills.getItems();
     const rawTeamMembersItems = rawTeamMembers.getItems();
 
     const createdProject = await this.prisma.project.create({
@@ -63,7 +71,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
       },
     });
 
-    await Promise.all(
+    await Promise.all([
       rawRolesItems.map(async (role) => {
         await this.prisma.role.upsert({
           where: {
@@ -74,6 +82,7 @@ export class PrismaProjectsRepository extends ProjectsRepository {
               create: {
                 projectId: createdProject.id,
                 membersAmount: role.membersAmount,
+                description: role.description.value,
               },
             },
           },
@@ -84,18 +93,16 @@ export class PrismaProjectsRepository extends ProjectsRepository {
               create: {
                 projectId: createdProject.id,
                 membersAmount: role.membersAmount,
+                description: role.description.value,
               },
             },
           },
         });
       }),
-    );
-
-    await Promise.all(
-      rawTechnologiesItems.map(async (technology) => {
-        await this.prisma.technology.upsert({
+      rawSkillsItems.map(async (skill) => {
+        await this.prisma.skill.upsert({
           where: {
-            slug: technology.slug.value,
+            slug: skill.slug.value,
           },
           update: {
             projects: {
@@ -105,8 +112,8 @@ export class PrismaProjectsRepository extends ProjectsRepository {
             },
           },
           create: {
-            id: technology.id,
-            slug: technology.slug.value,
+            id: skill.id,
+            slug: skill.slug.value,
             projects: {
               connect: {
                 id: createdProject.id,
@@ -115,9 +122,6 @@ export class PrismaProjectsRepository extends ProjectsRepository {
           },
         });
       }),
-    );
-
-    await Promise.all(
       rawTeamMembersItems.map(async (teamMember) => {
         await this.prisma.teamMember.create({
           data: {
@@ -127,20 +131,52 @@ export class PrismaProjectsRepository extends ProjectsRepository {
             status: teamMember.status as MEMBER_STATUS,
             createdAt: teamMember.createdAt,
             projectId: createdProject.id,
-            updatedAt: teamMember.updatedAt,
+            updatedAt: teamMember.updatedAt ?? null,
           },
         });
       }),
-    );
+    ]);
   }
 
   async save(project: Project): Promise<void> {
-    const { rawProject } = ProjectMapper.toPersistence(project);
+    const { rawProject, rawTeamMembers, rawInterested } =
+      ProjectMapper.toPersistence(project);
+    const newTeamMembers = rawTeamMembers.getNewItems();
+    const newInterested = rawInterested.getNewItems();
 
-    // const { getRemovedItems } = rawRoles;
+    const hasNewTeamMember = newTeamMembers.length > 0;
+    const hasNewInterested = newInterested.length > 0;
 
-    // const removedRoles = getRemovedItems();
-    // const newRoles = getNewItems();
+    if (hasNewInterested) {
+      await Promise.all(
+        newInterested.map(async (interested) => {
+          await this.prisma.interestedInProject.create({
+            data: {
+              userId: interested.recipientId,
+              projectId: rawProject.id,
+            },
+          });
+        }),
+      );
+    }
+
+    if (hasNewTeamMember) {
+      await Promise.all(
+        newTeamMembers.map(async (teamMember) => {
+          await this.prisma.teamMember.create({
+            data: {
+              id: teamMember.id,
+              recipientId: teamMember.recipientId,
+              permissionType: teamMember.permissionType,
+              status: teamMember.status as MEMBER_STATUS,
+              createdAt: teamMember.createdAt,
+              projectId: rawProject.id,
+              updatedAt: teamMember.updatedAt,
+            },
+          });
+        }),
+      );
+    }
 
     // TODO: add manage role on edit a project
     await this.prisma.project.update({
@@ -150,8 +186,20 @@ export class PrismaProjectsRepository extends ProjectsRepository {
       data: {
         description: rawProject.description,
         name: rawProject.name,
+        teamMembers: {
+          updateMany: rawTeamMembers.getItems().map((teamMember) => ({
+            where: { id: teamMember.id },
+            data: {
+              permissionType: teamMember.permissionType,
+              status: teamMember.status as MEMBER_STATUS,
+              updatedAt: teamMember.updatedAt,
+            },
+          })),
+        },
       },
     });
+
+    DomainEvents.dispatchEventsForAggregate(project.id);
   }
 
   async delete(project: Project) {

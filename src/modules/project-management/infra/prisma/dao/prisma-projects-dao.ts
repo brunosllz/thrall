@@ -1,7 +1,16 @@
 import { PrismaService } from '@common/infra/prisma/prisma.service';
-import { PaginationParams } from '@common/repositories/pagination-params';
-import { ProjectsDAO } from '@modules/project-management/application/dao/projects-dao';
+import {
+  PaginationParams,
+  PaginationQueryResponse,
+} from '@common/repositories/pagination-params';
+import {
+  FindManyWithShortDetailsQueryParams,
+  FindManyGeneralSkillsToTheProjectsQueryParams,
+  ProjectsDAO,
+} from '@modules/project-management/application/dao/projects-dao';
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class PrismaProjectsDAO extends ProjectsDAO {
@@ -9,23 +18,199 @@ export class PrismaProjectsDAO extends ProjectsDAO {
     super();
   }
 
-  async findManyRecent(params: PaginationParams): Promise<any[]> {
-    const projects = await this.prisma.project.findMany({
-      include: {
-        technologies: {
+  async findDetailsById(projectId: string) {
+    const project = this.prisma.project.findUnique({
+      where: {
+        id: projectId,
+      },
+      select: {
+        id: true,
+        imageUrl: true,
+        bannerUrl: true,
+        name: true,
+        description: true,
+        availableDays: true,
+        availableTimeUnit: true,
+        availableTimeValue: true,
+        authorId: true,
+        projectRoles: {
+          select: {
+            id: true,
+            membersAmount: true,
+            description: true,
+            role: {
+              select: {
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            membersAmount: 'desc',
+          },
+        },
+        user: {
+          select: {
+            name: true,
+            role: true,
+          },
+        },
+        skills: {
           select: {
             slug: true,
           },
         },
-      },
-      skip: (params.pageIndex - 1) * params.pageSize,
-      take: params.pageSize * params.pageIndex,
-      orderBy: {
-        createdAt: 'desc',
+        interestedInProject: {
+          select: {
+            userId: true,
+          },
+        },
+        createdAt: true,
       },
     });
 
-    return projects;
+    return project;
+  }
+
+  async findManyWithShortDetails(
+    { date, roles, skills }: FindManyWithShortDetailsQueryParams,
+    { pageIndex, pageSize }: PaginationParams,
+  ): Promise<PaginationQueryResponse> {
+    const dateParams: Prisma.DateTimeFilter<'Project'> | undefined =
+      date === 'day'
+        ? {
+            gte: dayjs().startOf('day').toDate(),
+          }
+        : date === 'week'
+        ? {
+            gte: dayjs().subtract(1, 'week').toDate(),
+          }
+        : date === 'month'
+        ? {
+            gte: dayjs().subtract(1, 'month').toDate(),
+          }
+        : undefined;
+
+    const skillsParams: Prisma.SkillListRelationFilter | undefined =
+      skills.length > 0
+        ? {
+            some: {
+              slug: {
+                in: skills,
+              },
+            },
+          }
+        : undefined;
+
+    const rolesParams: Prisma.ProjectRoleListRelationFilter | undefined =
+      roles.length > 0
+        ? {
+            some: {
+              role: {
+                name: {
+                  in: roles,
+                },
+              },
+            },
+          }
+        : undefined;
+
+    const [projects, totalProjects] = await this.prisma.$transaction([
+      this.prisma.project.findMany({
+        where: {
+          AND: [
+            {
+              skills: skillsParams,
+            },
+            {
+              projectRoles: rolesParams,
+            },
+            {
+              createdAt: dateParams,
+            },
+            {
+              status: 'recruiting',
+            },
+          ],
+        },
+        select: {
+          id: true,
+          imageUrl: true,
+          name: true,
+          description: true,
+          createdAt: true,
+          user: {
+            select: {
+              name: true,
+              role: true,
+            },
+          },
+          skills: {
+            select: {
+              slug: true,
+            },
+            skip: Math.floor(Math.random() * 6),
+            take: 3,
+          },
+        },
+        skip: (pageIndex - 1) * pageSize,
+        take: pageSize,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      this.prisma.project.count({
+        where: {
+          AND: [
+            {
+              skills: skillsParams,
+            },
+            {
+              projectRoles: rolesParams,
+            },
+            {
+              createdAt: dateParams,
+            },
+          ],
+        },
+      }),
+    ]);
+
+    return {
+      data: projects,
+      perPage: pageSize,
+      page: pageIndex,
+      lastPage: Math.ceil(totalProjects / pageSize),
+      total: totalProjects,
+    };
+  }
+
+  async findManyGeneralSkillsToTheProjects({
+    search,
+  }: FindManyGeneralSkillsToTheProjectsQueryParams) {
+    if (search) {
+      const skills = await this.prisma.skill.findMany({
+        where: {
+          slug: {
+            contains: search,
+          },
+        },
+        select: {
+          id: true,
+          slug: true,
+        },
+      });
+
+      return skills;
+    }
+
+    const skills = await this.prisma.skill.findMany({
+      select: {
+        id: true,
+        slug: true,
+      },
+    });
+
+    return skills;
   }
 
   async findManyByUserId(
@@ -37,7 +222,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
         authorId: userId,
       },
       include: {
-        technologies: {
+        skills: {
           select: {
             slug: true,
           },
@@ -51,7 +236,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
         },
       },
       skip: (pageIndex - 1) * pageSize,
-      take: pageSize * pageIndex,
+      take: pageSize,
       orderBy: {
         createdAt: 'desc',
       },
@@ -69,7 +254,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
         },
       },
       include: {
-        technologies: {
+        skills: {
           select: {
             slug: true,
           },

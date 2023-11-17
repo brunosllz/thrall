@@ -5,4 +5,4 @@ import { HttpModule } from './infra/http/http.module';
 @Module({
   imports: [HttpModule],
 })
-export class TimeLineModule {}
+export class AccountModule {}

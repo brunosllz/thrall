@@ -4,6 +4,6 @@ import { UseCaseError } from '../use-case-error';
 
 export class NotAllowedError extends Result<UseCaseError> {
   constructor() {
-    super(false, { message: 'Not allowed' });
+    super(false, 'Not allowed');
   }
 }

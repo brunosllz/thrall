@@ -29,7 +29,7 @@ export class FetchProjectsByUserIdUseCase {
 
       return right(Result.ok(projects));
     } catch (error) {
-      return left(Result.fail<void>(error));
+      return left(error);
     }
   }
 }

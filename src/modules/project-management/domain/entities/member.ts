@@ -50,6 +50,10 @@ export class Member extends Entity<MemberProps> {
 
   set status(status: MemberStatus | null) {
     this.props.status = status;
+  }
+
+  changeStatus(status: MemberStatus) {
+    this.props.status = status;
     this.touch();
   }
 

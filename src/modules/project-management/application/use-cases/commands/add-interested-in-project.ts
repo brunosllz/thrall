@@ -1,6 +1,7 @@
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
 import { Either, left, right } from '@common/logic/either';
 import { Result } from '@common/logic/result';
+import { Injectable } from '@nestjs/common';
 
 import { ProjectsRepository } from '../../repositories/projects-repository';
 
@@ -10,10 +11,11 @@ interface AddInterestedInProjectRequest {
 }
 
 type AddInterestedInProjectResponse = Either<
-  ResourceNotFoundError | Result<any>,
+  ResourceNotFoundError | Result<any> | Result<void>,
   Result<void>
 >;
 
+@Injectable()
 export class AddInterestedInProject {
   constructor(private readonly projectsRepository: ProjectsRepository) {}
 
@@ -38,7 +40,7 @@ export class AddInterestedInProject {
 
       return right(Result.ok());
     } catch (error) {
-      return left(Result.fail<void>(error));
+      return left(error);
     }
   }
 }

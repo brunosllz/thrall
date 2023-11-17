@@ -1,9 +1,10 @@
+import { Slug } from '@/common/domain/entities/value-objects/slug';
+import { Content } from '@/modules/project-management/domain/entities/value-objects/content';
 import { faker } from '@faker-js/faker';
 import {
   Role,
   RoleProps,
 } from '@modules/project-management/domain/entities/role';
-import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
 
 type Overrides = Partial<RoleProps>;
 
@@ -13,6 +14,7 @@ export function makeFakeRole(override = {} as Overrides, id?: string) {
       membersAmount: faker.number.int(),
       name: Slug.createFromText(faker.person.jobTitle()).getValue(),
       projectId: faker.string.uuid(),
+      description: new Content(faker.lorem.paragraphs()),
       ...override,
     },
     id,

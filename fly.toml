@@ -1,3 +1,4 @@
+app = "thrall"
 primary_region = "gru"
 
 [build]

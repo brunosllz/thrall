@@ -4,18 +4,15 @@ import { makeFakeProject } from '@test/factories/make-project';
 
 import { InMemoryProjectsDAO } from '../../dao/in-memory/in-memory-projects-dao';
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
-import { InMemoryRolesRepository } from '../../repositories/in-memory/in-memory-roles-repository';
 import { GetProjectBySlugUseCase } from './get-project-by-slug';
 
 let projectsDAO: InMemoryProjectsDAO;
 let projectsRepository: InMemoryProjectsRepository;
-let rolesRepository: InMemoryRolesRepository;
 let sut: GetProjectBySlugUseCase;
 
 describe('Get project by slug', () => {
   beforeEach(() => {
-    rolesRepository = new InMemoryRolesRepository();
-    projectsRepository = new InMemoryProjectsRepository(rolesRepository);
+    projectsRepository = new InMemoryProjectsRepository();
     projectsDAO = new InMemoryProjectsDAO(projectsRepository);
     sut = new GetProjectBySlugUseCase(projectsDAO);
   });

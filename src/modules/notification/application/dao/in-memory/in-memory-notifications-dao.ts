@@ -2,7 +2,6 @@ import {
   PaginationParams,
   PaginationQueryResponse,
 } from '@/common/repositories/pagination-params';
-import { InMemoryUsersRepository } from '@/modules/account/application/repositories/in-memory/in-memory-users-repository';
 
 import { InMemoryNotificationsRepository } from '../../repositories/in-memory/in-memory-notifications-repository';
 import { NotificationsDAO } from '../notifications-dao';
@@ -10,7 +9,6 @@ import { NotificationsDAO } from '../notifications-dao';
 export class InMemoryNotificationsDAO implements NotificationsDAO {
   constructor(
     readonly InMemoryNotificationsRepository: InMemoryNotificationsRepository,
-    readonly InMemoryUsersRepository: InMemoryUsersRepository,
   ) {}
 
   async findManyByUserId(
@@ -37,17 +35,5 @@ export class InMemoryNotificationsDAO implements NotificationsDAO {
       ).length;
 
     return countUnreadNotifications;
-  }
-
-  async findUserByAuthorId(authorId: string) {
-    const user = this.InMemoryUsersRepository.items.find(
-      (user) => user.id === authorId,
-    );
-
-    if (!user) {
-      return null;
-    }
-
-    return user;
   }
 }

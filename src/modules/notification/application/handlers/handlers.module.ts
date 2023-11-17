@@ -4,7 +4,6 @@ import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 
 import { UseCasesModule } from '../use-cases/use-cases.module';
-import { OnAnswerCreated } from './on-answer-created';
 import { OnNotificationRead } from './on-notification-read';
 
 @Module({
@@ -16,6 +15,6 @@ import { OnNotificationRead } from './on-notification-read';
     }),
     UseCasesModule,
   ],
-  providers: [OnNotificationRead, OnAnswerCreated],
+  providers: [OnNotificationRead],
 })
 export class HandlersModule {}

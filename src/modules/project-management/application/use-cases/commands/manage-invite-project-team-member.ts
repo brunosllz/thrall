@@ -63,7 +63,7 @@ export class ManageInviteProjectTeamMemberUseCase {
 
       return right(Result.ok<void>());
     } catch (error) {
-      return left(Result.fail<void>(error));
+      return left(error);
     }
   }
 }

@@ -1,14 +1,14 @@
+import { Slug } from '@/common/domain/entities/value-objects/slug';
+import { Skill } from '@/modules/project-management/domain/entities/skill';
+import { AvailableToParticipate } from '@/modules/project-management/domain/entities/value-objects/available-to-participate';
+import { ProjectGeneralSkillList } from '@/modules/project-management/domain/entities/watched-lists/project-general-skill-list';
 import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
 import { Either, left, right } from '@common/logic/either';
 import { Result } from '@common/logic/result';
 import { Project } from '@modules/project-management/domain/entities/project';
 import { Role } from '@modules/project-management/domain/entities/role';
-import { Technology } from '@modules/project-management/domain/entities/technology';
 import { Content } from '@modules/project-management/domain/entities/value-objects/content';
-import { Meeting } from '@modules/project-management/domain/entities/value-objects/meeting';
-import { Slug } from '@modules/project-management/domain/entities/value-objects/slug';
 import { ProjectRoleList } from '@modules/project-management/domain/entities/watched-lists/project-role-list';
-import { ProjectTechnologyList } from '@modules/project-management/domain/entities/watched-lists/project-technology-list';
 import { Injectable } from '@nestjs/common';
 
 import { ProjectsRepository } from '../../repositories/projects-repository';
@@ -17,7 +17,7 @@ import { ProjectDTO } from './dtos/project-dto';
 type CreateProjectRequest = ProjectDTO;
 
 type CreateProjectResponse = Either<
-  AlreadyExistsError | Result<any>,
+  AlreadyExistsError | Result<void> | Result<any>,
   Result<void>
 >;
 
@@ -31,10 +31,10 @@ export class CreateProjectUseCase {
     roles,
     imageUrl,
     status,
-    technologies,
+    generalSkills,
     description,
-    requirements,
-    ...request
+    availableToParticipate: { availableDays, availableTime },
+    bannerUrl,
   }: CreateProjectRequest): Promise<CreateProjectResponse> {
     try {
       const projectAlreadyExists = await this.projectsRepository.exists({
@@ -46,22 +46,30 @@ export class CreateProjectUseCase {
         return left(new AlreadyExistsError(`name "${name}"`));
       }
 
-      const meetingOrError = Meeting.create(request.meeting);
+      const availableToParticipateOrError = AvailableToParticipate.create({
+        value: {
+          availableDays,
+          availableTime: {
+            unit: availableTime.unit,
+            value: availableTime.value,
+          },
+        },
+      });
 
-      if (meetingOrError.isFailure) {
-        return left(Result.fail(meetingOrError.error));
+      if (availableToParticipateOrError.isFailure) {
+        return left(Result.fail(availableToParticipateOrError.error));
       }
 
-      const meeting = meetingOrError.getValue();
+      const availableToParticipate = availableToParticipateOrError.getValue();
 
       const projectOrError = Project.create({
         authorId,
         description: new Content(description),
         name,
         imageUrl,
+        bannerUrl,
         status,
-        meeting,
-        requirements: new Content(requirements),
+        availableToParticipate,
       });
 
       if (projectOrError.isFailure) {
@@ -75,6 +83,7 @@ export class CreateProjectUseCase {
           membersAmount: role.membersAmount,
           projectId: project.id,
           name: Slug.createFromText(role.name).getValue(),
+          description: new Content(role.description),
         });
 
         if (roleOrError.isFailure) {
@@ -86,26 +95,26 @@ export class CreateProjectUseCase {
         return createdRole;
       });
 
-      const createdTechnologies = technologies.map((technology) => {
-        const technologyOrError = Technology.create(technology.slug);
+      const createdGeneralSkills = generalSkills.map((generalSkills) => {
+        const skillsOrError = Skill.create(generalSkills.slug);
 
-        if (technologyOrError.isFailure) {
-          throw technologyOrError.errorValue();
+        if (skillsOrError.isFailure) {
+          throw skillsOrError.errorValue();
         }
 
-        const createdTechnology = technologyOrError.getValue();
+        const createdGeneralSkill = skillsOrError.getValue();
 
-        return createdTechnology;
+        return createdGeneralSkill;
       });
 
       project.roles = new ProjectRoleList(createdRoles);
-      project.technologies = new ProjectTechnologyList(createdTechnologies);
+      project.generalSkills = new ProjectGeneralSkillList(createdGeneralSkills);
 
       await this.projectsRepository.create(project);
 
       return right(Result.ok());
     } catch (error) {
-      return left(Result.fail<any>(error));
+      return left(error);
     }
   }
 }

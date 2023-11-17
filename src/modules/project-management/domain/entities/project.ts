@@ -1,3 +1,4 @@
+import { Slug } from '@/common/domain/entities/value-objects/slug';
 import { AggregateRoot } from '@common/domain/entities/aggregate-root';
 import { Guard } from '@common/logic/Guard';
 import { Result } from '@common/logic/result';
@@ -8,16 +9,15 @@ import { RejectedInviteTeamMemberEvent } from '../events/rejected-invite-team-me
 import { SendInviteTeamMemberEvent } from '../events/send-invite-team-member';
 import { Interested } from './interested';
 import { Member, MemberStatus, PermissionType } from './member';
+import { AvailableToParticipate } from './value-objects/available-to-participate';
 import { Content } from './value-objects/content';
-import { Meeting } from './value-objects/meeting';
-import { Slug } from './value-objects/slug';
+// import { Meeting } from './value-objects/meeting';
+import { ProjectGeneralSkillList } from './watched-lists/project-general-skill-list';
 import { ProjectInterestedList } from './watched-lists/project-interested-list';
 import { ProjectRoleList } from './watched-lists/project-role-list';
-import { ProjectTechnologyList } from './watched-lists/project-technology-list';
 import { TeamMembersList } from './watched-lists/team-members-list';
 
 export enum ProjectStatus {
-  DRAFT = 'draft',
   RECRUITING = 'recruiting',
   CLOSED = 'closed',
 }
@@ -28,15 +28,16 @@ export interface ProjectProps {
   description: Content;
   slug: Slug;
   imageUrl: string;
+  bannerUrl?: string;
   status: ProjectStatus;
   roles: ProjectRoleList;
-  technologies: ProjectTechnologyList;
-  requirements: Content;
-  meeting: Meeting;
+  generalSkills: ProjectGeneralSkillList;
+  availableToParticipate: AvailableToParticipate;
   interested: ProjectInterestedList;
   teamMembers: TeamMembersList;
   createdAt: Date;
   updatedAt?: Date;
+  // meeting?: Meeting; TODO: implement integration for schedule meetings of team
 }
 
 export class Project extends AggregateRoot<ProjectProps> {
@@ -60,6 +61,10 @@ export class Project extends AggregateRoot<ProjectProps> {
     return this.props.imageUrl;
   }
 
+  get bannerUrl() {
+    return this.props.bannerUrl;
+  }
+
   get status() {
     return this.props.status;
   }
@@ -68,16 +73,12 @@ export class Project extends AggregateRoot<ProjectProps> {
     return this.props.roles;
   }
 
-  get technologies() {
-    return this.props.technologies;
+  get generalSkills() {
+    return this.props.generalSkills;
   }
 
-  get requirements() {
-    return this.props.requirements;
-  }
-
-  get meeting() {
-    return this.props.meeting;
+  get availableToParticipate() {
+    return this.props.availableToParticipate;
   }
 
   get interested() {
@@ -112,13 +113,8 @@ export class Project extends AggregateRoot<ProjectProps> {
     this.touch();
   }
 
-  set technologies(technologies: ProjectTechnologyList) {
-    this.props.technologies = technologies;
-    this.touch();
-  }
-
-  set requirements(requirements: Content) {
-    this.props.requirements = requirements;
+  set generalSkills(generalSkills: ProjectGeneralSkillList) {
+    this.props.generalSkills = generalSkills;
     this.touch();
   }
 
@@ -161,9 +157,9 @@ export class Project extends AggregateRoot<ProjectProps> {
   }
 
   addInterested(recipientId: string) {
-    const alreadyExists = this.interested.getItems().find((interested) => {
-      interested.recipientId === recipientId;
-    });
+    const alreadyExists = this.interested
+      .getItems()
+      .find((interested) => interested.recipientId === recipientId);
 
     if (alreadyExists) {
       return Result.fail<Project>('It is already interested');
@@ -197,7 +193,8 @@ export class Project extends AggregateRoot<ProjectProps> {
     );
 
     if (member) {
-      member.status = MemberStatus.APPROVED;
+      member.changeStatus(MemberStatus.APPROVED);
+      this.teamMembers.update(teamMembers);
     }
   }
 
@@ -209,7 +206,8 @@ export class Project extends AggregateRoot<ProjectProps> {
     );
 
     if (member) {
-      member.status = MemberStatus.REJECTED;
+      member.changeStatus(MemberStatus.REJECTED);
+      this.teamMembers.update(teamMembers);
     }
 
     this.addDomainEvent(
@@ -224,7 +222,7 @@ export class Project extends AggregateRoot<ProjectProps> {
   static create(
     props: Optional<
       Omit<ProjectProps, 'slug'>,
-      'createdAt' | 'roles' | 'technologies' | 'teamMembers' | 'interested'
+      'createdAt' | 'roles' | 'generalSkills' | 'teamMembers' | 'interested'
     >,
     id?: string,
   ) {
@@ -263,7 +261,7 @@ export class Project extends AggregateRoot<ProjectProps> {
         ...props,
         slug: slug,
         roles: props.roles ?? new ProjectRoleList(),
-        technologies: props.technologies ?? new ProjectTechnologyList(),
+        generalSkills: props.generalSkills ?? new ProjectGeneralSkillList(),
         interested: props.interested ?? new ProjectInterestedList(),
         teamMembers: props.teamMembers ?? new TeamMembersList([ProjectOwner]),
         createdAt: props.createdAt ?? new Date(),

@@ -1,11 +1,14 @@
 import { AppModule } from '@/app.module';
 import { PrismaService } from '@/common/infra/prisma/prisma.service';
+import {
+  Member,
+  MemberStatus,
+  PermissionType,
+} from '@/modules/project-management/domain/entities/member';
+import { UnitTimeType } from '@/modules/project-management/domain/entities/value-objects/available-to-participate';
+import { TeamMembersList } from '@/modules/project-management/domain/entities/watched-lists/team-members-list';
 import { faker } from '@faker-js/faker';
 import { ProjectStatus } from '@modules/project-management/domain/entities/project';
-import {
-  MeetingType,
-  WEEK_DAYS,
-} from '@modules/project-management/domain/entities/value-objects/meeting';
 import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -53,17 +56,26 @@ describe('ProjectController (e2e)', () => {
       imageUrl: faker.image.url(),
       status: ProjectStatus.RECRUITING,
       requirements: faker.lorem.paragraph(),
-      roles: [{ membersAmount: 1, name: 'role' }],
-      technologies: [
+      roles: [
+        {
+          membersAmount: 1,
+          name: 'role',
+          description:
+            'Lorem markdownum **pressit**. Materia cacumen et in confundimur voco et manus redeuntem diurnos: quondam excipiunt, simulacra nocturnos redimitus Fames circumsonat quoque. Litora ferebat sidera ferventisque comitem, caesosque tollens: discedens parce numina ipsum, habitandae **villae**, sulco deterrere. Nurusque imperat Et ferunt stirpis nunc ferentes, ut deorum puppe caietam digredimur.',
+        },
+      ],
+      generalSkills: [
         {
           slug: 'technology',
         },
       ],
       name: 'Dev Xperience',
-      meeting: {
-        date: WEEK_DAYS.SUNDAY,
-        occurredTime: '10:00',
-        type: MeetingType.WEEKLY,
+      availableToParticipate: {
+        availableDays: [1, 3, 5],
+        availableTime: {
+          unit: UnitTimeType.HOUR,
+          value: 2,
+        },
       },
     };
 
@@ -79,7 +91,9 @@ describe('ProjectController (e2e)', () => {
       },
     });
 
-    expect(projectOnDatabase).toBeTruthy();
+    waitFor(() => {
+      expect(projectOnDatabase).toBeTruthy();
+    });
   });
 
   test('/projects/me (GET) - get projects from user', async () => {
@@ -94,14 +108,17 @@ describe('ProjectController (e2e)', () => {
     const response = await request(app.getHttpServer())
       .get('/projects/me')
       .set('Authorization', `Bearer ${accessToken}`)
-      .send();
+      .send()
+      .expect(200);
 
-    expect(response.statusCode).toEqual(200);
-    expect(response.body).toEqual({
-      projects: expect.arrayContaining([
-        expect.objectContaining({ name: 'Project 01' }),
-        expect.objectContaining({ name: 'Project 02' }),
-      ]),
+    await waitFor(() => {
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        projects: expect.arrayContaining([
+          expect.objectContaining({ name: 'Project 01' }),
+          expect.objectContaining({ name: 'Project 02' }),
+        ]),
+      });
     });
   });
 
@@ -123,6 +140,206 @@ describe('ProjectController (e2e)', () => {
     waitFor(() => {
       expect(projectsOnDatabase).toBeTruthy();
       expect(projectsOnDatabase).toHaveLength(0);
+    });
+  });
+
+  test('/:projectId/invite (POST) - send a invite team member', async () => {
+    const [user1, user2] = await Promise.all([
+      userFactory.makeUser(),
+      userFactory.makeUser(),
+    ]);
+
+    const createdProject = await projectFactory.makeProject({
+      authorId: user1.id,
+    });
+
+    const accessToken = jwt.sign({ uid: user1.id });
+
+    await request(app.getHttpServer())
+      .post(`/projects/${createdProject.id}/invite`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ recipientId: user2.id })
+      .expect(204);
+
+    const teamMembersOnDatabase = await prisma.teamMember.findMany({
+      where: {
+        projectId: createdProject.id,
+      },
+    });
+
+    waitFor(() => {
+      expect(teamMembersOnDatabase).toHaveLength(2);
+      expect(teamMembersOnDatabase).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            recipientId: user1.id,
+            status: 'approved',
+          }),
+          expect.objectContaining({ recipientId: user2.id, status: 'pending' }),
+        ]),
+      );
+    });
+  });
+
+  test('/:projectId/manage/invite (POST) - manage invite of a team member', async () => {
+    const [user1, user2, user3] = await Promise.all([
+      userFactory.makeUser(),
+      userFactory.makeUser(),
+      userFactory.makeUser(),
+    ]);
+
+    const createdProject = await projectFactory.makeProject({
+      authorId: user1.id,
+    });
+
+    const accessTokenUser1 = jwt.sign({ uid: user1.id });
+    const accessTokenUser2 = jwt.sign({ uid: user2.id });
+    const accessTokenUser3 = jwt.sign({ uid: user3.id });
+
+    await request(app.getHttpServer())
+      .post(`/projects/${createdProject.id}/invite`)
+      .set('Authorization', `Bearer ${accessTokenUser1}`)
+      .send({ recipientId: user2.id })
+      .expect(204);
+
+    await request(app.getHttpServer())
+      .post(`/projects/${createdProject.id}/invite`)
+      .set('Authorization', `Bearer ${accessTokenUser1}`)
+      .send({ recipientId: user3.id })
+      .expect(204);
+
+    await request(app.getHttpServer())
+      .post(`/projects/${createdProject.id}/manage/invite`)
+      .set('Authorization', `Bearer ${accessTokenUser2}`)
+      .send({ status: 'approved' })
+      .expect(204);
+
+    await request(app.getHttpServer())
+      .post(`/projects/${createdProject.id}/manage/invite`)
+      .set('Authorization', `Bearer ${accessTokenUser3}`)
+      .send({ status: 'rejected' })
+      .expect(204);
+
+    const teamMembersOnDatabase = await prisma.teamMember.findMany({
+      where: {
+        projectId: createdProject.id,
+      },
+    });
+
+    await waitFor(() => {
+      expect(teamMembersOnDatabase).toHaveLength(3);
+      expect(teamMembersOnDatabase).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            recipientId: user1.id,
+            status: 'approved',
+          }),
+          expect.objectContaining({
+            recipientId: user2.id,
+            status: 'approved',
+          }),
+          expect.objectContaining({
+            recipientId: user3.id,
+            status: 'rejected',
+          }),
+        ]),
+      );
+    });
+  });
+
+  test('/:projectId/manage/member/:memberId/privilege (PATCH) - manage privilege of a team member', async () => {
+    const [user1, user2] = await Promise.all([
+      userFactory.makeUser(),
+      userFactory.makeUser(),
+    ]);
+
+    const createdProject = await projectFactory.makeProject({
+      authorId: user1.id,
+      teamMembers: new TeamMembersList([
+        Member.create({
+          permissionType: PermissionType.OWNER,
+          recipientId: user1.id,
+          status: MemberStatus.APPROVED,
+        }).getValue(),
+        Member.create({
+          permissionType: PermissionType.MEMBER,
+          recipientId: user2.id,
+          status: MemberStatus.APPROVED,
+        }).getValue(),
+      ]),
+    });
+
+    const accessToken = jwt.sign({ uid: user1.id });
+
+    await request(app.getHttpServer())
+      .patch(
+        `/projects/${createdProject.id}/manage/member/${user2.id}/privilege`,
+      )
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ permissionType: 'owner' })
+      .expect(204);
+
+    const teamMembersOnDatabase = await prisma.teamMember.findMany({
+      where: {
+        projectId: createdProject.id,
+      },
+    });
+
+    waitFor(() => {
+      expect(teamMembersOnDatabase).toHaveLength(2);
+      expect(teamMembersOnDatabase).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            recipientId: user1.id,
+            status: 'approved',
+            permissionType: 'owner',
+          }),
+          expect.objectContaining({
+            recipientId: user2.id,
+            status: 'approved',
+            permissionType: 'owner',
+          }),
+        ]),
+      );
+    });
+  });
+
+  test('/interest/in/:projectId (POST) - add interest in a project', async () => {
+    const [user1, user2] = await Promise.all([
+      userFactory.makeUser(),
+      userFactory.makeUser(),
+    ]);
+
+    const createdProject = await projectFactory.makeProject({
+      authorId: user1.id,
+    });
+
+    const accessTokenUser2 = jwt.sign({ uid: user2.id });
+
+    await request(app.getHttpServer())
+      .post(`/projects/interest/in/${createdProject.id}`)
+      .set('Authorization', `Bearer ${accessTokenUser2}`)
+      .expect(204);
+
+    const ProjectOnDatabase = await prisma.project.findUnique({
+      where: {
+        id: createdProject.id,
+      },
+      include: {
+        interestedInProject: true,
+      },
+    });
+
+    waitFor(() => {
+      expect(ProjectOnDatabase?.interestedInProject).toHaveLength(1);
+      expect(ProjectOnDatabase?.interestedInProject).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            userId: user2.id,
+            projectId: createdProject.id,
+          }),
+        ]),
+      );
     });
   });
 });

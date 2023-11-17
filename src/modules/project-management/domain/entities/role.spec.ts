@@ -1,5 +1,7 @@
+import { Slug } from '@/common/domain/entities/value-objects/slug';
+
 import { Role } from './role';
-import { Slug } from './value-objects/slug';
+import { Content } from './value-objects/content';
 
 describe('Role', () => {
   it('should be able to create a role', () => {
@@ -8,6 +10,7 @@ describe('Role', () => {
         name: Slug.createFromText('Front end').getValue(),
         projectId: 'project-id',
         membersAmount: 3,
+        description: new Content('Lorem ipsum dolor sit amet.'),
       });
 
       expect(role.getValue()).toMatchObject({
