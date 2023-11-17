@@ -79,6 +79,20 @@ model InterestedInProject {
   @@map("interested_in_projects")
 }
 
+model ProjectRealized {
+  id               String @id @default(uuid())
+  userId           String @map("user_id")
+  projectId        String @map("project_id")
+  shortDescription String @map("short_description")
+
+  occurredAt DateTime @default(now()) @map("occurred_at")
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@map("projects_realized")
+}
+
 enum PROJECT_STATUS {
   recruiting
   inProgress
@@ -111,6 +125,7 @@ model Project {
   teamMembers         TeamMember[]
   skills              Skill[]
   interestedInProject InterestedInProject[]
+  ProjectRealized     ProjectRealized[]
 
   @@unique([authorId, slug])
   @@map("projects")
@@ -208,6 +223,7 @@ model User {
   account                   Account[]
   session                   Session[]
   InterestedInProject       InterestedInProject[]
+  ProjectRealized           ProjectRealized[]
 
   @@map("users")
 }
