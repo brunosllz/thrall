@@ -2,15 +2,14 @@ import { PaginationParams } from '@common/repositories/pagination-params';
 
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
 import {
-  FindManyGeneralSkillsToTheProjectsQueryParams,
+  // FindManyGeneralSkillsToTheProjectsQueryParams,
   FindManyWithShortDetailsQueryParams,
   ProjectsDAO,
 } from '../projects-dao';
 
 export class InMemoryProjectsDAO extends ProjectsDAO {
-  findManyGeneralSkillsToTheProjects(
-    queryParams: FindManyGeneralSkillsToTheProjectsQueryParams,
-  ): Promise<any[]> {
+  findManyGeneralSkillsToTheProjects(): // queryParams: FindManyGeneralSkillsToTheProjectsQueryParams,
+  Promise<any[]> {
     throw new Error('Method not implemented.');
   }
   constructor(readonly inMemoryProjectsRepository: InMemoryProjectsRepository) {
