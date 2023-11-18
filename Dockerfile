@@ -18,6 +18,7 @@ ENV NODE_ENV production
 WORKDIR /var/app
 COPY --from=dependencies /var/app/node_modules node_modules/
 COPY . .
+RUN npx prisma generate
 RUN npm run build
 
 FROM node:lts-alpine AS prodDependencies
@@ -37,7 +38,6 @@ COPY --from=build /var/app/build build/
 COPY --from=build /var/app/prisma prisma/
 RUN wget -O /var/app/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64 && \
   chmod -v +x /var/app/dumb-init
-# RUN npx prisma generate
 RUN npx pkg@5.5.2 . -o pkg_app
 RUN chmod -v +x /var/app/pkg_app
 
