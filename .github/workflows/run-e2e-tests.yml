@@ -39,5 +39,5 @@ jobs:
       - name: Run Tests
         run: npx prisma generate & npm run test:e2e
         env:
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.CI_JWT_SECRET_KEY }}
           DATABASE_URL: postgres://postgres:docker@localhost:5432/app

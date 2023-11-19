@@ -27,10 +27,15 @@
   "pkg": {
     "scripts": "build/**/*.js",
     "assets": [
-      "build/**/*"
+      "build/**/*",
+      "**/*.lua",
+      "../node_modules/bull/lib/commands/*.lua",
+      "./node_modules/bull/lib/commands/*.lua",
+      "node_modules/.prisma/client/*.node",
+      "node_modules/.prisma/client/index.js"
     ],
     "targets": [
-      "node16"
+      "node18"
     ]
   },
   "dependencies": {
