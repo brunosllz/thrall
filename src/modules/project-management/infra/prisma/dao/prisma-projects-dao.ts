@@ -221,17 +221,40 @@ export class PrismaProjectsDAO extends ProjectsDAO {
       where: {
         authorId: userId,
       },
-      include: {
-        skills: {
-          select: {
-            slug: true,
+      select: {
+        id: true,
+        authorId: true,
+        status: true,
+        slug: true,
+        bannerUrl: true,
+        name: true,
+        description: true,
+        projectRoles: {
+          where: {
+            users: {
+              some: {
+                id: userId,
+              },
+            },
           },
-          take: 3,
-        },
-        _count: {
           select: {
-            teamMembers: true,
-            answers: true,
+            role: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        teamMembers: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                name: true,
+                avatarUrl: true,
+              },
+            },
           },
         },
       },

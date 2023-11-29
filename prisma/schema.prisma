@@ -112,7 +112,7 @@ model Project {
   name               String
   description        String                      @db.Text
   status             PROJECT_STATUS              @default(recruiting)
-  imageUrl           String                      @map("image_url")
+  imageUrl           String?                     @map("image_url")
   bannerUrl          String?                     @map("banner_url")
   slug               String
   availableDays      Int[]                       @map("available_days")

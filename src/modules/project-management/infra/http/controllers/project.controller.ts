@@ -101,7 +101,7 @@ export class ProjectController {
       availableToParticipate,
       generalSkills,
       name,
-      status,
+      bannerUrl,
       imageUrl,
     } = body;
 
@@ -112,7 +112,7 @@ export class ProjectController {
       generalSkills,
       availableToParticipate,
       description,
-      status,
+      bannerUrl,
       imageUrl,
     });
 

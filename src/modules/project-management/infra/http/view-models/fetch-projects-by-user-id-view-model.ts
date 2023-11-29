@@ -6,12 +6,28 @@ export class FetchProjectsByUserIdViewModel {
       name: project.name,
       description: project.description,
       status: project.status,
-      imageUrl: project.imageUrl,
+      bannerUrl: project.bannerUrl,
       slug: project.slug,
-      createdAt: project.createdAt,
-      updatedAt: project.updatedAt,
-      skills: project.skills.map((skill: any) => skill.slug),
-      _count: project._count,
+      myRoles: project.projectRoles.map(
+        (projectRole: { role: { id: string; name: string } }) => {
+          return {
+            id: projectRole.role.id,
+            name: projectRole.role.name,
+          };
+        },
+      ),
+      teamMembers: project.teamMembers.map(
+        (teamMember: {
+          id: string;
+          user: { name: string; avatarUrl: string };
+        }) => {
+          return {
+            id: teamMember.id,
+            name: teamMember.user.name,
+            avatarUrl: teamMember.user.avatarUrl,
+          };
+        },
+      ),
     };
   }
 }

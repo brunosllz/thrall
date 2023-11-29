@@ -12,9 +12,9 @@ import { ProjectRoleList } from '@modules/project-management/domain/entities/wat
 import { Injectable } from '@nestjs/common';
 
 import { ProjectsRepository } from '../../repositories/projects-repository';
-import { ProjectDTO } from './dtos/project-dto';
+import { CreateProjectDTO } from './dtos/create-project-dto';
 
-type CreateProjectRequest = ProjectDTO;
+type CreateProjectRequest = CreateProjectDTO;
 
 type CreateProjectResponse = Either<
   AlreadyExistsError | Result<void> | Result<any>,
@@ -30,7 +30,6 @@ export class CreateProjectUseCase {
     name,
     roles,
     imageUrl,
-    status,
     generalSkills,
     description,
     availableToParticipate: { availableDays, availableTime },
@@ -68,7 +67,6 @@ export class CreateProjectUseCase {
         name,
         imageUrl,
         bannerUrl,
-        status,
         availableToParticipate,
       });
 

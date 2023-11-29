@@ -86,7 +86,7 @@ export class ProjectMapper {
         authorId: raw.authorId,
         description: new Content(raw.description),
         name: raw.name,
-        imageUrl: raw.imageUrl,
+        imageUrl: raw.imageUrl ?? undefined,
         bannerUrl: raw.bannerUrl ?? undefined,
         status: raw.status as ProjectStatus,
         roles: new ProjectRoleList(roles),

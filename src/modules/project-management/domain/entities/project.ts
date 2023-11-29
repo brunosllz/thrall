@@ -27,7 +27,7 @@ export interface ProjectProps {
   name: string;
   description: Content;
   slug: Slug;
-  imageUrl: string;
+  imageUrl?: string;
   bannerUrl?: string;
   status: ProjectStatus;
   roles: ProjectRoleList;
@@ -222,7 +222,12 @@ export class Project extends AggregateRoot<ProjectProps> {
   static create(
     props: Optional<
       Omit<ProjectProps, 'slug'>,
-      'createdAt' | 'roles' | 'generalSkills' | 'teamMembers' | 'interested'
+      | 'createdAt'
+      | 'roles'
+      | 'generalSkills'
+      | 'teamMembers'
+      | 'interested'
+      | 'status'
     >,
     id?: string,
   ) {
@@ -260,6 +265,7 @@ export class Project extends AggregateRoot<ProjectProps> {
       {
         ...props,
         slug: slug,
+        status: ProjectStatus.RECRUITING,
         roles: props.roles ?? new ProjectRoleList(),
         generalSkills: props.generalSkills ?? new ProjectGeneralSkillList(),
         interested: props.interested ?? new ProjectInterestedList(),
