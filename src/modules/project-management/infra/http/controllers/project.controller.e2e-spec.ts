@@ -8,7 +8,6 @@ import {
 import { UnitTimeType } from '@/modules/project-management/domain/entities/value-objects/available-to-participate';
 import { TeamMembersList } from '@/modules/project-management/domain/entities/watched-lists/team-members-list';
 import { faker } from '@faker-js/faker';
-import { ProjectStatus } from '@modules/project-management/domain/entities/project';
 import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -54,8 +53,7 @@ describe('ProjectController (e2e)', () => {
     const createProjectBody: CreateProjectBodySchema = {
       description: faker.lorem.paragraph(),
       imageUrl: faker.image.url(),
-      status: ProjectStatus.RECRUITING,
-      requirements: faker.lorem.paragraph(),
+      bannerUrl: faker.image.url(),
       roles: [
         {
           membersAmount: 1,
@@ -340,6 +338,27 @@ describe('ProjectController (e2e)', () => {
           }),
         ]),
       );
+    });
+  });
+
+  test('/:slug/management/details (GET) - get project details for management', async () => {
+    const user = await userFactory.makeUser();
+
+    const createdProject = await projectFactory.makeProject({
+      authorId: user.id,
+    });
+
+    const accessToken = jwt.sign({ uid: user.id });
+
+    const response = await request(app.getHttpServer())
+      .get(`/projects/${createdProject.slug.value}/management/details`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    waitFor(() => {
+      expect(response.body).toBeDefined();
+      expect(response.body.id).toEqual(createdProject.id);
+      expect(response.body.name).toEqual(createdProject.name);
     });
   });
 });

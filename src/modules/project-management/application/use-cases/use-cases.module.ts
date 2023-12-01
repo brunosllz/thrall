@@ -12,6 +12,7 @@ import { FetchGeneralSkillsFromProjectsUseCase } from './queries/fetch-general-s
 import { FetchProjectsByUserIdUseCase } from './queries/fetch-projects-by-user-id';
 import { FetchProjectsWithShortDetailsUseCase } from './queries/fetch-projects-with-short-details';
 import { GetProjectByIdUseCase } from './queries/get-project-by-id';
+import { GetProjectBySlugUseCase } from './queries/get-project-by-slug';
 
 @Module({
   imports: [PrismaDatabaseModule],
@@ -27,6 +28,7 @@ import { GetProjectByIdUseCase } from './queries/get-project-by-id';
     FetchProjectsWithShortDetailsUseCase,
     GetProjectByIdUseCase,
     FetchGeneralSkillsFromProjectsUseCase,
+    GetProjectBySlugUseCase,
   ],
   exports: [
     CreateProjectUseCase,
@@ -40,6 +42,7 @@ import { GetProjectByIdUseCase } from './queries/get-project-by-id';
     FetchProjectsWithShortDetailsUseCase,
     GetProjectByIdUseCase,
     FetchGeneralSkillsFromProjectsUseCase,
+    GetProjectBySlugUseCase,
   ],
 })
 export class UseCasesModule {}

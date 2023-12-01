@@ -231,9 +231,9 @@ export class PrismaProjectsDAO extends ProjectsDAO {
         description: true,
         projectRoles: {
           where: {
-            users: {
+            member: {
               some: {
-                id: userId,
+                recipientId: userId,
               },
             },
           },
@@ -276,18 +276,76 @@ export class PrismaProjectsDAO extends ProjectsDAO {
           slug,
         },
       },
-      include: {
+      select: {
+        id: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        slug: true,
+        availableDays: true,
+        availableTimeValue: true,
+        availableTimeUnit: true,
+        bannerUrl: true,
+        imageUrl: true,
+        name: true,
+        description: true,
+        interestedInProject: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                avatarUrl: true,
+                role: true,
+                seniority: true,
+                name: true,
+              },
+            },
+          },
+        },
+        projectRoles: {
+          select: {
+            id: true,
+            membersAmount: true,
+            description: true,
+            role: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
         skills: {
           select: {
             slug: true,
           },
         },
-        _count: {
+        status: true,
+        teamMembers: {
           select: {
-            teamMembers: true,
-            answers: true,
+            permissionType: true,
+            projectRole: {
+              select: {
+                role: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+            user: {
+              select: {
+                id: true,
+                avatarUrl: true,
+                title: true,
+                name: true,
+              },
+            },
           },
         },
+        createdAt: true,
       },
     });
 

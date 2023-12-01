@@ -1,7 +1,7 @@
 import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
 import { Either, left, right } from '@common/logic/either';
 import { Result } from '@common/logic/result';
-import { Project } from '@modules/project-management/domain/entities/project';
+import { Injectable } from '@nestjs/common';
 
 import { ProjectsDAO } from '../../dao/projects-dao';
 
@@ -12,9 +12,10 @@ interface GetProjectBySlugUseCaseRequest {
 
 type GetProjectBySlugUseCaseResponse = Either<
   ResourceNotFoundError | Result<void>,
-  Result<Project>
+  Result<any>
 >;
 
+@Injectable()
 export class GetProjectBySlugUseCase {
   constructor(private projectsDAO: ProjectsDAO) {}
 
@@ -31,7 +32,7 @@ export class GetProjectBySlugUseCase {
 
       return right(Result.ok(project));
     } catch (error) {
-      return left(Result.fail<void>(error));
+      return left(error);
     }
   }
 }
