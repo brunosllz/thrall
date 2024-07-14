@@ -1,5 +1,5 @@
-import { Result } from '@/common/logic/result';
-import { Either, left, right } from '@common/logic/either';
+import { Result } from '@/core/logic/result';
+import { Either, left, right } from '@/core/logic/either';
 import {
   Notification,
   NotificationType,

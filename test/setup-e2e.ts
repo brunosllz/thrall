@@ -1,7 +1,7 @@
 import 'dotenv/config';
 
-import { DomainEvents } from '@/common/domain/events/domain-events';
-import { envSchema } from '@/common/infra/config/env';
+import { DomainEvents } from '@/core/domain/events/domain-events';
+import { envSchema } from '@/core/infra/config/env';
 import { PrismaClient } from '@prisma/client';
 import { config } from 'dotenv';
 // import { Redis } from 'ioredis';

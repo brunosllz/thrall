@@ -1,6 +1,6 @@
-import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
-import { Either, left, right } from '@common/logic/either';
-import { Result } from '@common/logic/result';
+import { ResourceNotFoundError } from '@/core/errors/errors/resource-not-found-error';
+import { Either, left, right } from '@/core/logic/either';
+import { Result } from '@/core/logic/result';
 import { Injectable } from '@nestjs/common';
 
 import { ProjectsDAO } from '../../dao/projects-dao';

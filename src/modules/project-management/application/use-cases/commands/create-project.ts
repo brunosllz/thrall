@@ -1,25 +1,18 @@
-import { Slug } from '@/common/domain/entities/value-objects/slug';
+import { Slug } from '@/core/domain/value-objects/slug';
+import { AlreadyExistsError } from '@/core/errors/errors/already-exists-error';
+import { Either, left, right } from '@/core/logic/either';
+import { Result } from '@/core/logic/result';
+import { Job } from '@/modules/project-management/domain/entities/job';
 import { Skill } from '@/modules/project-management/domain/entities/skill';
 import { AvailableToParticipate } from '@/modules/project-management/domain/entities/value-objects/available-to-participate';
 import { ProjectGeneralSkillList } from '@/modules/project-management/domain/entities/watched-lists/project-general-skill-list';
-import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
-import { Either, left, right } from '@common/logic/either';
-import { Result } from '@common/logic/result';
+import { ProjectJobList } from '@/modules/project-management/domain/entities/watched-lists/project-job-list';
 import { Project } from '@modules/project-management/domain/entities/project';
-import { Role } from '@modules/project-management/domain/entities/role';
 import { Content } from '@modules/project-management/domain/entities/value-objects/content';
-import { ProjectRoleList } from '@modules/project-management/domain/entities/watched-lists/project-role-list';
 import { Injectable } from '@nestjs/common';
 
 import { ProjectsRepository } from '../../repositories/projects-repository';
 import { CreateProjectDTO } from './dtos/create-project-dto';
-
-type CreateProjectRequest = CreateProjectDTO;
-
-type CreateProjectResponse = Either<
-  AlreadyExistsError | Result<void> | Result<any>,
-  Result<void>
->;
 
 @Injectable()
 export class CreateProjectUseCase {
@@ -28,7 +21,7 @@ export class CreateProjectUseCase {
   async execute({
     authorId,
     name,
-    roles,
+    jobs,
     imageUrl,
     generalSkills,
     description,
@@ -56,7 +49,11 @@ export class CreateProjectUseCase {
       });
 
       if (availableToParticipateOrError.isFailure) {
-        return left(Result.fail(availableToParticipateOrError.error));
+        return left(
+          Result.fail<AvailableToParticipate>(
+            availableToParticipateOrError.error,
+          ),
+        );
       }
 
       const availableToParticipate = availableToParticipateOrError.getValue();
@@ -76,21 +73,21 @@ export class CreateProjectUseCase {
 
       const project = projectOrError.getValue();
 
-      const createdRoles = roles.map((role) => {
-        const roleOrError = Role.create({
-          membersAmount: role.membersAmount,
+      const createdJobs = jobs.map((job) => {
+        const jobOrError = Job.create({
+          jobAmountAvailable: job.jobAmountAvailable,
           projectId: project.id,
-          name: Slug.createFromText(role.name).getValue(),
-          description: new Content(role.description),
+          name: job.name,
+          description: new Content(job.description),
         });
 
-        if (roleOrError.isFailure) {
-          throw roleOrError.errorValue();
+        if (jobOrError.isFailure) {
+          throw jobOrError.errorValue();
         }
 
-        const createdRole = roleOrError.getValue();
+        const createdJob = jobOrError.getValue();
 
-        return createdRole;
+        return createdJob;
       });
 
       const createdGeneralSkills = generalSkills.map((generalSkills) => {
@@ -105,7 +102,7 @@ export class CreateProjectUseCase {
         return createdGeneralSkill;
       });
 
-      project.roles = new ProjectRoleList(createdRoles);
+      project.jobs = new ProjectJobList(createdJobs);
       project.generalSkills = new ProjectGeneralSkillList(createdGeneralSkills);
 
       await this.projectsRepository.create(project);
@@ -116,3 +113,10 @@ export class CreateProjectUseCase {
     }
   }
 }
+
+type CreateProjectRequest = CreateProjectDTO;
+
+type CreateProjectResponse = Either<
+  AlreadyExistsError | Result<void> | Result<any> | any,
+  Result<void>
+>;

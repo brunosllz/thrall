@@ -1,7 +1,7 @@
 import {
   PaginationParams,
   PaginationQueryResponse,
-} from '@common/repositories/pagination-params';
+} from '@/core/repositories/pagination-params';
 
 export type FindManyWithShortDetailsQueryParams = {
   roles: string[];
@@ -17,9 +17,13 @@ export abstract class ProjectsDAO {
   abstract findDetailsById(projectId: string): Promise<any>;
   abstract findManyByUserId(
     userId: string,
-    params: PaginationParams,
-  ): Promise<any[]>;
-  abstract findBySlug(slug: string, authorId: string): Promise<any>;
+    paginationParams: PaginationParams,
+  ): Promise<PaginationQueryResponse>;
+  abstract findManyInvolvedByUserId(
+    userId: string,
+    paginationParams: PaginationParams,
+  ): Promise<PaginationQueryResponse>;
+  abstract findBySlug(slug: string): Promise<any>;
   abstract findManyWithShortDetails(
     queryParams: FindManyWithShortDetailsQueryParams,
     paginationParams: PaginationParams,

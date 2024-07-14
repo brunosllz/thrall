@@ -1,19 +1,22 @@
-import { NotAllowedError } from '@/common/errors/errors/not-allowed-error';
-import { ResourceNotFoundError } from '@/common/errors/errors/resource-not-found-error';
-import { Result } from '@/common/logic/result';
+import { AlreadyExistsError } from '@/core/errors/errors/already-exists-error';
+import { NotAllowedError } from '@/core/errors/errors/not-allowed-error';
+import { ResourceNotFoundError } from '@/core/errors/errors/resource-not-found-error';
+import { AuthUser } from '@/core/infra/http/auth/auth-user';
+import { CurrentUser } from '@/core/infra/http/auth/decorators/current-user';
+import { ZodValidationPipe } from '@/core/infra/pipes/zod-validation-pipe';
+import { Result } from '@/core/logic/result';
 import { AddInterestedInProject } from '@/modules/project-management/application/use-cases/commands/add-interested-in-project';
 import { DeleteProjectUseCase } from '@/modules/project-management/application/use-cases/commands/delete-project';
-import { ManageProjectTeamMemberPrivilegeError } from '@/modules/project-management/application/use-cases/commands/errors/manage-project-team-member-privilege-error';
+import { EditProjectUseCase } from '@/modules/project-management/application/use-cases/commands/edit-project';
+import { ManageProjectTeamMemberPrivilegeAndJobError } from '@/modules/project-management/application/use-cases/commands/errors/manage-project-team-member-privilege-and-job-error';
 import { ManageInviteProjectTeamMemberUseCase } from '@/modules/project-management/application/use-cases/commands/manage-invite-project-team-member';
-import { ManageProjectTeamMemberPrivilegeUseCase } from '@/modules/project-management/application/use-cases/commands/manage-project-team-member-privilege';
+import { ManageProjectTeamMemberPrivilegeAndJobUseCase } from '@/modules/project-management/application/use-cases/commands/manage-project-team-member-privilege-and-job';
 import { SendInviteProjectTeamMemberUseCase } from '@/modules/project-management/application/use-cases/commands/send-invite-project-team-member';
 import { FetchGeneralSkillsFromProjectsUseCase } from '@/modules/project-management/application/use-cases/queries/fetch-general-skills-from-projects';
+import { FetchProjectsInvolvedByUserIdUseCase } from '@/modules/project-management/application/use-cases/queries/fetch-projects-involved-by-user-id';
 import { FetchProjectsWithShortDetailsUseCase } from '@/modules/project-management/application/use-cases/queries/fetch-projects-with-short-details';
 import { GetProjectByIdUseCase } from '@/modules/project-management/application/use-cases/queries/get-project-by-id';
-import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
-import { AuthUser } from '@common/infra/http/auth/auth-user';
-import { CurrentUser } from '@common/infra/http/auth/decorators/current-user';
-import { ZodValidationPipe } from '@common/infra/pipes/zod-validation-pipe';
+import { GetProjectBySlugUseCase } from '@/modules/project-management/application/use-cases/queries/get-project-by-slug';
 import { CreateProjectUseCase } from '@modules/project-management/application/use-cases/commands/create-project';
 import { FetchProjectsByUserIdUseCase } from '@modules/project-management/application/use-cases/queries/fetch-projects-by-user-id';
 import {
@@ -26,9 +29,10 @@ import {
   HttpCode,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
   Param,
-  Patch,
   Post,
+  Put,
   Query,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -56,20 +60,26 @@ import {
   manageInviteProjectTeamMemberParamsSchema,
 } from '../validation-schemas/manage-invite-project-team-member-schema';
 import {
-  ManageProjectTeamMemberPrivilegeParamsSchema,
-  ManageProjectTeamMemberPrivilegeBodySchema,
-  manageProjectTeamMemberPrivilegeBodySchema,
-  manageProjectTeamMemberPrivilegeParamsSchema,
-} from '../validation-schemas/manage-project-team-member-privilege-schema';
+  ManageProjectTeamMemberPrivilegeAndJobBodySchema,
+  ManageProjectTeamMemberPrivilegeAndJobParamsSchema,
+  manageProjectTeamMemberPrivilegeAndJobBodySchema,
+  manageProjectTeamMemberPrivilegeAndJobParamsSchema,
+} from '../validation-schemas/manage-project-team-member-privilege-and-job-schema';
 import {
   SendAInviteTeamMemberBodySchema,
   SendAInviteTeamMemberParamsSchema,
   sendAInviteTeamMemberBodySchema,
   sendAInviteTeamMemberParamsSchema,
 } from '../validation-schemas/send-invite-team-member-schema';
+import {
+  UpdateProjectBodySchema,
+  updateProjectBodySchema,
+} from '../validation-schemas/update-project-schema';
 import { FetchProjectsByUserIdViewModel } from '../view-models/fetch-projects-by-user-id-view-model';
+import { FetchProjectsInvolvedByUserIdViewModel } from '../view-models/fetch-projects-involved-by-user-id-view-model';
 import { FetchProjectsWithShortDetailsViewModel } from '../view-models/fetch-projects-with-short-details-view-model';
 import { GetAllGeneralSkillsLinkedToTheProjectsViewModel } from '../view-models/get-all-general-skills-linked-to-the-projects-view-model';
+import { GetProjectDetailsBySlugViewModel } from '../view-models/get-project-details-by-slug-view-model';
 import { GetProjectsDetailsViewModel } from '../view-models/get-project-details-view-model';
 
 @Controller('/projects')
@@ -80,11 +90,14 @@ export class ProjectController {
     private readonly deleteProjectUseCase: DeleteProjectUseCase,
     private readonly sendInviteProjectTeamMemberUseCase: SendInviteProjectTeamMemberUseCase,
     private readonly manageInviteProjectTeamMemberUseCase: ManageInviteProjectTeamMemberUseCase,
-    private readonly manageProjectTeamMemberPrivilegeUseCase: ManageProjectTeamMemberPrivilegeUseCase,
+    private readonly manageProjectTeamMemberPrivilegeAndJobUseCase: ManageProjectTeamMemberPrivilegeAndJobUseCase,
     private readonly addInterestedInProject: AddInterestedInProject,
     private readonly fetchProjectsWithShortDetailsUseCase: FetchProjectsWithShortDetailsUseCase,
     private readonly getProjectByIdUseCase: GetProjectByIdUseCase,
     private readonly fetchGeneralSkillsFromProjectsUseCase: FetchGeneralSkillsFromProjectsUseCase,
+    private readonly getProjectBySlugUseCase: GetProjectBySlugUseCase,
+    private readonly editProjectUseCase: EditProjectUseCase,
+    private readonly fetchProjectsInvolvedByUserId: FetchProjectsInvolvedByUserIdUseCase,
   ) {}
 
   @Post()
@@ -97,7 +110,7 @@ export class ProjectController {
 
     const {
       description,
-      roles,
+      jobs,
       availableToParticipate,
       generalSkills,
       name,
@@ -108,7 +121,7 @@ export class ProjectController {
     const result = await this.createProjectUseCase.execute({
       authorId: userId,
       name,
-      roles,
+      jobs,
       generalSkills,
       availableToParticipate,
       description,
@@ -126,7 +139,73 @@ export class ProjectController {
             message: error.errorValue().message,
           });
         default:
-          Logger.error(error.errorValue());
+          Logger.error(error);
+          throw new InternalServerErrorException({
+            statusCode: 500,
+            massage: 'Internal Server Error',
+          });
+      }
+    }
+  }
+
+  @Put('/:projectId')
+  @HttpCode(200)
+  async updateProject(
+    @CurrentUser() user: AuthUser,
+    @Param('projectId') projectId: string,
+    @Body(new ZodValidationPipe(updateProjectBodySchema))
+    body: UpdateProjectBodySchema,
+  ) {
+    const { userId } = user;
+
+    const {
+      description,
+      jobs,
+      availableToParticipate,
+      generalSkills,
+      name,
+      bannerUrl,
+      imageUrl,
+    } = body;
+
+    const result = await this.editProjectUseCase.execute({
+      recipientId: userId,
+      name,
+      jobs,
+      generalSkills,
+      availableToParticipate,
+      description,
+      bannerUrl,
+      imageUrl,
+      projectId,
+    });
+
+    if (result.isLeft()) {
+      const error = result.value;
+
+      switch (error.constructor) {
+        case Result:
+          throw new BadRequestException({
+            statusCode: 400,
+            message: error.errorValue(),
+          });
+        case NotAllowedError:
+          throw new UnauthorizedException({
+            statusCode: 401,
+            message: error.errorValue(),
+          });
+        case AlreadyExistsError:
+          throw new ConflictException({
+            statusCode: 409,
+            message: error.errorValue(),
+          });
+        case ResourceNotFoundError:
+          throw new NotFoundException({
+            statusCode: 404,
+            message: error.errorValue(),
+          });
+        default:
+          Logger.error(error);
           throw new InternalServerErrorException({
             statusCode: 500,
             massage: 'Internal Server Error',
@@ -198,7 +277,7 @@ export class ProjectController {
   }
 
   @Get('/me')
-  async fetchProjectsByUserId(@CurrentUser() user: AuthUser) {
+  async fetchProjectsByFromUser(@CurrentUser() user: AuthUser) {
     const { userId } = user;
 
     const result = await this.fetchProjectsByUserIdUseCase.execute({
@@ -211,7 +290,7 @@ export class ProjectController {
       const error = result.value;
       switch (error.constructor) {
         default:
-          Logger.error(error.errorValue());
+          Logger.error(error);
           throw new InternalServerErrorException({
             statusCode: 500,
             massage: 'Internal Server Error',
@@ -219,14 +298,49 @@ export class ProjectController {
       }
     }
 
-    const projectsValue = result.value.getValue();
-
-    const projects = projectsValue.map((project) =>
-      FetchProjectsByUserIdViewModel.toHTTP(project),
-    );
+    const { data, lastPage, page, perPage, total } = result.value.getValue();
 
     return {
-      projects,
+      data: data.map((item) => FetchProjectsByUserIdViewModel.toHTTP(item)),
+      lastPage,
+      page,
+      perPage,
+      total,
+    };
+  }
+
+  @Get('/me/involved')
+  async fetchProjectsInvolvedFromUser(@CurrentUser() user: AuthUser) {
+    const { userId } = user;
+
+    const result = await this.fetchProjectsInvolvedByUserId.execute({
+      userId,
+      pageIndex: 1,
+      pageSize: 10,
+    });
+
+    if (result.isLeft()) {
+      const error = result.value;
+      switch (error.constructor) {
+        default:
+          Logger.error(error);
+          throw new InternalServerErrorException({
+            statusCode: 500,
+            massage: 'Internal Server Error',
+          });
+      }
+    }
+
+    const { data, lastPage, page, perPage, total } = result.value.getValue();
+
+    return {
+      data: data.map((item) =>
+        FetchProjectsInvolvedByUserIdViewModel.toHTTP(item),
+      ),
+      lastPage,
+      page,
+      perPage,
+      total,
     };
   }
 
@@ -300,7 +414,7 @@ export class ProjectController {
             message: error.errorValue(),
           });
         default:
-          Logger.error(error.errorValue());
+          Logger.error(error);
           throw new InternalServerErrorException({
             statusCode: 500,
             massage: 'Internal Server Error',
@@ -343,7 +457,7 @@ export class ProjectController {
             message: error.errorValue().message,
           });
         default:
-          Logger.error(error.errorValue());
+          Logger.error(error);
           throw new InternalServerErrorException({
             statusCode: 500,
             massage: 'Internal Server Error',
@@ -352,7 +466,7 @@ export class ProjectController {
     }
   }
 
-  @Post('/:projectId/manage/invite')
+  @Post('/:projectId/management/invite')
   @HttpCode(204)
   async manageInviteProjectTeamMember(
     @CurrentUser() user: AuthUser,
@@ -386,7 +500,7 @@ export class ProjectController {
             message: error.errorValue(),
           });
         default:
-          Logger.error(error.errorValue());
+          Logger.error(error);
           throw new InternalServerErrorException({
             statusCode: 500,
             massage: 'Internal Server Error',
@@ -395,25 +509,31 @@ export class ProjectController {
     }
   }
 
-  @Patch('/:projectId/manage/member/:memberId/privilege')
+  @Put('/:projectId/management/member/:memberId/privilege-and-job')
   @HttpCode(204)
-  async manageProjectTeamMemberPrivilege(
-    @Param(new ZodValidationPipe(manageProjectTeamMemberPrivilegeParamsSchema))
-    params: ManageProjectTeamMemberPrivilegeParamsSchema,
-    @Body(new ZodValidationPipe(manageProjectTeamMemberPrivilegeBodySchema))
-    body: ManageProjectTeamMemberPrivilegeBodySchema,
+  async manageProjectTeamMemberPrivilegeAndJob(
+    @Param(
+      new ZodValidationPipe(manageProjectTeamMemberPrivilegeAndJobParamsSchema),
+    )
+    params: ManageProjectTeamMemberPrivilegeAndJobParamsSchema,
+    @Body(
+      new ZodValidationPipe(manageProjectTeamMemberPrivilegeAndJobBodySchema),
+    )
+    body: ManageProjectTeamMemberPrivilegeAndJobBodySchema,
     @CurrentUser() user: AuthUser,
   ) {
     const { userId } = user;
-    const { permissionType } = body;
+    const { permissionType, jobsId } = body;
     const { projectId, memberId } = params;
 
-    const result = await this.manageProjectTeamMemberPrivilegeUseCase.execute({
-      memberId,
-      ownerId: userId,
-      projectId,
-      permissionType,
-    });
+    const result =
+      await this.manageProjectTeamMemberPrivilegeAndJobUseCase.execute({
+        memberId,
+        ownerId: userId,
+        projectId,
+        permissionType,
+        jobsId,
+      });
 
     if (result.isLeft()) {
       const error = result.value;
@@ -429,13 +549,13 @@ export class ProjectController {
             statusCode: 401,
             message: error.errorValue(),
           });
-        case ManageProjectTeamMemberPrivilegeError.InvalidDeleteItSelf:
+        case ManageProjectTeamMemberPrivilegeAndJobError.InvalidDeleteItSelf:
           throw new UnauthorizedException({
-            statusCode: 401,
+            code: 'unauthorized',
             message: error.errorValue(),
           });
         default:
-          Logger.error(error.errorValue());
+          Logger.error(error);
 
           throw new InternalServerErrorException({
             statusCode: 500,
@@ -475,7 +595,7 @@ export class ProjectController {
             message: error.errorValue().message,
           });
         default:
-          Logger.error(error.errorValue());
+          Logger.error(error);
 
           throw new InternalServerErrorException({
             statusCode: 500,
@@ -483,5 +603,35 @@ export class ProjectController {
           });
       }
     }
+  }
+
+  @Get('/:slug/management/details')
+  async getProjectDetailsBySlug(@Param('slug') slug: string) {
+    const result = await this.getProjectBySlugUseCase.execute({
+      slug: slug,
+    });
+
+    if (result.isLeft()) {
+      const error = result.value;
+
+      switch (error.constructor) {
+        case ResourceNotFoundError:
+          throw new BadRequestException({
+            statusCode: 400,
+            message: error.errorValue(),
+          });
+        default:
+          Logger.error(error);
+
+          throw new InternalServerErrorException({
+            statusCode: 500,
+            massage: 'Internal Server Error',
+          });
+      }
+    }
+
+    const project = result.value.getValue();
+
+    return GetProjectDetailsBySlugViewModel.toHTTP(project);
   }
 }

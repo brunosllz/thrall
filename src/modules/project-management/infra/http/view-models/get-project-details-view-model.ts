@@ -19,8 +19,7 @@ export class GetProjectsDetailsViewModel {
   static toHTTP(projectDetails: any) {
     return {
       id: projectDetails.id,
-      imageUrl:
-        projectDetails.imageUrl.length > 0 ? projectDetails.imageUrl : null,
+      imageUrl: projectDetails.imageUrl,
       bannerUrl: projectDetails.bannerUrl,
       name: projectDetails.name,
       description: projectDetails.description,
@@ -37,7 +36,7 @@ export class GetProjectsDetailsViewModel {
           ? 'hrs'
           : unitTimeMapper[projectDetails.availableTimeUnit]
       }`,
-      roles: projectDetails.projectRoles.map((role: any) => ({
+      roles: projectDetails.projectJobs.map((role: any) => ({
         id: role.id,
         name: role.role.name,
         description: role.description,

@@ -1,8 +1,8 @@
-import { Slug } from '@/common/domain/entities/value-objects/slug';
+import { Slug } from '@/core/domain/value-objects/slug';
 import { UserSkillList } from '@/modules/account/domain/watched-lists/user-skill-list';
 import { UserMapper } from '@/modules/account/infra/prisma/repositories/mappers/user-mapper';
 import { Skill } from '@/modules/project-management/domain/entities/skill';
-import { PrismaService } from '@common/infra/prisma/prisma.service';
+import { PrismaService } from '@/core/infra/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import { User, UserProps } from '@modules/account/domain/user';
 import { Email } from '@modules/account/domain/value-objects/email';

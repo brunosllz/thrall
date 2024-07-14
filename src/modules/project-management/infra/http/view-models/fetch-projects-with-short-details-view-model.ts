@@ -2,10 +2,7 @@ export class FetchProjectsWithShortDetailsViewModel {
   static toHTTP(projectShortDetails: any) {
     return {
       id: projectShortDetails.id,
-      imageUrl:
-        projectShortDetails.imageUrl.length > 0
-          ? projectShortDetails.imageUrl
-          : null,
+      imageUrl: projectShortDetails.imageUrl,
       name: projectShortDetails.name,
       description: projectShortDetails.description,
       author: {

@@ -1,5 +1,5 @@
-import { Either, left, right } from '@/common/logic/either';
-import { Result } from '@/common/logic/result';
+import { Either, left, right } from '@/core/logic/either';
+import { Result } from '@/core/logic/result';
 import { Injectable } from '@nestjs/common';
 
 import { NotificationsDAO } from '../../dao/notifications-dao';

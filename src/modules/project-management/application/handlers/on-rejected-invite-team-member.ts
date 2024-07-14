@@ -1,5 +1,5 @@
-import { DomainEvents } from '@common/domain/events/domain-events';
-import { EventHandler } from '@common/domain/events/event-handler';
+import { DomainEvents } from '@/core/domain/events/domain-events';
+import { EventHandler } from '@/core/domain/events/event-handler';
 import { Injectable, Logger } from '@nestjs/common';
 
 import { RejectedInviteTeamMemberEvent } from '../../domain/events/rejected-invite-team-member';

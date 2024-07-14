@@ -41,28 +41,42 @@ export class GetProjectDetailsBySlugViewModel {
           id: string;
           permissionType: 'owner' | 'member';
           user: {
+            id: string;
             name: string;
             avatarUrl: string;
-            id: string;
             title: string;
           };
+          projectJob: Array<{
+            role: {
+              name: string;
+              slug: string;
+            };
+          }>;
         }) => {
           return {
-            id: teamMember.user.id,
+            id: teamMember.id,
+            userId: teamMember.user.id,
             avatarUrl: teamMember.user.avatarUrl,
             name: teamMember.user.name,
             title: teamMember.user.title,
             permissionType: teamMember.permissionType,
+            roles: teamMember.projectJob.map((member) => {
+              return {
+                name: member.role.name,
+                slug: member.role.slug,
+              };
+            }),
           };
         },
       ),
-      roles: project.projectRoles.map(
+      jobs: project.projectJobs.map(
         (projectRole: {
           id: string;
           membersAmount: number;
           description: string;
           role: {
             name: string;
+            slug: string;
           };
         }) => {
           return {
@@ -70,6 +84,7 @@ export class GetProjectDetailsBySlugViewModel {
             membersAmount: projectRole.membersAmount,
             description: projectRole.description,
             name: projectRole.role.name,
+            slug: projectRole.role.slug,
           };
         },
       ),
@@ -81,6 +96,7 @@ export class GetProjectDetailsBySlugViewModel {
             role: string;
             seniority: string;
             name: string;
+            slugProfile: string;
           };
         }) => {
           return {
@@ -89,6 +105,7 @@ export class GetProjectDetailsBySlugViewModel {
             role: interestedUser.user.role,
             seniority: interestedUser.user.seniority,
             name: interestedUser.user.name,
+            slugProfile: interestedUser.user.slugProfile,
           };
         },
       ),

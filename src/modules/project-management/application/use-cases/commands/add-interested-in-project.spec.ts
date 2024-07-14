@@ -1,5 +1,5 @@
-import { Result } from '@/common/logic/result';
-import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
+import { Result } from '@/core/logic/result';
+import { ResourceNotFoundError } from '@/core/errors/errors/resource-not-found-error';
 import { faker } from '@faker-js/faker';
 
 import { makeFakeProject } from '@test/factories/make-project';

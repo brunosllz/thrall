@@ -1,6 +1,6 @@
-import { Slug } from '@/common/domain/entities/value-objects/slug';
-import { DomainEvents } from '@/common/domain/events/domain-events';
-import { PrismaService } from '@common/infra/prisma/prisma.service';
+import { Slug } from '@/core/domain/value-objects/slug';
+import { DomainEvents } from '@/core/domain/events/domain-events';
+import { PrismaService } from '@/core/infra/prisma/prisma.service';
 import { ProjectsRepository } from '@modules/project-management/application/repositories/projects-repository';
 import { Project } from '@modules/project-management/domain/entities/project';
 import { Injectable } from '@nestjs/common';
@@ -31,15 +31,20 @@ export class PrismaProjectsRepository extends ProjectsRepository {
     const project = await this.prisma.project.findUnique({
       where: { id },
       include: {
-        answers: true,
-        projectRoles: {
+        projectJobs: {
           select: {
+            id: true,
             membersAmount: true,
             description: true,
             role: {
               select: {
-                id: true,
                 name: true,
+                slug: true,
+              },
+            },
+            member: {
+              select: {
+                recipientId: true,
               },
             },
           },
@@ -58,10 +63,10 @@ export class PrismaProjectsRepository extends ProjectsRepository {
   }
 
   async create(project: Project) {
-    const { rawProject, rawRoles, rawSkills, rawTeamMembers } =
+    const { rawProject, rawProjectJobs, rawSkills, rawTeamMembers } =
       ProjectMapper.toPersistence(project);
 
-    const rawRolesItems = rawRoles.getItems();
+    const rawJobsItems = rawProjectJobs.getItems();
     const rawSkillsItems = rawSkills.getItems();
     const rawTeamMembersItems = rawTeamMembers.getItems();
 
@@ -72,28 +77,28 @@ export class PrismaProjectsRepository extends ProjectsRepository {
     });
 
     await Promise.all([
-      rawRolesItems.map(async (role) => {
+      rawJobsItems.map(async (job) => {
         await this.prisma.role.upsert({
           where: {
-            name: role.name.value,
+            slug: job.slug.value,
           },
           update: {
-            projectRoles: {
+            projectJobs: {
               create: {
                 projectId: createdProject.id,
-                membersAmount: role.membersAmount,
-                description: role.description.value,
+                membersAmount: job.jobAmountAvailable,
+                description: job.description.value,
               },
             },
           },
           create: {
-            id: role.id,
-            name: role.name.value,
-            projectRoles: {
+            name: job.name,
+            slug: job.slug.value,
+            projectJobs: {
               create: {
                 projectId: createdProject.id,
-                membersAmount: role.membersAmount,
-                description: role.description.value,
+                membersAmount: job.jobAmountAvailable,
+                description: job.description.value,
               },
             },
           },
@@ -139,13 +144,82 @@ export class PrismaProjectsRepository extends ProjectsRepository {
   }
 
   async save(project: Project): Promise<void> {
-    const { rawProject, rawTeamMembers, rawInterested } =
-      ProjectMapper.toPersistence(project);
-    const newTeamMembers = rawTeamMembers.getNewItems();
+    const {
+      rawProject,
+      rawTeamMembers,
+      rawInterested,
+      rawProjectJobs,
+      rawSkills,
+    } = ProjectMapper.toPersistence(project);
     const newInterested = rawInterested.getNewItems();
+    const newTeamMembers = rawTeamMembers.getNewItems();
+    const removedTeamMember = rawTeamMembers.getRemovedItems();
+    const removedJobs = rawProjectJobs.getRemovedItems();
+    const newSkills = rawSkills.getNewItems();
+    const removedSkills = rawSkills.getRemovedItems();
 
     const hasNewTeamMember = newTeamMembers.length > 0;
+    const hasRemovedTeamMember = removedTeamMember.length > 0;
     const hasNewInterested = newInterested.length > 0;
+    const hasRemovedJobs = removedJobs.length > 0;
+    const hasNewSkills = newSkills.length > 0;
+    const hasRemovedSkills = removedSkills.length > 0;
+
+    if (hasNewSkills) {
+      await Promise.all([
+        newSkills.forEach(async (skill) => {
+          await this.prisma.skill.upsert({
+            where: {
+              slug: skill.slug.value,
+            },
+            update: {
+              projects: {
+                connect: {
+                  id: rawProject.id,
+                },
+              },
+            },
+            create: {
+              slug: skill.slug.value,
+              projects: {
+                connect: {
+                  id: rawProject.id,
+                },
+              },
+            },
+          });
+        }),
+      ]);
+    }
+
+    if (hasRemovedSkills) {
+      await Promise.all([
+        removedSkills.forEach(async (skill) => {
+          await this.prisma.skill.update({
+            where: {
+              slug: skill.slug.value,
+            },
+            data: {
+              projects: {
+                disconnect: {
+                  id: rawProject.id,
+                },
+              },
+            },
+          });
+        }),
+      ]);
+    }
+
+    if (hasRemovedJobs) {
+      await this.prisma.projectJob.deleteMany({
+        where: {
+          id: {
+            in: removedJobs.map((job) => job.id),
+          },
+        },
+      });
+    }
 
     if (hasNewInterested) {
       await Promise.all(
@@ -178,7 +252,18 @@ export class PrismaProjectsRepository extends ProjectsRepository {
       );
     }
 
-    // TODO: add manage role on edit a project
+    if (hasRemovedTeamMember) {
+      await Promise.all(
+        removedTeamMember.map(async (teamMember) => {
+          await this.prisma.teamMember.delete({
+            where: {
+              id: teamMember.id,
+            },
+          });
+        }),
+      );
+    }
+
     await this.prisma.project.update({
       where: {
         id: rawProject.id,
@@ -186,6 +271,12 @@ export class PrismaProjectsRepository extends ProjectsRepository {
       data: {
         description: rawProject.description,
         name: rawProject.name,
+        slug: rawProject.slug,
+        availableTimeUnit: rawProject.availableTimeUnit,
+        bannerUrl: rawProject.bannerUrl,
+        imageUrl: rawProject.imageUrl,
+        availableTimeValue: rawProject.availableTimeValue,
+        availableDays: rawProject.availableDays,
         teamMembers: {
           updateMany: rawTeamMembers.getItems().map((teamMember) => ({
             where: { id: teamMember.id },
@@ -196,8 +287,92 @@ export class PrismaProjectsRepository extends ProjectsRepository {
             },
           })),
         },
+        projectJobs: {
+          upsert: rawProjectJobs.currentItems.map((job) => ({
+            where: { id: job.id },
+            update: {
+              description: job.description.value,
+              membersAmount: job.jobAmountAvailable,
+              role: {
+                connectOrCreate: {
+                  where: {
+                    slug: job.slug.value,
+                  },
+                  create: {
+                    name: job.name,
+                    slug: job.slug.value,
+                  },
+                },
+              },
+            },
+            create: {
+              description: job.description.value,
+              membersAmount: job.jobAmountAvailable,
+              role: {
+                connectOrCreate: {
+                  where: {
+                    slug: job.slug.value,
+                  },
+                  create: {
+                    name: job.name,
+                    slug: job.slug.value,
+                  },
+                },
+              },
+            },
+          })),
+        },
       },
     });
+
+    for (const job of rawProjectJobs.getItems()) {
+      const newAssignedMembers = job.membersIdsAssigned.getNewItems();
+      const removedAssignedMembers = job.membersIdsAssigned.getRemovedItems();
+
+      if (newAssignedMembers.length > 0) {
+        await Promise.all([
+          newAssignedMembers.map(async (memberId) => {
+            await this.prisma.teamMember.update({
+              where: {
+                projectId_recipientId: {
+                  projectId: rawProject.id,
+                  recipientId: memberId,
+                },
+              },
+              data: {
+                projectJob: {
+                  connect: {
+                    id: job.id,
+                  },
+                },
+              },
+            });
+          }),
+        ]);
+      }
+
+      if (removedAssignedMembers.length > 0) {
+        await Promise.all([
+          removedAssignedMembers.map(async (memberId) => {
+            await this.prisma.teamMember.update({
+              where: {
+                projectId_recipientId: {
+                  projectId: rawProject.id,
+                  recipientId: memberId,
+                },
+              },
+              data: {
+                projectJob: {
+                  disconnect: {
+                    id: job.id,
+                  },
+                },
+              },
+            });
+          }),
+        ]);
+      }
+    }
 
     DomainEvents.dispatchEventsForAggregate(project.id);
   }

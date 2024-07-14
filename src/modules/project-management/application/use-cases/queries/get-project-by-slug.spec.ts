@@ -1,4 +1,4 @@
-import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
+import { ResourceNotFoundError } from '@/core/errors/errors/resource-not-found-error';
 
 import { makeFakeProject } from '@test/factories/make-project';
 
@@ -30,7 +30,6 @@ describe('Get project by slug', () => {
 
       const result = await sut.execute({
         slug: 'title-example',
-        authorId: '1',
       });
 
       expect(result.isRight()).toBe(true);
@@ -51,7 +50,6 @@ describe('Get project by slug', () => {
     try {
       const result = await sut.execute({
         slug: 'non-exist-slug',
-        authorId: '1',
       });
 
       expect(result.isLeft()).toBe(true);

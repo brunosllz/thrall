@@ -1,8 +1,8 @@
-import { PrismaService } from '@common/infra/prisma/prisma.service';
+import { PrismaService } from '@/core/infra/prisma/prisma.service';
 import {
   PaginationParams,
   PaginationQueryResponse,
-} from '@common/repositories/pagination-params';
+} from '@/core/repositories/pagination-params';
 import {
   FindManyWithShortDetailsQueryParams,
   FindManyGeneralSkillsToTheProjectsQueryParams,
@@ -33,7 +33,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
         availableTimeUnit: true,
         availableTimeValue: true,
         authorId: true,
-        projectRoles: {
+        projectJobs: {
           select: {
             id: true,
             membersAmount: true,
@@ -101,7 +101,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
           }
         : undefined;
 
-    const rolesParams: Prisma.ProjectRoleListRelationFilter | undefined =
+    const rolesParams: Prisma.ProjectJobListRelationFilter | undefined =
       roles.length > 0
         ? {
             some: {
@@ -122,7 +122,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
               skills: skillsParams,
             },
             {
-              projectRoles: rolesParams,
+              projectJobs: rolesParams,
             },
             {
               createdAt: dateParams,
@@ -165,7 +165,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
               skills: skillsParams,
             },
             {
-              projectRoles: rolesParams,
+              projectJobs: rolesParams,
             },
             {
               createdAt: dateParams,
@@ -216,20 +216,19 @@ export class PrismaProjectsDAO extends ProjectsDAO {
   async findManyByUserId(
     userId: string,
     { pageIndex, pageSize }: PaginationParams,
-  ): Promise<any[]> {
+  ): Promise<PaginationQueryResponse> {
     const projects = await this.prisma.project.findMany({
       where: {
         authorId: userId,
       },
       select: {
         id: true,
-        authorId: true,
         status: true,
         slug: true,
         bannerUrl: true,
         name: true,
         description: true,
-        projectRoles: {
+        projectJobs: {
           where: {
             member: {
               some: {
@@ -242,6 +241,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
               select: {
                 id: true,
                 name: true,
+                slug: true,
               },
             },
           },
@@ -265,16 +265,94 @@ export class PrismaProjectsDAO extends ProjectsDAO {
       },
     });
 
-    return projects;
+    return {
+      data: projects,
+      perPage: pageSize,
+      page: pageIndex,
+      lastPage: Math.ceil(projects.length / pageSize),
+      total: projects.length,
+    };
   }
 
-  async findBySlug(slug: string, authorId: string): Promise<any> {
-    const project = await this.prisma.project.findUnique({
+  async findManyInvolvedByUserId(
+    userId: string,
+    { pageIndex, pageSize }: PaginationParams,
+  ): Promise<PaginationQueryResponse> {
+    const projects = await this.prisma.project.findMany({
       where: {
-        authorId_slug: {
-          authorId,
-          slug,
+        AND: [
+          {
+            teamMembers: {
+              some: {
+                recipientId: userId,
+                status: 'approved',
+              },
+            },
+          },
+          {
+            authorId: {
+              not: userId,
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        status: true,
+        slug: true,
+        bannerUrl: true,
+        name: true,
+        description: true,
+        projectJobs: {
+          where: {
+            member: {
+              some: {
+                recipientId: userId,
+              },
+            },
+          },
+          select: {
+            role: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+          },
         },
+        teamMembers: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                name: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+      },
+      skip: (pageIndex - 1) * pageSize,
+      take: pageSize,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return {
+      data: projects,
+      perPage: pageSize,
+      page: pageIndex,
+      lastPage: Math.ceil(projects.length / pageSize),
+      total: projects.length,
+    };
+  }
+
+  async findBySlug(slug: string): Promise<any> {
+    const project = await this.prisma.project.findFirst({
+      where: {
+        slug,
       },
       select: {
         id: true,
@@ -301,11 +379,12 @@ export class PrismaProjectsDAO extends ProjectsDAO {
                 role: true,
                 seniority: true,
                 name: true,
+                slugProfile: true,
               },
             },
           },
         },
-        projectRoles: {
+        projectJobs: {
           select: {
             id: true,
             membersAmount: true,
@@ -313,6 +392,7 @@ export class PrismaProjectsDAO extends ProjectsDAO {
             role: {
               select: {
                 name: true,
+                slug: true,
               },
             },
           },
@@ -325,16 +405,8 @@ export class PrismaProjectsDAO extends ProjectsDAO {
         status: true,
         teamMembers: {
           select: {
+            id: true,
             permissionType: true,
-            projectRole: {
-              select: {
-                role: {
-                  select: {
-                    name: true,
-                  },
-                },
-              },
-            },
             user: {
               select: {
                 id: true,
@@ -342,6 +414,21 @@ export class PrismaProjectsDAO extends ProjectsDAO {
                 title: true,
                 name: true,
               },
+            },
+            projectJob: {
+              select: {
+                role: {
+                  select: {
+                    name: true,
+                    slug: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            user: {
+              name: 'asc',
             },
           },
         },

@@ -1,7 +1,7 @@
 import {
   PaginationParams,
   PaginationQueryResponse,
-} from '@/common/repositories/pagination-params';
+} from '@/core/repositories/pagination-params';
 
 import { InMemoryNotificationsRepository } from '../../repositories/in-memory/in-memory-notifications-repository';
 import { NotificationsDAO } from '../notifications-dao';

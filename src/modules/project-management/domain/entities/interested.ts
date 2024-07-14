@@ -1,11 +1,19 @@
-import { Entity } from '@common/domain/entities/entity';
-import { Guard } from '@common/logic/Guard';
-import { Result } from '@common/logic/result';
-import { Optional } from '@common/logic/types/Optional';
+import { Entity } from '@/core/domain/entities/entity';
+import { Guard } from '@/core/logic/Guard';
+import { Result } from '@/core/logic/result';
+import { Optional } from '@/core/logic/types/Optional';
+
+export enum InterestedStatus {
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  PENDING = 'pending',
+}
 
 interface interestedProps {
   recipientId: string;
   occurredAt: Date;
+  status: InterestedStatus;
+  updatedAt?: Date;
 }
 
 export class Interested extends Entity<interestedProps> {
@@ -17,7 +25,27 @@ export class Interested extends Entity<interestedProps> {
     return this.props.occurredAt;
   }
 
-  static create(props: Optional<interestedProps, 'occurredAt'>, id?: string) {
+  get status() {
+    return this.props.status;
+  }
+
+  get updatedAt() {
+    return this.props.updatedAt;
+  }
+
+  set status(status: InterestedStatus) {
+    this.props.status = status;
+    this.touch();
+  }
+
+  private touch() {
+    this.props.updatedAt = new Date();
+  }
+
+  static create(
+    props: Optional<interestedProps, 'occurredAt' | 'status'>,
+    id?: string,
+  ) {
     const resultGuard = Guard.againstNullOrUndefinedBulk([
       { argument: props.recipientId, argumentName: 'recipientId' },
     ]);
@@ -30,6 +58,7 @@ export class Interested extends Entity<interestedProps> {
       {
         recipientId: props.recipientId,
         occurredAt: props.occurredAt ?? new Date(),
+        status: props.status ?? InterestedStatus.PENDING,
       },
       id,
     );

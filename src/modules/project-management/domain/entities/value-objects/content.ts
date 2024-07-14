@@ -5,7 +5,7 @@ export class Content {
     this.value = value;
   }
 
-  static createExcerptFromText(text: string, limit: number) {
+  static createExcerptFromContent(text: string, limit: number) {
     return text.length > limit
       ? text.substring(0, limit).trimEnd().concat('...')
       : text;

@@ -14,9 +14,9 @@ export const createProjectBodySchema = z.object({
   }),
   description: z.string(),
   generalSkills: z.array(z.object({ slug: z.string() })),
-  roles: z.array(
+  jobs: z.array(
     z.object({
-      membersAmount: z.coerce.number(),
+      jobAmountAvailable: z.coerce.number(),
       name: z.string(),
       description: z.string(),
     }),

@@ -1,4 +1,4 @@
-import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
+import { ResourceNotFoundError } from '@/core/errors/errors/resource-not-found-error';
 import { MemberStatus } from '@modules/project-management/domain/entities/member';
 
 import { makeFakeMember } from '@test/factories/make-member';

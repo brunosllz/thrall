@@ -1,10 +1,18 @@
-import { Slug } from '@/common/domain/entities/value-objects/slug';
-import { ProjectRoleList } from '@/modules/project-management/domain/entities/watched-lists/project-role-list';
-import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
-import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
+import { Slug } from '@/core/domain/value-objects/slug';
+import {
+  MemberStatus,
+  PermissionType,
+} from '@/modules/project-management/domain/entities/member';
+import { Skill } from '@/modules/project-management/domain/entities/skill';
+import { ProjectGeneralSkillList } from '@/modules/project-management/domain/entities/watched-lists/project-general-skill-list';
+import { ProjectJobList } from '@/modules/project-management/domain/entities/watched-lists/project-job-list';
+import { NotAllowedError } from '@/core/errors/errors/not-allowed-error';
+import { ResourceNotFoundError } from '@/core/errors/errors/resource-not-found-error';
+import { faker } from '@faker-js/faker';
 
+import { makeFakeJob } from '@test/factories/make-job';
+import { makeFakeMember } from '@test/factories/make-member';
 import { makeFakeProject } from '@test/factories/make-project';
-import { makeFakeRole } from '@test/factories/make-role';
 
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
 import { EditProjectUseCase } from './edit-project';
@@ -22,33 +30,71 @@ describe('Edit a projects', () => {
     let errorOccurred = false;
 
     try {
-      const projects = makeFakeProject(
+      const project = makeFakeProject(
         {
           authorId: '1',
-          roles: new ProjectRoleList([
-            makeFakeRole(
+          jobs: new ProjectJobList([
+            makeFakeJob(
               {
                 projectId: '1',
-                name: Slug.createFromText('devops').getValue(),
-                membersAmount: 1,
+                name: 'devops',
+                jobAmountAvailable: 1,
               },
               '1',
             ),
+            makeFakeJob(
+              {
+                projectId: '1',
+                name: 'full stack',
+                jobAmountAvailable: 2,
+              },
+              '2',
+            ),
+          ]),
+          generalSkills: new ProjectGeneralSkillList([
+            Skill.create('react').getValue(),
+            Skill.create('prisma').getValue(),
           ]),
         },
         '1',
       );
 
-      await projectsRepository.create(projects);
+      expect(project.jobs.currentItems).toHaveLength(2);
+      await projectsRepository.create(project);
 
       await sut.execute({
-        projectId: projects.id,
-        authorId: '1',
+        projectId: project.id,
+        recipientId: '1',
         name: 'example title',
         description: 'example content',
-        roles: [
-          { id: '1', name: 'front-end', amount: 3, description: 'lorem' },
-          { name: 'back-end', amount: 2, description: 'lorem' },
+        jobs: [
+          {
+            id: '1',
+            name: 'front-end',
+            jobAmountAvailable: 3,
+            description: 'lorem',
+          },
+          {
+            name: 'back-end',
+            jobAmountAvailable: 2,
+            description: faker.lorem.paragraphs(),
+          },
+          {
+            name: 'back-end',
+            jobAmountAvailable: 2,
+            description: faker.lorem.paragraphs(),
+          },
+        ],
+        generalSkills: [
+          {
+            slug: 'react',
+          },
+          {
+            slug: 'javascript',
+          },
+          {
+            slug: 'typescript',
+          },
         ],
       });
 
@@ -58,15 +104,27 @@ describe('Edit a projects', () => {
           value: 'example content',
         },
       });
-      expect(projectsRepository.items[0].roles.currentItems).toHaveLength(2);
-      expect(projectsRepository.items[0].roles.currentItems[0]).toMatchObject({
-        name: Slug.createFromText('front end').getValue(),
-        membersAmount: 3,
+      expect(projectsRepository.items[0].jobs.getRemovedItems()).toHaveLength(
+        1,
+      );
+      expect(projectsRepository.items[0].jobs.currentItems).toHaveLength(3);
+      expect(projectsRepository.items[0].jobs.currentItems[0]).toMatchObject({
+        name: 'front-end',
+        slug: Slug.createFromText('front-end').getValue(),
+        jobAmountAvailable: 3,
       });
-      expect(projectsRepository.items[0].roles.currentItems[1]).toMatchObject({
-        name: Slug.createFromText('back end').getValue(),
-        membersAmount: 2,
+      expect(
+        projectsRepository.items[0].jobs.currentItems[0].description.value,
+      ).toBe('lorem');
+
+      expect(projectsRepository.items[0].jobs.currentItems[1]).toMatchObject({
+        name: 'back-end',
+        slug: Slug.createFromText('back-end').getValue(),
+        jobAmountAvailable: 2,
       });
+      expect(
+        projectsRepository.items[0].generalSkills.currentItems,
+      ).toHaveLength(3);
     } catch (error) {
       errorOccurred = true;
     }
@@ -74,22 +132,22 @@ describe('Edit a projects', () => {
     expect(errorOccurred).toBeFalsy();
   });
 
-  it('should be not able edit a projects with non exists id', async () => {
+  it('should be not able edit a project with non exists id', async () => {
     let errorOccurred = false;
 
     try {
-      const projects = makeFakeProject({
+      const project = makeFakeProject({
         authorId: '1',
       });
 
-      await projectsRepository.create(projects);
+      await projectsRepository.create(project);
 
       const result = await sut.execute({
         projectId: 'non-id',
-        authorId: '1',
+        recipientId: '1',
         name: 'title example',
         description: 'content example 2',
-        roles: [],
+        jobs: [],
       });
 
       expect(result.isLeft()).toBe(true);
@@ -101,23 +159,79 @@ describe('Edit a projects', () => {
     expect(errorOccurred).toBeFalsy();
   });
 
-  it('should be not able edit a projects with invalid author id', async () => {
+  it('should be not able edit a project with invalid recipient id', async () => {
     let errorOccurred = false;
 
     try {
-      const projects = makeFakeProject();
+      const project = makeFakeProject();
 
-      await projectsRepository.create(projects);
+      await projectsRepository.create(project);
 
       const result = await sut.execute({
-        projectId: projects.id,
-        authorId: 'non-id',
+        projectId: project.id,
+        recipientId: 'non-id',
         name: 'title example',
         description: 'content example 2',
-        roles: [],
+        jobs: [],
       });
 
       expect(result.isLeft()).toBe(true);
+      expect(result.value).toBeInstanceOf(NotAllowedError);
+    } catch (error) {
+      errorOccurred = true;
+    }
+
+    expect(errorOccurred).toBeFalsy();
+  });
+
+  it('should be not able edit a project if member is not owner', async () => {
+    let errorOccurred = false;
+
+    try {
+      const project = makeFakeProject(
+        {
+          authorId: '1',
+          jobs: new ProjectJobList([
+            makeFakeJob(
+              {
+                projectId: '1',
+                name: 'devops',
+                jobAmountAvailable: 1,
+              },
+              '1',
+            ),
+          ]),
+        },
+        '1',
+      );
+
+      project.teamMembers.add(
+        makeFakeMember({
+          recipientId: '2',
+          status: MemberStatus.APPROVED,
+          permissionType: PermissionType.MEMBER,
+        }),
+      );
+
+      await projectsRepository.create(project);
+
+      const result = await sut.execute({
+        projectId: project.id,
+        recipientId: '2',
+        name: 'example title',
+        description: 'example content',
+        jobs: [
+          {
+            id: '1',
+            name: 'front-end',
+            jobAmountAvailable: 3,
+            description: 'lorem',
+          },
+          { name: 'back-end', jobAmountAvailable: 2, description: 'lorem' },
+        ],
+      });
+
+      expect(result.isLeft()).toBeTruthy();
       expect(result.value).toBeInstanceOf(NotAllowedError);
     } catch (error) {
       errorOccurred = true;

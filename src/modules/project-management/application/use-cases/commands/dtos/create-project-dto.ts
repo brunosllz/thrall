@@ -1,6 +1,6 @@
 import { UnitTimeType } from '@/modules/project-management/domain/entities/value-objects/available-to-participate';
 
-import { RoleDTO } from './role-dto';
+import { JobDTO } from './job-dto';
 import { SkillDTO } from './skill-dto';
 
 export interface CreateProjectDTO {
@@ -9,7 +9,7 @@ export interface CreateProjectDTO {
   imageUrl?: string;
   bannerUrl?: string;
   name: string;
-  roles: Array<RoleDTO>;
+  jobs: Array<JobDTO>;
   generalSkills: Array<SkillDTO>;
   availableToParticipate: {
     availableDays: number[];

@@ -1,6 +1,6 @@
-import { PaginationParams } from '@/common/repositories/pagination-params';
+import { PaginationParams } from '@/core/repositories/pagination-params';
 import { NotificationsDAO } from '@/modules/notification/application/dao/notifications-dao';
-import { PrismaService } from '@common/infra/prisma/prisma.service';
+import { PrismaService } from '@/core/infra/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()

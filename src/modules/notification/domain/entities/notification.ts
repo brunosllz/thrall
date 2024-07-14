@@ -1,7 +1,7 @@
-import { AggregateRoot } from '@/common/domain/entities/aggregate-root';
-import { Guard } from '@/common/logic/Guard';
-import { Result } from '@/common/logic/result';
-import { Optional } from '@common/logic/types/Optional';
+import { AggregateRoot } from '@/core/domain/entities/aggregate-root';
+import { Guard } from '@/core/logic/Guard';
+import { Result } from '@/core/logic/result';
+import { Optional } from '@/core/logic/types/Optional';
 
 import { NotificationReadEvent } from '../events/notification-read';
 

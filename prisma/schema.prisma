@@ -123,36 +123,38 @@ model Project {
 
   answers             Answer[]
   user                User                  @relation(fields: [authorId], references: [id])
-  projectRoles        ProjectRole[]
+  projectJobs         ProjectJob[]
   teamMembers         TeamMember[]
   skills              Skill[]
   interestedInProject InterestedInProject[]
-  ProjectRealized     ProjectRealized[]
+  projectRealized     ProjectRealized[]
 
   @@unique([authorId, slug])
+  @@index([slug])
   @@map("projects")
 }
 
-model ProjectRole {
+model ProjectJob {
   id            String @id @default(uuid())
   description   String @db.Text
   membersAmount Int    @map("members_amount")
   projectId     String @map("project_id")
-  roleId        String @map("role_id")
+  roleSlug      String @map("role_slug")
 
-  users   User[]
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  role    Role    @relation(fields: [roleId], references: [id])
+  member  TeamMember[]
+  project Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  role    Role         @relation(fields: [roleSlug], references: [slug])
 
-  @@unique([projectId, roleId])
-  @@map("project_roles")
+  @@unique([projectId, roleSlug])
+  @@map("project_jobs")
 }
 
 model Role {
   id   String @id @default(uuid())
   name String @unique
+  slug String @unique
 
-  projectRoles ProjectRole[]
+  projectJobs ProjectJob[]
 
   @@map("roles")
 }
@@ -177,9 +179,11 @@ model TeamMember {
   createdAt      DateTime               @default(now()) @map("created_at")
   updatedAt      DateTime?              @updatedAt @map("updated_at")
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [recipientId], references: [id])
+  projectJob ProjectJob[]
+  project    Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user       User         @relation(fields: [recipientId], references: [id])
 
+  @@unique([projectId, recipientId])
   @@map("team_members")
 }
 
@@ -214,18 +218,17 @@ model User {
   seniority    String?
   overallRate  Decimal   @default(0.0) @map("overall_rate") @db.Decimal(5, 2)
 
-  Answer                    Answer[]
-  AnswerComment             AnswerComment[]
+  answer                    Answer[]
+  answerComment             AnswerComment[]
   authorIdToNotifcation     Notification[]        @relation("NotificationAuthorIdToUser")
   recipientIdToNotification Notification[]        @relation("NotificationRecipientIdToUser")
   projects                  Project[]
   teamMember                TeamMember[]
-  projectRole               ProjectRole[]
   skills                    Skill[]
   account                   Account[]
   session                   Session[]
-  InterestedInProject       InterestedInProject[]
-  ProjectRealized           ProjectRealized[]
+  interestedInProject       InterestedInProject[]
+  projectRealized           ProjectRealized[]
 
   @@map("users")
 }

@@ -1,4 +1,4 @@
-import { PrismaService } from '@common/infra/prisma/prisma.service';
+import { PrismaService } from '@/core/infra/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import {
   Answer,

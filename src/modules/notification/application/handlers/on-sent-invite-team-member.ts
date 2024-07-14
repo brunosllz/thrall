@@ -1,5 +1,5 @@
-import { DomainEvents } from '@common/domain/events/domain-events';
-import { EventHandler } from '@common/domain/events/event-handler';
+import { DomainEvents } from '@/core/domain/events/domain-events';
+import { EventHandler } from '@/core/domain/events/event-handler';
 import { ProjectsRepository } from '@modules/project-management/application/repositories/projects-repository';
 import { SendInviteTeamMemberEvent } from '@modules/project-management/domain/events/send-invite-team-member';
 

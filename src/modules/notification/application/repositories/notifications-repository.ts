@@ -1,4 +1,4 @@
-import { AsyncMaybe } from '@common/logic/types/Maybe';
+import { AsyncMaybe } from '@/core/logic/types/Maybe';
 import { Notification } from '@modules/notification/domain/entities/notification';
 
 export abstract class NotificationsRepository {

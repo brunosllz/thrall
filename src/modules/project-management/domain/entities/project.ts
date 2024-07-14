@@ -1,8 +1,8 @@
-import { Slug } from '@/common/domain/entities/value-objects/slug';
-import { AggregateRoot } from '@common/domain/entities/aggregate-root';
-import { Guard } from '@common/logic/Guard';
-import { Result } from '@common/logic/result';
-import { Optional } from '@common/logic/types/Optional';
+import { AggregateRoot } from '@/core/domain/entities/aggregate-root';
+import { Slug } from '@/core/domain/value-objects/slug';
+import { Guard } from '@/core/logic/guard';
+import { Result } from '@/core/logic/result';
+import { Optional } from '@/core/logic/types/Optional';
 
 import { ExpressProjectInterestEvent } from '../events/express-project-interest';
 import { RejectedInviteTeamMemberEvent } from '../events/rejected-invite-team-member';
@@ -14,9 +14,8 @@ import { Content } from './value-objects/content';
 // import { Meeting } from './value-objects/meeting';
 import { ProjectGeneralSkillList } from './watched-lists/project-general-skill-list';
 import { ProjectInterestedList } from './watched-lists/project-interested-list';
-import { ProjectRoleList } from './watched-lists/project-role-list';
+import { ProjectJobList } from './watched-lists/project-job-list';
 import { TeamMembersList } from './watched-lists/team-members-list';
-
 export enum ProjectStatus {
   RECRUITING = 'recruiting',
   CLOSED = 'closed',
@@ -30,14 +29,13 @@ export interface ProjectProps {
   imageUrl?: string;
   bannerUrl?: string;
   status: ProjectStatus;
-  roles: ProjectRoleList;
+  jobs: ProjectJobList;
   generalSkills: ProjectGeneralSkillList;
   availableToParticipate: AvailableToParticipate;
   interested: ProjectInterestedList;
   teamMembers: TeamMembersList;
   createdAt: Date;
   updatedAt?: Date;
-  // meeting?: Meeting; TODO: implement integration for schedule meetings of team
 }
 
 export class Project extends AggregateRoot<ProjectProps> {
@@ -69,8 +67,8 @@ export class Project extends AggregateRoot<ProjectProps> {
     return this.props.status;
   }
 
-  get roles() {
-    return this.props.roles;
+  get jobs() {
+    return this.props.jobs;
   }
 
   get generalSkills() {
@@ -108,14 +106,28 @@ export class Project extends AggregateRoot<ProjectProps> {
     this.touch();
   }
 
-  set roles(roles: ProjectRoleList) {
-    this.props.roles = roles;
+  set imageUrl(imageUrl: string | undefined) {
+    this.props.imageUrl = imageUrl;
+    this.touch();
+  }
+
+  set bannerUrl(bannerUrl: string | undefined) {
+    this.props.bannerUrl = bannerUrl;
+    this.touch();
+  }
+
+  set jobs(jobs: ProjectJobList) {
+    this.props.jobs = jobs;
     this.touch();
   }
 
   set generalSkills(generalSkills: ProjectGeneralSkillList) {
     this.props.generalSkills = generalSkills;
     this.touch();
+  }
+
+  set availableToParticipate(availableToParticipate: AvailableToParticipate) {
+    this.props.availableToParticipate = availableToParticipate;
   }
 
   set teamMembers(teamMembers: TeamMembersList) {
@@ -140,7 +152,7 @@ export class Project extends AggregateRoot<ProjectProps> {
     });
 
     if (memberOrError.isFailure) {
-      return Result.fail<Project>(memberOrError.error);
+      return Result.fail<Member>(memberOrError.error);
     }
 
     const newMember = memberOrError.getValue();
@@ -223,7 +235,7 @@ export class Project extends AggregateRoot<ProjectProps> {
     props: Optional<
       Omit<ProjectProps, 'slug'>,
       | 'createdAt'
-      | 'roles'
+      | 'jobs'
       | 'generalSkills'
       | 'teamMembers'
       | 'interested'
@@ -266,7 +278,7 @@ export class Project extends AggregateRoot<ProjectProps> {
         ...props,
         slug: slug,
         status: ProjectStatus.RECRUITING,
-        roles: props.roles ?? new ProjectRoleList(),
+        jobs: props.jobs ?? new ProjectJobList(),
         generalSkills: props.generalSkills ?? new ProjectGeneralSkillList(),
         interested: props.interested ?? new ProjectInterestedList(),
         teamMembers: props.teamMembers ?? new TeamMembersList([ProjectOwner]),

@@ -1,5 +1,5 @@
-import { Guard } from '@/common/logic/Guard';
-import { Result } from '@/common/logic/result';
+import { Guard } from '@/core/logic/Guard';
+import { Result } from '@/core/logic/result';
 
 export enum UnitTimeType {
   HOUR = 'hour',

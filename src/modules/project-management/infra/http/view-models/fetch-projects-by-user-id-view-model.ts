@@ -2,31 +2,29 @@ export class FetchProjectsByUserIdViewModel {
   static toHTTP(project: any) {
     return {
       id: project.id,
-      authorId: project.authorId,
+      status: project.status,
+      slug: project.slug,
+      bannerUrl: project.bannerUrl,
       name: project.name,
       description: project.description,
-      status: project.status,
-      bannerUrl: project.bannerUrl,
-      slug: project.slug,
-      myRoles: project.projectRoles.map(
-        (projectRole: { role: { id: string; name: string } }) => {
-          return {
-            id: projectRole.role.id,
-            name: projectRole.role.name,
-          };
-        },
+      myRoles: project.projectJobs.map(
+        (projectRole: {
+          role: { id: string; name: string; slug: string };
+        }) => ({
+          id: projectRole.role.id,
+          name: projectRole.role.name,
+          slug: projectRole.role.slug,
+        }),
       ),
       teamMembers: project.teamMembers.map(
         (teamMember: {
           id: string;
           user: { name: string; avatarUrl: string };
-        }) => {
-          return {
-            id: teamMember.id,
-            name: teamMember.user.name,
-            avatarUrl: teamMember.user.avatarUrl,
-          };
-        },
+        }) => ({
+          id: teamMember.id,
+          name: teamMember.user.name,
+          avatarUrl: teamMember.user.avatarUrl,
+        }),
       ),
     };
   }

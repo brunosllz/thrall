@@ -1,4 +1,4 @@
-import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
+import { NotAllowedError } from '@/core/errors/errors/not-allowed-error';
 
 import { makeFakeNotification } from '@test/factories/make-notification';
 

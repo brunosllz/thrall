@@ -1,5 +1,5 @@
-import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
-import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
+import { NotAllowedError } from '@/core/errors/errors/not-allowed-error';
+import { ResourceNotFoundError } from '@/core/errors/errors/resource-not-found-error';
 import {
   MemberStatus,
   PermissionType,

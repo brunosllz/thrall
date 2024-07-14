@@ -1,7 +1,7 @@
-import { Entity } from '@common/domain/entities/entity';
-import { Guard } from '@common/logic/Guard';
-import { Result } from '@common/logic/result';
-import { Optional } from '@common/logic/types/Optional';
+import { Entity } from '@/core/domain/entities/entity';
+import { Guard } from '@/core/logic/Guard';
+import { Result } from '@/core/logic/result';
+import { Optional } from '@/core/logic/types/Optional';
 
 export enum MemberStatus {
   APPROVED = 'approved',
@@ -18,6 +18,7 @@ export interface MemberProps {
   recipientId: string;
   permissionType: PermissionType;
   status: MemberStatus | null;
+  role?: string;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -33,6 +34,10 @@ export class Member extends Entity<MemberProps> {
 
   get status() {
     return this.props.status;
+  }
+
+  get role() {
+    return this.props.role;
   }
 
   get createdAt() {

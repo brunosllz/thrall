@@ -1,12 +1,12 @@
-import { Slug } from '@/common/domain/entities/value-objects/slug';
-import { DomainEvents } from '@common/domain/events/domain-events';
+import { DomainEvents } from '@/core/domain/events/domain-events';
+import { Slug } from '@/core/domain/value-objects/slug';
 import { Project } from '@modules/project-management/domain/entities/project';
 
 import { ProjectsRepository } from '../projects-repository';
 export class InMemoryProjectsRepository extends ProjectsRepository {
   items: Project[] = [];
 
-  async exists({ authorId, slug }: { authorId: string; slug: Slug }) {
+  async exists({ authorId, slug }) {
     const hasItem = this.items.find((project) => {
       return project.authorId === authorId && project.slug.value === slug.value;
     });

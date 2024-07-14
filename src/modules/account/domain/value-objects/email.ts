@@ -1,4 +1,4 @@
-import { Either, left, right } from '@common/logic/either';
+import { Either, left, right } from '@/core/logic/either';
 
 import { EmailBadFormattedError } from './errors/email-bad-formatted-error';
 

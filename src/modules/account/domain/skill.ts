@@ -1,7 +1,7 @@
-import { Slug } from '@/common/domain/entities/value-objects/slug';
-import { Entity } from '@common/domain/entities/entity';
-import { Guard } from '@common/logic/Guard';
-import { Result } from '@common/logic/result';
+import { Slug } from '@/core/domain/value-objects/slug';
+import { Entity } from '@/core/domain/entities/entity';
+import { Guard } from '@/core/logic/Guard';
+import { Result } from '@/core/logic/result';
 
 interface SkillProps {
   slug: Slug;

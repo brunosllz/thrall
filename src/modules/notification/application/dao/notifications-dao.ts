@@ -1,7 +1,7 @@
 import {
   PaginationParams,
   PaginationQueryResponse,
-} from '@common/repositories/pagination-params';
+} from '@/core/repositories/pagination-params';
 
 export abstract class NotificationsDAO {
   abstract findManyByUserId(

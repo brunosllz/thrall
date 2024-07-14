@@ -1,4 +1,4 @@
-import { Slug } from '@/common/domain/entities/value-objects/slug';
+import { Slug } from '@/core/domain/value-objects/slug';
 import { faker } from '@faker-js/faker';
 import { PrismaClient } from '@prisma/client';
 import dayjs from 'dayjs';
@@ -93,59 +93,80 @@ const skills = [
 ];
 
 const roles = [
-  { name: 'Desenvolvedor Front-end' },
-  { name: 'Desenvolvedor Back-end' },
-  { name: 'Engenheiro de Software' },
-  { name: 'Arquiteto de Software' },
-  { name: 'Analista de Sistemas' },
-  { name: 'Analista de Qualidade de Software' },
-  { name: 'Gerente de Projeto de Software' },
-  { name: 'Scrum Master' },
-  { name: 'Product Owner' },
-  { name: 'UX/UI Designer' },
-  { name: 'Engenheiro de DevOps' },
-  { name: 'Engenheiro de Testes' },
-  { name: 'Desenvolvedor Full Stack' },
-  { name: 'Desenvolvedor Mobile' },
-  { name: 'Engenheiro de Dados' },
-  { name: 'Analista de Segurança da Informação' },
-  { name: 'Analista de Dados' },
-  { name: 'Engenheiro de Redes' },
-  { name: 'Administrador de Banco de Dados' },
-  { name: 'Engenheiro de Integração' },
-  { name: 'Engenheiro de Cloud' },
-  { name: 'Analista de Requisitos' },
-  { name: 'Analista de Negócios' },
-  { name: 'Desenvolvedor Java' },
-  { name: 'Desenvolvedor Python' },
-  { name: 'Desenvolvedor JavaScript' },
-  { name: 'Desenvolvedor PHP' },
-  { name: 'Desenvolvedor C#' },
-  { name: 'Desenvolvedor Ruby' },
-  { name: 'Desenvolvedor Swift' },
-  { name: 'Desenvolvedor Kotlin' },
-  { name: 'Desenvolvedor TypeScript' },
-  { name: 'Desenvolvedor C++' },
-  { name: 'Desenvolvedor Go' },
-  { name: 'Desenvolvedor Rust' },
-  { name: 'Desenvolvedor Scala' },
-  { name: 'Desenvolvedor Lua' },
-  { name: 'Desenvolvedor HTML/CSS' },
-  { name: 'Desenvolvedor Android' },
-  { name: 'Desenvolvedor iOS' },
-  { name: 'Engenheiro de Machine Learning' },
-  { name: 'Engenheiro de Inteligência Artificial' },
-  { name: 'Analista de Big Data' },
-  { name: 'Desenvolvedor Web' },
-  { name: 'Engenheiro de Front-end' },
-  { name: 'Engenheiro de Back-end' },
-  { name: 'Engenheiro de Segurança de Software' },
+  { name: 'Desenvolvedor Front-end', slug: 'desenvolvedor-front-end' },
+  { name: 'Desenvolvedor Back-end', slug: 'desenvolvedor-back-end' },
+  { name: 'Engenheiro de Software', slug: 'engenheiro-de-software' },
+  { name: 'Arquiteto de Software', slug: 'arquiteto-de-software' },
+  { name: 'Analista de Sistemas', slug: 'analista-de-sistemas' },
+  {
+    name: 'Analista de Qualidade de Software',
+    slug: 'analista-de-qualidade-de-software',
+  },
+  {
+    name: 'Gerente de Projeto de Software',
+    slug: 'gerente-de-projeto-de-software',
+  },
+  { name: 'Scrum Master', slug: 'scrum-master' },
+  { name: 'Product Owner', slug: 'product-owner' },
+  { name: 'UX/UI Designer', slug: 'ux-ui-designer' },
+  { name: 'Engenheiro de DevOps', slug: 'engenheiro-de-devops' },
+  { name: 'Engenheiro de Testes', slug: 'engenheiro-de-testes' },
+  { name: 'Desenvolvedor Full Stack', slug: 'desenvolvedor-full-stack' },
+  { name: 'Desenvolvedor Mobile', slug: 'desenvolvedor-mobile' },
+  { name: 'Engenheiro de Dados', slug: 'engenheiro-de-dados' },
+  {
+    name: 'Analista de Segurança da Informação',
+    slug: 'analista-de-seguranca-da-informacao',
+  },
+  { name: 'Analista de Dados', slug: 'analista-de-dados' },
+  { name: 'Engenheiro de Redes', slug: 'engenheiro-de-redes' },
+  {
+    name: 'Administrador de Banco de Dados',
+    slug: 'administrador-de-banco-de-dados',
+  },
+  { name: 'Engenheiro de Integração', slug: 'engenheiro-de-integracao' },
+  { name: 'Engenheiro de Cloud', slug: 'engenheiro-de-cloud' },
+  { name: 'Analista de Requisitos', slug: 'analista-de-requisitos' },
+  { name: 'Analista de Negócios', slug: 'analista-de-negocios' },
+  { name: 'Desenvolvedor Java', slug: 'desenvolvedor-java' },
+  { name: 'Desenvolvedor Python', slug: 'desenvolvedor-python' },
+  { name: 'Desenvolvedor JavaScript', slug: 'desenvolvedor-javascript' },
+  { name: 'Desenvolvedor PHP', slug: 'desenvolvedor-php' },
+  { name: 'Desenvolvedor C#', slug: 'desenvolvedor-c' },
+  { name: 'Desenvolvedor Ruby', slug: 'desenvolvedor-ruby' },
+  { name: 'Desenvolvedor Swift', slug: 'desenvolvedor-swift' },
+  { name: 'Desenvolvedor Kotlin', slug: 'desenvolvedor-kotlin' },
+  { name: 'Desenvolvedor TypeScript', slug: 'desenvolvedor-typescript' },
+  { name: 'Desenvolvedor C++', slug: 'desenvolvedor-cpp' },
+  { name: 'Desenvolvedor Go', slug: 'desenvolvedor-go' },
+  { name: 'Desenvolvedor Rust', slug: 'desenvolvedor-rust' },
+  { name: 'Desenvolvedor Scala', slug: 'desenvolvedor-scala' },
+  { name: 'Desenvolvedor Lua', slug: 'desenvolvedor-lua' },
+  { name: 'Desenvolvedor HTML/CSS', slug: 'desenvolvedor-html-css' },
+  { name: 'Desenvolvedor Android', slug: 'desenvolvedor-android' },
+  { name: 'Desenvolvedor iOS', slug: 'desenvolvedor-ios' },
+  {
+    name: 'Engenheiro de Machine Learning',
+    slug: 'engenheiro-de-machine-learning',
+  },
+  {
+    name: 'Engenheiro de Inteligência Artificial',
+    slug: 'engenheiro-de-inteligencia-artificial',
+  },
+  { name: 'Analista de Big Data', slug: 'analista-de-big-data' },
+  { name: 'Desenvolvedor Web', slug: 'desenvolvedor-web' },
+  { name: 'Engenheiro de Front-end', slug: 'engenheiro-de-front-end' },
+  { name: 'Engenheiro de Back-end', slug: 'engenheiro-de-back-end' },
+  {
+    name: 'Engenheiro de Segurança de Software',
+    slug: 'engenheiro-de-seguranca-de-software',
+  },
 ];
 
 async function main() {
   await prisma.skill.deleteMany();
   await prisma.interestedInProject.deleteMany();
-  await prisma.projectRole.deleteMany();
+  await prisma.projectJob.deleteMany();
   await prisma.role.deleteMany();
   await prisma.teamMember.deleteMany();
   await prisma.skill.deleteMany();
@@ -210,7 +231,6 @@ async function main() {
   });
 
   let projectName;
-  let roleName;
 
   await prisma.role.createMany({
     data: roles,
@@ -219,7 +239,6 @@ async function main() {
   await Promise.all(
     Array.from({ length: 100 }).map(async () => {
       projectName = faker.company.name();
-      roleName = faker.person.jobTitle();
 
       const project = await prisma.project.create({
         data: {
@@ -245,7 +264,7 @@ async function main() {
               status: 'approved',
             },
           },
-          projectRoles: {
+          projectJobs: {
             create: {
               description: `
                 ${faker.lorem.paragraphs()}
@@ -254,11 +273,12 @@ async function main() {
               membersAmount: faker.number.int({ max: 5, min: 0 }),
               role: {
                 connectOrCreate: {
-                  create: {
-                    name: roleName,
-                  },
                   where: {
-                    name: roleName,
+                    slug: 'devops',
+                  },
+                  create: {
+                    name: 'devops',
+                    slug: 'devops',
                   },
                 },
               },
@@ -300,11 +320,11 @@ async function main() {
             ${faker.lorem.paragraphs()}
           `,
           membersAmount: faker.number.int({ max: 5, min: 0 }),
-          roleId: roles[randomIndex].id,
+          roleSlug: roles[randomIndex].slug,
         }),
       );
 
-      await prisma.projectRole.createMany({
+      await prisma.projectJob.createMany({
         data: projectRoles,
       });
     }),

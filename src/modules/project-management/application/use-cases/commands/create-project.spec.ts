@@ -1,8 +1,7 @@
-import { Slug } from '@/common/domain/entities/value-objects/slug';
+import { Slug } from '@/core/domain/value-objects/slug';
 import { UnitTimeType } from '@/modules/project-management/domain/entities/value-objects/available-to-participate';
-import { AlreadyExistsError } from '@common/errors/errors/already-exists-error';
+import { AlreadyExistsError } from '@/core/errors/errors/already-exists-error';
 import { faker } from '@faker-js/faker';
-import { ProjectStatus } from '@modules/project-management/domain/entities/project';
 
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
 import { CreateProjectUseCase } from './create-project';
@@ -25,15 +24,14 @@ describe('Create a projects', () => {
         name: 'title example',
         description: faker.lorem.paragraphs(),
         imageUrl: faker.image.url(),
-        status: ProjectStatus.RECRUITING,
-        roles: [
+        jobs: [
           {
-            membersAmount: 2,
+            jobAmountAvailable: 2,
             name: 'front end',
             description: faker.lorem.paragraphs(),
           },
           {
-            membersAmount: 1,
+            jobAmountAvailable: 1,
             name: 'devops',
             description: faker.lorem.paragraphs(),
           },
@@ -51,15 +49,17 @@ describe('Create a projects', () => {
       expect(result.isRight()).toBeTruthy();
       expect(projectsRepository.items).toHaveLength(1);
       expect(projectsRepository.items[0].slug.value).toEqual('title-example');
-      expect(projectsRepository.items[0].roles.getItems()).toHaveLength(2);
-      expect(projectsRepository.items[0].roles.getItems()).toEqual([
+      expect(projectsRepository.items[0].jobs.getItems()).toHaveLength(2);
+      expect(projectsRepository.items[0].jobs.getItems()).toEqual([
         expect.objectContaining({
-          membersAmount: 2,
-          name: Slug.createFromText('front end').getValue(),
+          jobAmountAvailable: 2,
+          name: 'front end',
+          slug: Slug.createFromText('front end').getValue(),
         }),
         expect.objectContaining({
-          membersAmount: 1,
-          name: Slug.createFromText('devops').getValue(),
+          jobAmountAvailable: 1,
+          name: 'devops',
+          slug: Slug.createFromText('devops').getValue(),
         }),
       ]);
       expect(projectsRepository.items[0].generalSkills.getItems()).toHaveLength(
@@ -88,15 +88,14 @@ describe('Create a projects', () => {
         name: 'title example',
         description: faker.lorem.paragraphs(),
         imageUrl: faker.image.url(),
-        status: ProjectStatus.RECRUITING,
-        roles: [
+        jobs: [
           {
-            membersAmount: 2,
+            jobAmountAvailable: 2,
             name: 'front end',
             description: faker.lorem.paragraphs(),
           },
           {
-            membersAmount: 1,
+            jobAmountAvailable: 1,
             name: 'devops',
             description: faker.lorem.paragraphs(),
           },
@@ -116,15 +115,14 @@ describe('Create a projects', () => {
         name: 'title example',
         description: faker.lorem.paragraphs(),
         imageUrl: faker.image.url(),
-        status: ProjectStatus.RECRUITING,
-        roles: [
+        jobs: [
           {
-            membersAmount: 2,
+            jobAmountAvailable: 2,
             name: 'front end',
             description: faker.lorem.paragraphs(),
           },
           {
-            membersAmount: 1,
+            jobAmountAvailable: 1,
             name: 'devops',
             description: faker.lorem.paragraphs(),
           },

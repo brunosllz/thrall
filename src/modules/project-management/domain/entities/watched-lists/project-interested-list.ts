@@ -1,4 +1,4 @@
-import { WatchedList } from '@common/domain/watched-list';
+import { WatchedList } from '@/core/domain/watched-list';
 
 import { Interested } from '../interested';
 

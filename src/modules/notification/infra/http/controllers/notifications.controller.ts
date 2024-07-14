@@ -1,12 +1,12 @@
+import { AuthUser } from '@/core/infra/http/auth/auth-user';
+import { CurrentUser } from '@/core/infra/http/auth/decorators/current-user';
 import {
   PaginationValidationSchema,
   paginationValidationSchema,
-} from '@/common/infra/http/validation-schemas/pagination-validation-schema';
-import { ZodValidationPipe } from '@/common/infra/pipes/zod-validation-pipe';
+} from '@/core/infra/http/validation-schemas/pagination-validation-schema';
+import { ZodValidationPipe } from '@/core/infra/pipes/zod-validation-pipe';
 import { FetchNotificationsByUserIdUseCase } from '@/modules/notification/application/use-cases/queries/fetch-notifications-by-user-id';
 import { ReadNotificationUseCase } from '@/modules/notification/application/use-cases/read-notification';
-import { AuthUser } from '@common/infra/http/auth/auth-user';
-import { CurrentUser } from '@common/infra/http/auth/decorators/current-user';
 import {
   InternalServerErrorException,
   Controller,

@@ -1,5 +1,5 @@
-import { DomainEvents } from '@common/domain/events/domain-events';
-import { EventHandler } from '@common/domain/events/event-handler';
+import { DomainEvents } from '@/core/domain/events/domain-events';
+import { EventHandler } from '@/core/domain/events/event-handler';
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 

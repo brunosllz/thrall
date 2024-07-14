@@ -1,8 +1,8 @@
-import { Slug } from '@/common/domain/entities/value-objects/slug';
-import { Guard } from '@/common/logic/Guard';
-import { Result } from '@/common/logic/result';
-import { Entity } from '@common/domain/entities/entity';
-import { Optional } from '@common/logic/types/Optional';
+import { Slug } from '@/core/domain/value-objects/slug';
+import { Guard } from '@/core/logic/Guard';
+import { Result } from '@/core/logic/result';
+import { Entity } from '@/core/domain/entities/entity';
+import { Optional } from '@/core/logic/types/Optional';
 
 import { Email } from './value-objects/email';
 import { UserSkillList } from './watched-lists/user-skill-list';

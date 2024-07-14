@@ -1,4 +1,4 @@
-import { PrismaService } from '@common/infra/prisma/prisma.service';
+import { PrismaService } from '@/core/infra/prisma/prisma.service';
 import { Module } from '@nestjs/common';
 
 @Module({

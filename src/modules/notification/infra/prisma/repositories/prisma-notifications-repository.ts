@@ -1,5 +1,5 @@
-import { DomainEvents } from '@common/domain/events/domain-events';
-import { PrismaService } from '@common/infra/prisma/prisma.service';
+import { DomainEvents } from '@/core/domain/events/domain-events';
+import { PrismaService } from '@/core/infra/prisma/prisma.service';
 import { NotificationsRepository } from '@modules/notification/application/repositories/notifications-repository';
 import { Notification } from '@modules/notification/domain/entities/notification';
 import { Injectable } from '@nestjs/common';

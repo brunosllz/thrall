@@ -1,4 +1,7 @@
-import { PaginationParams } from '@common/repositories/pagination-params';
+import {
+  PaginationParams,
+  PaginationQueryResponse,
+} from '@/core/repositories/pagination-params';
 
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
 import {
@@ -8,6 +11,11 @@ import {
 } from '../projects-dao';
 
 export class InMemoryProjectsDAO extends ProjectsDAO {
+  findManyInvolvedByUserId(): // userId: string,
+  // paginationParams: PaginationParams,
+  Promise<PaginationQueryResponse> {
+    throw new Error('Method not implemented.');
+  }
   findManyGeneralSkillsToTheProjects(): // queryParams: FindManyGeneralSkillsToTheProjectsQueryParams,
   Promise<any[]> {
     throw new Error('Method not implemented.');
@@ -72,12 +80,18 @@ export class InMemoryProjectsDAO extends ProjectsDAO {
       .filter((project) => project.authorId === userId)
       .slice((pageIndex - 1) * pageSize, pageIndex * pageSize);
 
-    return projects;
+    return {
+      total: projects.length,
+      perPage: pageSize,
+      page: pageIndex,
+      lastPage: Math.ceil(projects.length / pageSize),
+      data: projects,
+    };
   }
 
-  async findBySlug(slug: string, authorId: string) {
+  async findBySlug(slug: string) {
     const project = this.inMemoryProjectsRepository.items.find(
-      (project) => project.slug.value === slug && project.authorId === authorId,
+      (project) => project.slug.value === slug,
     );
 
     return project;

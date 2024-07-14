@@ -1,7 +1,7 @@
-import { NotAllowedError } from '@common/errors/errors/not-allowed-error';
-import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
-import { Either, left, right } from '@common/logic/either';
-import { Result } from '@common/logic/result';
+import { NotAllowedError } from '@/core/errors/errors/not-allowed-error';
+import { ResourceNotFoundError } from '@/core/errors/errors/resource-not-found-error';
+import { Either, left, right } from '@/core/logic/either';
+import { Result } from '@/core/logic/result';
 import { MemberStatus } from '@modules/project-management/domain/entities/member';
 import { Injectable } from '@nestjs/common';
 

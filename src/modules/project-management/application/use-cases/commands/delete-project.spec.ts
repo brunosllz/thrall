@@ -1,10 +1,9 @@
-import { Slug } from '@/common/domain/entities/value-objects/slug';
-import { NotAllowedError } from '@/common/errors/errors/not-allowed-error';
-import { ProjectRoleList } from '@/modules/project-management/domain/entities/watched-lists/project-role-list';
-import { ResourceNotFoundError } from '@common/errors/errors/resource-not-found-error';
+import { NotAllowedError } from '@/core/errors/errors/not-allowed-error';
+import { ProjectJobList } from '@/modules/project-management/domain/entities/watched-lists/project-job-list';
+import { ResourceNotFoundError } from '@/core/errors/errors/resource-not-found-error';
 
+import { makeFakeJob } from '@test/factories/make-job';
 import { makeFakeProject } from '@test/factories/make-project';
-import { makeFakeRole } from '@test/factories/make-role';
 
 import { InMemoryProjectsRepository } from '../../repositories/in-memory/in-memory-projects-repository';
 import { DeleteProjectUseCase } from './delete-project';
@@ -25,16 +24,16 @@ describe('Delete a projects', () => {
       const projects = makeFakeProject(
         {
           authorId: '1',
-          roles: new ProjectRoleList([
-            makeFakeRole({
+          jobs: new ProjectJobList([
+            makeFakeJob({
               projectId: '1',
-              name: Slug.createFromText('devops').getValue(),
-              membersAmount: 1,
+              name: 'devops',
+              jobAmountAvailable: 1,
             }),
-            makeFakeRole({
+            makeFakeJob({
               projectId: '1',
-              name: Slug.createFromText('front end').getValue(),
-              membersAmount: 4,
+              name: 'front end',
+              jobAmountAvailable: 4,
             }),
           ]),
         },
@@ -74,16 +73,16 @@ describe('Delete a projects', () => {
       const projects = makeFakeProject(
         {
           authorId: '1',
-          roles: new ProjectRoleList([
-            makeFakeRole({
+          jobs: new ProjectJobList([
+            makeFakeJob({
               projectId: '1',
-              name: Slug.createFromText('devops').getValue(),
-              membersAmount: 1,
+              name: 'devops',
+              jobAmountAvailable: 1,
             }),
-            makeFakeRole({
+            makeFakeJob({
               projectId: '1',
-              name: Slug.createFromText('front end').getValue(),
-              membersAmount: 4,
+              name: 'front end',
+              jobAmountAvailable: 4,
             }),
           ]),
         },
